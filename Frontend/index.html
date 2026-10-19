@@ -8,34 +8,38 @@
   <style>
     :root{--navy:#142b4a;--blue:#2459a9;--bg:#f3f6fb;--text:#17253a;--muted:#68778c;--line:#dfe6ef;--white:#fff;--green:#16834a;--amber:#a86100;--red:#b42318}
     *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
-    .topbar{background:var(--navy);color:#fff;padding:16px 22px;display:flex;align-items:center;gap:12px}
-    .logo{width:38px;height:38px;border-radius:10px;background:#ffffff20;display:grid;place-items:center;font-weight:800}
-    h1{font-size:17px;margin:0}.subtitle{font-size:11px;color:#d4dfed;margin-top:4px}
-    main{max-width:1400px;margin:20px auto;padding:0 16px 30px}.intro{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-    h2{font-size:20px;margin:0 0 5px}.muted{color:var(--muted);line-height:1.5}.status{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:#fff;margin-bottom:14px;line-height:1.5}
+    .app{min-height:100vh;display:grid;grid-template-columns:235px minmax(0,1fr)}.sidebar{background:var(--navy);color:#fff;padding:20px 13px;min-height:100vh;position:sticky;top:0;height:100vh}
+    .brand{display:flex;align-items:center;gap:10px;padding:0 7px 22px;border-bottom:1px solid #ffffff26}.logo{width:38px;height:38px;flex:0 0 38px;border-radius:10px;background:#ffffff20;display:grid;place-items:center;font-weight:800}
+    h1{font-size:14px;margin:0}.subtitle{font-size:10px;color:#d4dfed;margin-top:4px}.nav-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#aebed2;margin:20px 9px 8px}
+    main{min-width:0;max-width:1600px;margin:0 auto;padding:24px;width:100%}.intro{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    h2{font-size:22px;margin:0 0 5px}.muted{color:var(--muted);line-height:1.5}.status{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:#fff;margin-bottom:14px;line-height:1.5}
     .status strong{display:block}.status.good{border-color:#b7e4c7}.status.bad{border-color:#f2c078}
-    .tabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.tab,button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;background:#fff;color:var(--text)}
-    .tab.active,button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}button.secondary{background:#fff}button:disabled{opacity:.55;cursor:wait}
-    .layout{display:grid;grid-template-columns:minmax(270px,340px) minmax(0,1fr);gap:14px;align-items:start}
+    .side-nav{display:flex;flex-direction:column;gap:7px;margin-top:10px}.tab{display:flex;align-items:center;gap:10px;text-align:left;width:100%;border:1px solid transparent;border-radius:9px;padding:11px 10px;cursor:pointer;background:transparent;color:#dbe5f1;font:inherit;font-size:12px}
+    .tab.active{background:#2459a9;color:#fff;border-color:#5d86c5}button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;background:#fff;color:var(--text)}button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}button.secondary{background:#fff}button:disabled{opacity:.55;cursor:wait}
+    .layout{display:grid;grid-template-columns:minmax(250px,320px) minmax(0,1fr);gap:14px;align-items:start}
     .panel{background:#fff;border:1px solid var(--line);border-radius:11px;padding:15px;min-width:0}.panel h3{margin:0 0 12px;font-size:15px}
     .fields{display:grid;grid-template-columns:1fr;gap:10px}.field label{display:block;font-size:11px;font-weight:700;margin-bottom:5px;color:#42516a}
     input,select,textarea{width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:var(--text);font:inherit}
     textarea{min-height:65px;resize:vertical}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}.toolbar input{flex:1;min-width:150px}
     .tablewrap{overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:8px}table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:12px}th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #edf0f5}th{position:sticky;top:0;background:#edf2f9;color:#34445c;z-index:1}td.actions-cell{white-space:nowrap}td .edit{padding:5px 8px;color:var(--blue)}
     .empty{text-align:center;padding:25px;color:var(--muted)}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:12px}.count{font-size:11px;color:var(--muted);align-self:center}
-    @media(max-width:850px){.layout{grid-template-columns:1fr}.tablewrap{max-height:55vh}}@media(max-width:500px){main{padding:0 10px}.topbar{padding:13px}.panel{padding:12px}.tab,button{padding:8px 10px}}
+    @media(max-width:850px){.app{grid-template-columns:175px minmax(0,1fr)}main{padding:16px}.layout{grid-template-columns:1fr}.tablewrap{max-height:55vh}.sidebar{padding:15px 8px}}@media(max-width:560px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto;min-height:0;padding:12px}.brand{padding-bottom:12px}.nav-label{margin:12px 8px 5px}.side-nav{display:grid;grid-template-columns:1fr;gap:5px;margin-top:6px}.tab{padding:9px}.sidebar{position:static}main{padding:12px}.panel{padding:12px}}
   </style>
 </head>
 <body>
-<header class="topbar"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></header>
-<main>
-  <section class="intro"><div><h2>QAQC Monitoring</h2><div class="muted">New system foundation — records are saved to the new QAQC Monitoring Database.</div></div><button id="setupBtn" class="secondary" onclick="prepareDatabase()">Prepare Database</button></section>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></div>
+    <div class="nav-label">Main Menu</div>
+    <nav class="side-nav" id="tabs">
+      <button class="tab active" data-module="J.O Register" onclick="switchModule('J.O Register')"><span>▦</span><span>J.O Register</span></button>
+      <button class="tab" data-module="FGTS Monitoring" onclick="switchModule('FGTS Monitoring')"><span>▤</span><span>FGTS Monitoring / QC Allocation</span></button>
+      <button class="tab" data-module="Transfer Monitoring" onclick="switchModule('Transfer Monitoring')"><span>⇄</span><span>Transfer Monitoring</span></button>
+    </nav>
+  </aside>
+  <main>
+  <section class="intro"><div><h2 id="pageHeading">J.O Register</h2><div class="muted" id="pageDescription">Register and manage job order records.</div></div><button id="setupBtn" class="secondary" onclick="prepareDatabase()">Prepare Database</button></section>
   <div id="status" class="status"><strong>Checking connection…</strong><span class="muted">Please wait.</span></div>
-  <nav class="tabs" id="tabs">
-    <button class="tab active" data-module="J.O Register" onclick="switchModule('J.O Register')">J.O Register</button>
-    <button class="tab" data-module="FGTS Monitoring" onclick="switchModule('FGTS Monitoring')">FGTS Monitoring / QC Allocation</button>
-    <button class="tab" data-module="Transfer Monitoring" onclick="switchModule('Transfer Monitoring')">Transfer Monitoring</button>
-  </nav>
   <section class="layout">
     <div class="panel">
       <h3 id="formTitle">New J.O Register Record</h3>
@@ -51,7 +55,8 @@
       <div class="hint">Transfer Monitoring stores one record per transfer with its total quantity. FGTS Monitoring records each QC allocation separately.</div>
     </div>
   </section>
-</main>
+  </main>
+</div>
 <script>
 var currentModule = 'J.O Register';
 var currentFields = [];
@@ -101,6 +106,13 @@ function prepareDatabase() {
 function switchModule(name) {
   currentModule = name;
   document.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('active', b.getAttribute('data-module') === name);});
+  var headings = {
+    'J.O Register': ['J.O Register','Register and manage job order records.'],
+    'FGTS Monitoring': ['FGTS Monitoring / QC Allocation','Manage FGTS references and quantity allocations per QC in charge.'],
+    'Transfer Monitoring': ['Transfer Monitoring','Manage transfer records with one total quantity per transfer.']
+  };
+  document.getElementById('pageHeading').textContent = headings[name][0];
+  document.getElementById('pageDescription').textContent = headings[name][1];
   document.getElementById('search').value = '';
   resetForm(); renderFields(); loadRecords();
 }
