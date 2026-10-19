@@ -65,14 +65,18 @@ function showStatus(ok, heading, detail) {
   var span = document.createElement('span'); span.className = 'muted'; span.textContent = detail || '';
   box.appendChild(strong); box.appendChild(span);
 }
-function callServer(method, args, success) {
+function callServer(method, args, success, failure) {
   if (!(window.google && google.script && google.script.run)) {
-    showStatus(false, 'Preview mode', 'Para gumana ang save at database, kailangan itong buksan mula sa deployed Google Apps Script web app.');
+    showStatus(false, 'Preview mode', 'Para gumana ang save at database, kailangan itong buksan mula sa Google Apps Script web app.');
+    if (typeof failure === 'function') failure(new Error('Hindi ito nabuksan mula sa Google Apps Script web app.'));
     return;
   }
-  var runner = google.script.run.withFailureHandler(function(err) {
-    showStatus(false, 'May kailangang ayusin', err && err.message ? err.message : String(err));
-  }).withSuccessHandler(success);
+  var runner = google.script.run
+    .withFailureHandler(function(err) {
+      showStatus(false, 'May kailangang ayusin', err && err.message ? err.message : String(err));
+      if (typeof failure === 'function') failure(err);
+    })
+    .withSuccessHandler(success);
   runner[method].apply(runner, args || []);
 }
 function checkStatus() {
@@ -90,6 +94,8 @@ function prepareDatabase() {
     btn.disabled = false; btn.textContent = 'Prepare Database';
     showStatus(!!res.ok, res.message || 'Database setup finished.', 'New tabs only are created; existing records are not cleared.');
     checkStatus();
+  }, function() {
+    btn.disabled = false; btn.textContent = 'Prepare Database';
   });
 }
 function switchModule(name) {
@@ -175,6 +181,8 @@ function submitRecord(event) {
   callServer('saveRecord',[currentModule,data],function(res){
     btn.disabled=false;btn.textContent=document.getElementById('recordId').value ? 'Save Changes' : 'Save Record';
     if(res && res.ok){showStatus(true,res.message,'Nai-save sa bagong database.');resetForm();loadRecords();}
+  },function(){
+    btn.disabled=false;btn.textContent=document.getElementById('recordId').value ? 'Save Changes' : 'Save Record';
   });
 }
 document.addEventListener('DOMContentLoaded',function(){
