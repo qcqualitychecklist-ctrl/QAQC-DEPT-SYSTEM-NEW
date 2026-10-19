@@ -1,0 +1,52 @@
+name: Sync QAQC code to Google Apps Script
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+      CLASP_JSON: ${{ secrets.CLASP_JSON }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Prepare Apps Script source folder
+        run: |
+          mkdir -p deploy
+          cp Backend/Code.gs deploy/Code.gs
+          cp Frontend/index.html deploy/index.html
+          cat > deploy/appsscript.json <<'EOF'
+          {
+            "timeZone": "Asia/Manila",
+            "exceptionLogging": "STACKDRIVER",
+            "runtimeVersion": "V8"
+          }
+          EOF
+
+      - name: Explain setup is pending
+        if: ${{ env.CLASPRC_JSON == '' || env.CLASP_JSON == '' }}
+        run: |
+          echo "Automatic sync is not connected yet."
+          echo "Add repository secrets CLASPRC_JSON and CLASP_JSON after clasp authentication."
+
+      - name: Configure clasp credentials
+        if: ${{ env.CLASPRC_JSON != '' && env.CLASP_JSON != '' }}
+        run: |
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          printf '%s' "$CLASP_JSON" > .clasp.json
+
+      - name: Push source to Google Apps Script
+        if: ${{ env.CLASPRC_JSON != '' && env.CLASP_JSON != '' }}
+        run: |
+          npx --yes @google/clasp push --force
