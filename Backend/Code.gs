@@ -108,9 +108,13 @@ function saveTransfer(input) {
   const id=String(input['Record ID']||''), data=sh.getDataRange().getValues(), now=new Date(); let row=-1;
   if(id){for(let i=1;i<data.length;i++)if(String(data[i][0])===id){row=i+1;break;}if(row<0)throw new Error('Transfer record not found. Refresh and try again.');}
   const old=row>0?data[row-1]:null,recordId=id||Utilities.getUuid(),transferId=old?String(old[3]):('TR-'+Utilities.getUuid().toUpperCase());
-  const inputObj=Object.assign({},input,{'Transfer ID':transferId,'Done Qty':old?old[16]:0,'Remaining Qty':qty-(old?Number(old[16])||0:0),'QC In Charge':old?old[18]:'','FGTS No.':old?old[19]:'','Date Finished':old?old[20]:'','Reminders':''});
+  const linkedAllocations=getAllocationRows_(transferId);
+  const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
+  if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
+  const inputObj=Object.assign({},input,{'Transfer ID':transferId,'Done Qty':alreadyAllocated,'Remaining Qty':qty-alreadyAllocated,'QC In Charge':[...new Set(linkedAllocations.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', '),'FGTS No.':[...new Set(linkedAllocations.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', '),'Date Finished':[...new Set(linkedAllocations.map(a=>formatCell_(a[5])).filter(Boolean))].join(', '),'Reminders':''});
   const out=TRANSFER_HEADERS.map((h,j)=>h==='Record ID'?recordId:h==='Created At'?(old?old[1]:now):h==='Updated At'?now:(inputObj[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
+  syncTransferSummary_(transferId);
   return {ok:true,recordId:recordId,transferId:transferId,message:row>0?'Transfer updated.':'Transfer saved.'};
 }
 
@@ -137,6 +141,7 @@ function saveAllocation(transferId,input) {
   if(existingTotal+qty>Number(tr[13]))throw new Error('Total allocated quantity ('+(existingTotal+qty)+') cannot exceed transfer Qty ('+tr[13]+').');
   const now=new Date(),aid=id||Utilities.getUuid(),out=ALLOCATION_HEADERS.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?transferId:h==='Created At'?(row>0?rows[row-1][7]:now):h==='Updated At'?now:(input[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
+  syncTransferSummary_(transferId);
   return {ok:true,message:row>0?'QC allocation updated.':'QC allocation saved.'};
 }
 
@@ -144,7 +149,7 @@ function deleteAllocation(transferId,allocationId) {
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ALLOCATION_SHEET);
   if(!sh)throw new Error('Allocation sheet not found.');
   const rows=sh.getDataRange().getValues();
-  for(let i=1;i<rows.length;i++)if(String(rows[i][0])===String(allocationId)&&String(rows[i][1])===String(transferId)){sh.deleteRow(i+1);return {ok:true,message:'Allocation deleted.'};}
+  for(let i=1;i<rows.length;i++)if(String(rows[i][0])===String(allocationId)&&String(rows[i][1])===String(transferId)){sh.deleteRow(i+1);syncTransferSummary_(transferId);return {ok:true,message:'Allocation deleted.'};}
   throw new Error('Allocation not found.');
 }
 
@@ -157,6 +162,32 @@ function deleteTransfer(recordId) {
   if(alloc&&alloc.getLastRow()>1){const a=alloc.getDataRange().getValues();for(let i=a.length-1;i>=1;i--)if(String(a[i][1])===transferId)alloc.deleteRow(i+1);}
   sh.deleteRow(row);
   return {ok:true,message:'Transfer and its linked QC allocations were deleted.'};
+}
+
+function getAllocationRows_(transferId) {
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ALLOCATION_SHEET);
+  if(!sh||sh.getLastRow()<2)return [];
+  return sh.getDataRange().getValues().slice(1).filter(r=>String(r[1])===String(transferId));
+}
+
+function syncTransferSummary_(transferId) {
+  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
+  if(!sh||sh.getLastRow()<2)return;
+  const values=sh.getDataRange().getValues();
+  let rowIndex=-1;
+  for(let i=1;i<values.length;i++)if(String(values[i][3])===String(transferId)){rowIndex=i+1;break;}
+  if(rowIndex<0)return;
+  const tr=values[rowIndex-1],allocs=getAllocationRows_(transferId);
+  const done=allocs.reduce((sum,a)=>sum+(Number(a[4])||0),0);
+  const qc=[...new Set(allocs.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', ');
+  const fgts=[...new Set(allocs.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
+  const finished=[...new Set(allocs.map(a=>formatCell_(a[5])).filter(Boolean))].join(', ');
+  const qty=Number(tr[13])||0;
+  sh.getRange(rowIndex,17,1,5).setValues([[done,Math.max(0,qty-done),qc,fgts,finished]]);
+  const status=String(tr[15]||''),received=tr[4];
+  let reminder='';
+  if(['Ongoing','For line up'].includes(status)&&received){const d=new Date(received);const days=Math.floor((new Date().setHours(0,0,0,0)-d.setHours(0,0,0,0))/86400000);if(days>=REMINDER_AFTER_DAYS)reminder='DELAYED ('+days+' days)';}
+  sh.getRange(rowIndex,24).setValue(reminder);
 }
 
 function deleteJO(recordId) {
