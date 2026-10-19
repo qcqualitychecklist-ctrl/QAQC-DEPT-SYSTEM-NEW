@@ -1,1 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QAQC Department System</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #142b4a;
+      --blue: #2459a9;
+      --bg: #f3f6fb;
+      --text: #17253a;
+      --muted: #68778c;
+      --line: #dfe6ef;
+      --white: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+    .topbar {
+      background: var(--navy);
+      color: white;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: #ffffff1c; display: grid; place-items: center;
+      font-weight: 800; letter-spacing: .5px;
+    }
+    .brand h1 { margin: 0; font-size: 18px; font-weight: 700; }
+    .brand p { margin: 5px 0 0; color: #d4dfed; font-size: 12px; }
+    main { max-width: 1120px; margin: 28px auto; padding: 0 20px 36px; }
+    .intro { margin-bottom: 22px; }
+    .intro h2 { font-size: 23px; margin: 0 0 8px; }
+    .intro p { color: var(--muted); margin: 0; line-height: 1.6; }
+    .status {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 16px; border: 1px solid var(--line);
+      border-radius: 12px; background: var(--white); margin-bottom: 22px;
+    }
+    .status-mark {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #94a3b8; margin-top: 4px; flex: 0 0 auto;
+    }
+    .status strong { display: block; margin-bottom: 4px; }
+    .status p { margin: 0; color: var(--muted); line-height: 1.5; }
+    .section-title { font-size: 15px; margin: 24px 0 12px; }
+    .modules {
+      display: grid; grid-template-columns: repeat( auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+    }
+    .module {
+      background: var(--white); border: 1px solid var(--line);
+      border-radius: 12px; padding: 18px; min-height: 128px;
+    }
+    .module .icon {
+      width: 36px; height: 36px; display: grid; place-items: center;
+      border-radius: 10px; background: #eaf1fd; color: var(--blue);
+      font-weight: 800; margin-bottom: 13px;
+    }
+    .module h3 { margin: 0 0 6px; font-size: 14px; }
+    .module p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .note {
+      margin-top: 20px; color: var(--muted); font-size: 12px;
+      line-height: 1.6;
+    }
+    @media (max-width: 520px) {
+      .topbar { padding: 15px; }
+      main { margin-top: 22px; padding: 0 14px 28px; }
+      .intro h2 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">QC</div>
+    <div class="brand">
+      <h1>QAQC Department System</h1>
+      <p>Quality Assurance &amp; Quality Control</p>
+    </div>
+  </header>
 
+  <main>
+    <section class="intro">
+      <h2>System Foundation</h2>
+      <p>The new QAQC system is being prepared. Existing systems and historical records remain untouched.</p>
+    </section>
+
+    <section class="status" aria-live="polite">
+      <span class="status-mark" id="statusMark"></span>
+      <div>
+        <strong id="statusTitle">Checking database connection…</strong>
+        <p id="statusMessage">Waiting for the Apps Script backend.</p>
+      </div>
+    </section>
+
+    <h2 class="section-title">Planned modules</h2>
+    <section class="modules">
+      <article class="module">
+        <div class="icon">JO</div>
+        <h3>J.O Register</h3>
+        <p>Job order records and status tracking.</p>
+      </article>
+      <article class="module">
+        <div class="icon">FG</div>
+        <h3>FGTS Monitoring</h3>
+        <p>FGTS references, QC assignments, and allocated quantities.</p>
+      </article>
+      <article class="module">
+        <div class="icon">TR</div>
+        <h3>Transfer Monitoring</h3>
+        <p>Transfer records and total transferred quantity.</p>
+      </article>
+      <article class="module">
+        <div class="icon">QC</div>
+        <h3>QC Allocation</h3>
+        <p>Detailed quantity allocation per QC In Charge.</p>
+      </article>
+    </section>
+
+    <p class="note">This is the initial interface scaffold. Module actions and data editing will be added and tested before the system is used for actual records.</p>
+  </main>
+
+  <script>
+    (function () {
+      const title = document.getElementById('statusTitle');
+      const message = document.getElementById('statusMessage');
+      const mark = document.getElementById('statusMark');
+
+      function showStatus(ok, heading, detail) {
+        title.textContent = heading;
+        message.textContent = detail;
+        mark.style.background = ok ? '#16a34a' : '#d97706';
+      }
+
+      if (window.google && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function (result) {
+            if (result && result.ok) {
+              showStatus(true, 'Database connection successful', result.databaseName + ' — read-only connection check passed.');
+            } else {
+              showStatus(false, 'Database connection needs attention', result && result.message ? result.message : 'The backend returned an unexpected response.');
+            }
+          })
+          .withFailureHandler(function (error) {
+            showStatus(false, 'Could not check the database', error && error.message ? error.message : String(error));
+          })
+          .getSystemStatus();
+      } else {
+        showStatus(false, 'Preview mode', 'Open this page through the deployed Google Apps Script web app to test the database connection.');
+      }
+    })();
+  </script>
+</body>
+</html>
