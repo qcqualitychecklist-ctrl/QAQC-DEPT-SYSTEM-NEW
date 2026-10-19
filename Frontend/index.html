@@ -1,206 +1,71 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <base target="_top">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>QAQC Department System</title>
-  <style>
-    :root{--navy:#142b4a;--blue:#2459a9;--bg:#f3f6fb;--text:#17253a;--muted:#68778c;--line:#dfe6ef;--white:#fff;--green:#16834a;--amber:#a86100;--red:#b42318}
-    *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
-    .app{min-height:100vh;display:grid;grid-template-columns:235px minmax(0,1fr)}.sidebar{background:var(--navy);color:#fff;padding:20px 13px;min-height:100vh;position:sticky;top:0;height:100vh}
-    .brand{display:flex;align-items:center;gap:10px;padding:0 7px 22px;border-bottom:1px solid #ffffff26}.logo{width:38px;height:38px;flex:0 0 38px;border-radius:10px;background:#ffffff20;display:grid;place-items:center;font-weight:800}
-    h1{font-size:14px;margin:0}.subtitle{font-size:10px;color:#d4dfed;margin-top:4px}.nav-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#aebed2;margin:20px 9px 8px}
-    main{min-width:0;max-width:1600px;margin:0 auto;padding:24px;width:100%}.intro{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-    h2{font-size:22px;margin:0 0 5px}.muted{color:var(--muted);line-height:1.5}.status{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:#fff;margin-bottom:14px;line-height:1.5}
-    .status strong{display:block}.status.good{border-color:#b7e4c7}.status.bad{border-color:#f2c078}
-    .side-nav{display:flex;flex-direction:column;gap:7px;margin-top:10px}.tab{display:flex;align-items:center;gap:10px;text-align:left;width:100%;border:1px solid transparent;border-radius:9px;padding:11px 10px;cursor:pointer;background:transparent;color:#dbe5f1;font:inherit;font-size:12px}
-    .tab.active{background:#2459a9;color:#fff;border-color:#5d86c5}button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;background:#fff;color:var(--text)}button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}button.secondary{background:#fff}button:disabled{opacity:.55;cursor:wait}
-    .layout{display:grid;grid-template-columns:minmax(250px,320px) minmax(0,1fr);gap:14px;align-items:start}
-    .panel{background:#fff;border:1px solid var(--line);border-radius:11px;padding:15px;min-width:0}.panel h3{margin:0 0 12px;font-size:15px}
-    .fields{display:grid;grid-template-columns:1fr;gap:10px}.field label{display:block;font-size:11px;font-weight:700;margin-bottom:5px;color:#42516a}
-    input,select,textarea{width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:var(--text);font:inherit}
-    textarea{min-height:65px;resize:vertical}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}.toolbar input{flex:1;min-width:150px}
-    .tablewrap{overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:8px}table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:12px}th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #edf0f5}th{position:sticky;top:0;background:#edf2f9;color:#34445c;z-index:1}td.actions-cell{white-space:nowrap}td .edit{padding:5px 8px;color:var(--blue)}
-    .empty{text-align:center;padding:25px;color:var(--muted)}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:12px}.count{font-size:11px;color:var(--muted);align-self:center}
-    @media(max-width:850px){.app{grid-template-columns:175px minmax(0,1fr)}main{padding:16px}.layout{grid-template-columns:1fr}.tablewrap{max-height:55vh}.sidebar{padding:15px 8px}}@media(max-width:560px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto;min-height:0;padding:12px}.brand{padding-bottom:12px}.nav-label{margin:12px 8px 5px}.side-nav{display:grid;grid-template-columns:1fr;gap:5px;margin-top:6px}.tab{padding:9px}.sidebar{position:static}main{padding:12px}.panel{padding:12px}}
-  </style>
-</head>
-<body>
+<html><head><base target="_top"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QAQC Department System</title>
+<style>
+:root{--navy:#142b4a;--blue:#2459a9;--bg:#f3f6fb;--text:#17253a;--muted:#68778c;--line:#dfe6ef;--green:#16834a;--amber:#a86100;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font:13px Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}button,input,select,textarea{font:inherit}button{border:1px solid var(--line);border-radius:8px;padding:8px 11px;background:#fff;color:var(--text);cursor:pointer}button:disabled{opacity:.55;cursor:wait}button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}button.danger{color:#b42318;border-color:#f1c5c1}button.small{padding:5px 7px;font-size:11px}
+.app{min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr)}.sidebar{background:var(--navy);color:white;padding:18px 12px;min-height:100vh;position:sticky;top:0;height:100vh}.brand{display:flex;align-items:center;gap:10px;padding:0 5px 20px;border-bottom:1px solid #ffffff26}.logo{width:38px;height:38px;flex:0 0 38px;border-radius:10px;background:#ffffff20;display:grid;place-items:center;font-weight:800}.brand h1{font-size:13px;margin:0}.subtitle{font-size:10px;color:#d4dfed;margin-top:4px}.navlabel{font-size:10px;color:#aebed2;text-transform:uppercase;letter-spacing:1px;margin:20px 8px 8px}.nav{display:flex;flex-direction:column;gap:6px}.nav button{background:transparent;color:#dbe5f1;border-color:transparent;text-align:left;width:100%;padding:11px 10px;display:flex;gap:10px;align-items:center}.nav button.active{background:var(--blue);color:white;border-color:#5d86c5}
+main{min-width:0;padding:22px;width:100%;max-width:1800px;margin:auto}.intro{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}h2{font-size:22px;margin:0 0 5px}.muted{color:var(--muted);line-height:1.5}.status{background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:14px;line-height:1.5}.status strong{display:block}.status.good{border-color:#b7e4c7}.status.bad{border-color:#f2c078}
+.panel{background:white;border:1px solid var(--line);border-radius:11px;padding:14px;min-width:0}.panel h3{font-size:15px;margin:0 0 12px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.toolbar input{flex:1;min-width:180px}.count{align-self:center;color:var(--muted);font-size:11px}input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:9px;background:#fff;color:var(--text);min-width:0}textarea{min-height:70px;resize:vertical}.tablewrap{overflow:auto;max-height:68vh;border:1px solid var(--line);border-radius:8px}table{border-collapse:collapse;width:100%;font-size:11px;white-space:nowrap}th,td{padding:8px 9px;text-align:left;border-bottom:1px solid #edf0f5;vertical-align:middle}th{position:sticky;top:0;background:#edf2f9;color:#34445c;z-index:1}td.actioncell{white-space:normal;min-width:190px}.empty{text-align:center;color:var(--muted);padding:24px}.pill{display:inline-block;border-radius:20px;padding:4px 8px;background:#edf2f9}.pill.delay{background:#fee4e2;color:#b42318}.pill.hold{background:#fff0d2;color:#8a4b00}.pill.passed{background:#d9f5e5;color:#146c3a}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.field label{display:block;font-size:11px;font-weight:bold;color:#42516a;margin-bottom:5px}.field.full{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:10px}
+.modal{position:fixed;inset:0;background:#0b1728a6;z-index:10;display:none;align-items:center;justify-content:center;padding:16px}.modal.open{display:flex}.dialog{background:#fff;border-radius:13px;width:min(920px,100%);max-height:92vh;overflow:auto;padding:18px;box-shadow:0 16px 55px #0003}.dialoghead{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:14px}.dialoghead h3{margin:0;font-size:18px}.alloc-layout{display:grid;grid-template-columns:minmax(240px,300px) minmax(0,1fr);gap:14px}.alloclist{overflow:auto;max-height:300px;border:1px solid var(--line);border-radius:8px}.alloclist table{width:100%}
+@media(max-width:950px){.app{grid-template-columns:180px minmax(0,1fr)}main{padding:14px}.alloc-layout{grid-template-columns:1fr}.tablewrap{max-height:58vh}}
+@media(max-width:600px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;min-height:0;padding:12px}.brand{padding-bottom:12px}.navlabel{margin:12px 8px 6px}.nav{display:grid;grid-template-columns:1fr 1fr}.nav button{padding:9px 7px;font-size:11px}.nav button span:first-child{display:none}main{padding:10px}.fields{grid-template-columns:1fr}.field.full{grid-column:auto}.dialog{padding:12px}.intro h2{font-size:19px}}
+</style></head><body>
 <div class="app">
-  <aside class="sidebar">
-    <div class="brand"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></div>
-    <div class="nav-label">Main Menu</div>
-    <nav class="side-nav" id="tabs">
-      <button class="tab active" data-module="J.O Register" onclick="switchModule('J.O Register')"><span>▦</span><span>J.O Register</span></button>
-      <button class="tab" data-module="FGTS Monitoring" onclick="switchModule('FGTS Monitoring')"><span>▤</span><span>FGTS Monitoring / QC Allocation</span></button>
-      <button class="tab" data-module="Transfer Monitoring" onclick="switchModule('Transfer Monitoring')"><span>⇄</span><span>Transfer Monitoring</span></button>
-    </nav>
-  </aside>
-  <main>
-  <section class="intro"><div><h2 id="pageHeading">J.O Register</h2><div class="muted" id="pageDescription">Register and manage job order records.</div></div><button id="setupBtn" class="secondary" onclick="prepareDatabase()">Prepare Database</button></section>
-  <div id="status" class="status"><strong>Checking connection…</strong><span class="muted">Please wait.</span></div>
-  <section class="layout">
-    <div class="panel">
-      <h3 id="formTitle">New J.O Register Record</h3>
-      <form id="recordForm" onsubmit="submitRecord(event)"><div id="fields" class="fields"></div>
-        <div class="actions"><button type="submit" class="primary" id="saveBtn">Save Record</button><button type="button" onclick="resetForm()">Clear</button></div>
-      </form>
-      <div class="hint">To edit a record, select Edit in the table. Saving an edited record updates that record; it does not create a duplicate.</div>
-    </div>
-    <div class="panel">
-      <h3 id="listTitle">J.O Register Records</h3>
-      <div class="toolbar"><input id="search" placeholder="Search records..." oninput="loadRecords()"><button onclick="loadRecords()">Refresh</button><span id="count" class="count"></span></div>
-      <div class="tablewrap"><table><thead id="thead"></thead><tbody id="tbody"><tr><td class="empty">Loading records…</td></tr></tbody></table></div>
-      <div class="hint">Transfer Monitoring stores one record per transfer with its total quantity. FGTS Monitoring records each QC allocation separately.</div>
-    </div>
-  </section>
-  </main>
-</div>
+<aside class="sidebar"><div class="brand"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></div><div class="navlabel">Main Menu</div>
+<nav class="nav"><button class="active" data-page="Transfer Monitoring" onclick="switchPage('Transfer Monitoring')"><span>⇄</span>Transfer Monitoring</button><button data-page="J.O Register" onclick="switchPage('J.O Register')"><span>▦</span>J.O Register</button></nav></aside>
+<main>
+<section class="intro"><div><h2 id="pageHeading">Transfer Monitoring</h2><div class="muted" id="pageDescription">Track received items, QC allocation, completion, and delays.</div></div><div class="actions" style="margin-top:0"><button id="setupBtn" onclick="prepareDatabase()">Prepare Database</button><button id="addBtn" class="primary" onclick="openAdd()">＋ Add Transfer</button></div></section>
+<div id="status" class="status"><strong>Checking connection…</strong><span class="muted">Please wait.</span></div>
+<section class="panel"><div class="toolbar"><input id="search" placeholder="Search transfer, J.O, S.O, client, QC, FGTS..." oninput="loadRecords()"><button onclick="loadRecords()">Refresh</button><span id="count" class="count"></span></div>
+<div class="tablewrap"><table><thead id="thead"></thead><tbody id="tbody"><tr><td class="empty">Loading records…</td></tr></tbody></table></div>
+<div class="hint">Each transfer receives a unique Transfer ID. QC allocations are stored separately and linked to that ID. Items with status Ongoing or For line up are marked delayed after 3 days; this threshold can be adjusted.</div></section>
+</main></div>
+
+<div class="modal" id="transferModal"><div class="dialog"><div class="dialoghead"><div><h3 id="transferTitle">Add Transfer</h3><div class="muted">Enter the details of the item received by QC.</div></div><button onclick="closeModal('transferModal')">✕</button></div>
+<form id="transferForm" onsubmit="submitTransfer(event)"><input type="hidden" id="transferRecordId"><div class="fields" id="transferFields"></div><div class="actions"><button class="primary" id="transferSave" type="submit">Save Transfer</button><button type="button" onclick="closeModal('transferModal')">Cancel</button></div></form></div></div>
+
+<div class="modal" id="allocationModal"><div class="dialog"><div class="dialoghead"><div><h3 id="allocationTitle">FGTS / QC Allocation</h3><div class="muted" id="allocationSubtitle"></div></div><button onclick="closeModal('allocationModal')">✕</button></div>
+<div class="alloc-layout"><section class="panel"><h3 id="allocationFormTitle">Add QC Allocation</h3><form id="allocationForm" onsubmit="submitAllocation(event)"><input type="hidden" id="allocationId"><div class="fields" id="allocationFields"></div><div class="actions"><button class="primary" type="submit" id="allocationSave">Save Allocation</button><button type="button" onclick="resetAllocationForm()">Clear</button></div></form><div class="hint" id="allocationQtyHint"></div></section>
+<section><h3>Saved QC Allocations</h3><div class="alloclist"><table><thead><tr><th>QC In Charge</th><th>FGTS No.</th><th>Qty</th><th>Date Finished</th><th>Action</th></tr></thead><tbody id="allocationRows"><tr><td colspan="5" class="empty">No allocations yet.</td></tr></tbody></table></div><div class="hint">Done Qty is the total of saved allocations. Allocation quantity cannot exceed the transfer Qty.</div></section></div></div></div>
+
 <script>
-var currentModule = 'J.O Register';
-var currentFields = [];
-var records = [];
-var busy = false;
-function showStatus(ok, heading, detail) {
-  var box = document.getElementById('status');
-  box.className = 'status ' + (ok ? 'good' : 'bad');
-  box.innerHTML = '';
-  var strong = document.createElement('strong'); strong.textContent = heading;
-  var span = document.createElement('span'); span.className = 'muted'; span.textContent = detail || '';
-  box.appendChild(strong); box.appendChild(span);
-}
-function callServer(method, args, success, failure) {
-  if (!(window.google && google.script && google.script.run)) {
-    showStatus(false, 'Preview mode', 'Para gumana ang save at database, kailangan itong buksan mula sa Google Apps Script web app.');
-    if (typeof failure === 'function') failure(new Error('Hindi ito nabuksan mula sa Google Apps Script web app.'));
-    return;
-  }
-  var runner = google.script.run
-    .withFailureHandler(function(err) {
-      showStatus(false, 'May kailangang ayusin', err && err.message ? err.message : String(err));
-      if (typeof failure === 'function') failure(err);
-    })
-    .withSuccessHandler(success);
-  runner[method].apply(runner, args || []);
-}
-function checkStatus() {
-  callServer('getSystemStatus', [], function(res) {
-    if (!res || !res.ok) { showStatus(false, 'Database connection failed', res && res.message ? res.message : 'Hindi makakonekta sa database.'); return; }
-    var missing = (res.requiredSheets || []).filter(function(n){return (res.existingSheets || []).indexOf(n) < 0;});
-    if (missing.length) showStatus(true, 'Connected: ' + res.databaseName, 'Kailangan pang ihanda ang mga tab. Pindutin ang Prepare Database. Wala pang nababago sa records.');
-    else showStatus(true, 'Database connected: ' + res.databaseName, 'Nakita ang required tabs. Maaari nang mag-load at mag-save ng records.');
-    loadRecords();
-  });
-}
-function prepareDatabase() {
-  var btn = document.getElementById('setupBtn'); btn.disabled = true; btn.textContent = 'Preparing…';
-  callServer('setupDatabase', [], function(res) {
-    btn.disabled = false; btn.textContent = 'Prepare Database';
-    showStatus(!!res.ok, res.message || 'Database setup finished.', 'New tabs only are created; existing records are not cleared.');
-    checkStatus();
-  }, function() {
-    btn.disabled = false; btn.textContent = 'Prepare Database';
-  });
-}
-function switchModule(name) {
-  currentModule = name;
-  document.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('active', b.getAttribute('data-module') === name);});
-  var headings = {
-    'J.O Register': ['J.O Register','Register and manage job order records.'],
-    'FGTS Monitoring': ['FGTS Monitoring / QC Allocation','Manage FGTS references and quantity allocations per QC in charge.'],
-    'Transfer Monitoring': ['Transfer Monitoring','Manage transfer records with one total quantity per transfer.']
-  };
-  document.getElementById('pageHeading').textContent = headings[name][0];
-  document.getElementById('pageDescription').textContent = headings[name][1];
-  document.getElementById('search').value = '';
-  resetForm(); renderFields(); loadRecords();
-}
-function renderFields() {
-  var configs = {
-    'J.O Register': [
-      ['J.O No','text',true],['S.O No','text',false],['Customer','text',false],['Item No','text',false],['Description','textarea',false],['Quantity','number',false],['Date Received','date',false],['Target Date','date',false],['Status','select',false,['Pending','Ongoing','Completed','Delayed','Cancelled']],['Remarks','textarea',false]
-    ],
-    'FGTS Monitoring': [
-      ['FGTS No','text',true],['S.O No','text',false],['J.O No','text',false],['QC In Charge','text',true],['Quantity','number',true],['Allocation Date','date',false],['Status','select',false,['Pending','Ongoing','Completed','Delayed']],['Remarks','textarea',false]
-    ],
-    'Transfer Monitoring': [
-      ['Transfer No','text',true],['Date','date',false],['S.O No','text',false],['J.O No','text',false],['Item No','text',false],['Description','textarea',false],['Total Quantity','number',true],['From Department','text',false],['To Department','text',false],['Status','select',false,['Pending','In Transit','Received','Completed','Delayed']],['Remarks','textarea',false]
-    ]
-  };
-  currentFields = configs[currentModule];
-  document.getElementById('formTitle').textContent = (document.getElementById('recordId').value ? 'Edit ' : 'New ') + currentModule + ' Record';
-  var wrap = document.getElementById('fields'); wrap.innerHTML = '';
-  currentFields.forEach(function(def) {
-    var div = document.createElement('div'); div.className = 'field';
-    var label = document.createElement('label'); label.textContent = def[0] + (def[2] ? ' *' : ''); div.appendChild(label);
-    var input;
-    if (def[1] === 'textarea') input = document.createElement('textarea');
-    else if (def[1] === 'select') {
-      input = document.createElement('select');
-      var blank = document.createElement('option'); blank.value = ''; blank.textContent = 'Select status'; input.appendChild(blank);
-      def[3].forEach(function(opt){var o=document.createElement('option');o.value=opt;o.textContent=opt;input.appendChild(o);});
-    } else { input = document.createElement('input'); input.type = def[1]; if (def[1] === 'number') {input.min='0';input.step='any';} }
-    input.name = def[0]; input.id = 'field_' + currentFields.indexOf(def); if (def[2]) input.required = true;
-    div.appendChild(input); wrap.appendChild(div);
-  });
-}
-function loadRecords() {
-  callServer('getModuleData', [currentModule, document.getElementById('search').value], function(res) {
-    if (!res || !res.ok) return;
-    records = res.records || [];
-    renderTable();
-  });
-}
-function renderTable() {
-  var thead = document.getElementById('thead'), tbody = document.getElementById('tbody');
-  thead.innerHTML = ''; tbody.innerHTML = '';
-  var headers = currentFields.map(function(f){return f[0];});
-  var tr = document.createElement('tr');
-  headers.forEach(function(h){var th=document.createElement('th');th.textContent=h;tr.appendChild(th);});
-  var actionTh=document.createElement('th');actionTh.textContent='Action';tr.appendChild(actionTh);thead.appendChild(tr);
-  document.getElementById('listTitle').textContent = currentModule + ' Records';
-  document.getElementById('count').textContent = records.length + ' record(s)';
-  if (!records.length) {var empty=document.createElement('tr');var td=document.createElement('td');td.colSpan=headers.length+1;td.className='empty';td.textContent='No records found.';empty.appendChild(td);tbody.appendChild(empty);return;}
-  records.forEach(function(record){
-    var row=document.createElement('tr');
-    headers.forEach(function(h){var td=document.createElement('td');td.textContent=record[h] == null ? '' : record[h];row.appendChild(td);});
-    var action=document.createElement('td');action.className='actions-cell';
-    var edit=document.createElement('button');edit.className='edit';edit.textContent='Edit';edit.onclick=function(){editRecord(record);};action.appendChild(edit);
-    row.appendChild(action);tbody.appendChild(row);
-  });
-}
-function editRecord(record) {
-  document.getElementById('recordId').value = record['Record ID'] || '';
-  currentFields.forEach(function(def,i){var el=document.getElementById('field_'+i);if(el)el.value=record[def[0]] == null ? '' : record[def[0]];});
-  document.getElementById('formTitle').textContent='Edit ' + currentModule + ' Record';
-  document.getElementById('saveBtn').textContent='Save Changes';
-  document.getElementById('recordForm').scrollIntoView({behavior:'smooth',block:'start'});
-}
-function resetForm() {
-  document.getElementById('recordForm').reset();
-  document.getElementById('recordId').value='';
-  document.getElementById('formTitle').textContent='New ' + currentModule + ' Record';
-  document.getElementById('saveBtn').textContent='Save Record';
-}
-function submitRecord(event) {
-  event.preventDefault();
-  var data={'Record ID':document.getElementById('recordId').value};
-  var missing=[];
-  currentFields.forEach(function(def,i){var el=document.getElementById('field_'+i);data[def[0]]=el ? el.value : '';if(def[2] && !String(data[def[0]]).trim())missing.push(def[0]);});
-  if(missing.length){showStatus(false,'May kulang na required field','Pakilagyan: '+missing.join(', '));return;}
-  var btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Saving…';
-  callServer('saveRecord',[currentModule,data],function(res){
-    btn.disabled=false;btn.textContent=document.getElementById('recordId').value ? 'Save Changes' : 'Save Record';
-    if(res && res.ok){showStatus(true,res.message,'Nai-save sa bagong database.');resetForm();loadRecords();}
-  },function(){
-    btn.disabled=false;btn.textContent=document.getElementById('recordId').value ? 'Save Changes' : 'Save Record';
-  });
-}
-document.addEventListener('DOMContentLoaded',function(){
-  var hidden=document.createElement('input');hidden.type='hidden';hidden.id='recordId';document.getElementById('recordForm').appendChild(hidden);
-  renderFields();checkStatus();
-});
-</script>
-</body>
-</html>
+const STATUS_OPTIONS=['Ongoing','For line up','Hold','Passed'];
+const TRANSFER_FIELDS=[
+ ['Date Received','date',true],['Time Received','time',true],['Section','text',true],['Transfer No.','text',true],['J.O','text',false],['S.O','text',false],['Client','text',false],['Item No.','text',false],['Panel Name','text',false],['Qty','number',true],['Location','text',false],['Status','select',true],['Status Remark','textarea',false],['Remarks','textarea',false]
+];
+const ALLOCATION_FIELDS=[['QC In Charge','text',true],['FGTS No.','text',true],['Qty','number',true],['Date Finished','date',false],['Allocation Remarks','textarea',false]];
+let currentPage='Transfer Monitoring',records=[],joRecords=[],activeTransfer=null,allocations=[];
+function el(id){return document.getElementById(id)}
+function showStatus(ok,title,detail){const box=el('status');box.className='status '+(ok?'good':'bad');box.replaceChildren();const b=document.createElement('strong');b.textContent=title;const s=document.createElement('span');s.className='muted';s.textContent=detail||'';box.append(b,s)}
+function callServer(method,args,success,failure){if(!(window.google&&google.script&&google.script.run)){showStatus(false,'Preview mode','Para gumana ang database, buksan ang deployed Google Apps Script web app.');if(failure)failure(new Error('Open the Apps Script web app to use the database.'));return}const run=google.script.run.withSuccessHandler(success).withFailureHandler(err=>{showStatus(false,'May kailangang ayusin',err&&err.message?err.message:String(err));if(failure)failure(err)});run[method].apply(run,args||[])}
+function prepareDatabase(){el('setupBtn').disabled=true;callServer('setupDatabase',[],r=>{el('setupBtn').disabled=false;showStatus(!!r.ok,r.message||'Database prepared.','Existing records were preserved.');checkStatus()},()=>el('setupBtn').disabled=false)}
+function checkStatus(){callServer('getSystemStatus',[],r=>{if(!r||!r.ok){showStatus(false,'Database connection failed',r&&r.message);return}const missing=r.requiredSheets.filter(n=>!r.existingSheets.includes(n));showStatus(true,'Connected: '+r.databaseName,missing.length?'Click Prepare Database to create the missing tabs.':'Required database tabs are ready.');loadRecords()})}
+function switchPage(page){currentPage=page;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));el('pageHeading').textContent=page;el('pageDescription').textContent=page==='Transfer Monitoring'?'Track received items, QC allocation, completion, and delays.':'Register and manage job order records.';el('addBtn').textContent=page==='Transfer Monitoring'?'＋ Add Transfer':'＋ Add J.O';el('addBtn').onclick=page==='Transfer Monitoring'?openAdd:openAddJO;el('search').placeholder=page==='Transfer Monitoring'?'Search transfer, J.O, S.O, client, QC, FGTS...':'Search J.O, S.O, customer, item...';loadRecords()}
+function loadRecords(){const method=currentPage==='Transfer Monitoring'?'getModuleData':'getModuleData';callServer(method,[currentPage,el('search').value],r=>{if(!r||!r.ok)return;records=r.records||[];renderTable()})}
+function renderTable(){const heads=currentPage==='Transfer Monitoring'?['Date Received','Section','Transfer No.','J.O','S.O','Client','Item No.','Panel Name','Qty','Status','Done Qty','Remaining Qty','QC In Charge','FGTS No.','Date Finished','Status Remark','Remarks','Reminders','Action']:['J.O No','S.O No','Customer','Item No','Description','Quantity','Date Received','Target Date','Status','Remarks','Action'];el('thead').innerHTML='';el('tbody').innerHTML='';const hr=document.createElement('tr');heads.forEach(h=>{const th=document.createElement('th');th.textContent=h;hr.appendChild(th)});el('thead').appendChild(hr);el('count').textContent=records.length+' record(s)';if(!records.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent='No records found.';tr.appendChild(td);el('tbody').appendChild(tr);return}records.forEach(rec=>{const tr=document.createElement('tr');heads.forEach(h=>{const td=document.createElement('td');if(h==='Action'){td.className='actioncell';if(currentPage==='Transfer Monitoring'){const alloc=button('FGTS/QC Allocation','small primary',()=>openAllocations(rec));const edit=button('Edit','small',()=>openEdit(rec));const del=button('Delete','small danger',()=>removeTransfer(rec));td.append(alloc,document.createTextNode(' '),edit,document.createTextNode(' '),del)}else{td.append(button('Edit','small',()=>openEditJO(rec)),document.createTextNode(' '),button('Delete','small danger',()=>removeJO(rec)))}}else if(currentPage==='Transfer Monitoring'&&h==='Status'){const sel=document.createElement('select');STATUS_OPTIONS.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o)});sel.value=rec.Status||'Ongoing';sel.onchange=()=>quickStatus(rec,sel.value);td.appendChild(sel)}else if(currentPage==='Transfer Monitoring'&&h==='Reminders'){if(rec.Reminders){const p=document.createElement('span');p.className='pill delay';p.textContent=rec.Reminders;td.appendChild(p)}}else{td.textContent=rec[h]??'';if(h==='Status'&&rec[h]==='Hold')td.className='pill hold';if(h==='Status'&&rec[h]==='Passed')td.className='pill passed'}tr.appendChild(td)});el('tbody').appendChild(tr)})}
+function button(label,cls,fn){const b=document.createElement('button');b.textContent=label;b.className=cls;b.onclick=fn;return b}
+function makeFields(containerId,defs,values,statusFieldName){const wrap=el(containerId);wrap.innerHTML='';defs.forEach((d,i)=>{const [name,type,required]=d,div=document.createElement('div');div.className='field'+(['Status Remark','Remarks','Allocation Remarks'].includes(name)?' full':'');const label=document.createElement('label');label.textContent=name+(required?' *':'');div.appendChild(label);let input;if(type==='textarea')input=document.createElement('textarea');else if(type==='select'){input=document.createElement('select');STATUS_OPTIONS.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;input.appendChild(o)})}else{input=document.createElement('input');input.type=type;if(type==='number'){input.min='0.01';input.step='any'}}input.name=name;input.id=containerId+'_'+i;input.required=!!required;input.value=values&&values[name]!=null?values[name]:(name==='Status'?'Ongoing':'');div.appendChild(input);wrap.appendChild(div)})}
+function readFields(containerId,defs){const out={};defs.forEach((d,i)=>out[d[0]]=el(containerId+'_'+i).value.trim());return out}
+function openModal(id){el(id).classList.add('open')}function closeModal(id){el(id).classList.remove('open')}
+function openAdd(){el('transferForm').reset();el('transferRecordId').value='';el('transferTitle').textContent='Add Transfer';el('transferSave').textContent='Save Transfer';makeFields('transferFields',TRANSFER_FIELDS);openModal('transferModal')}
+function openEdit(rec){el('transferRecordId').value=rec['Record ID'];el('transferTitle').textContent='Edit Transfer — '+(rec['Transfer ID']||'');el('transferSave').textContent='Save Changes';makeFields('transferFields',TRANSFER_FIELDS,rec);openModal('transferModal')}
+function submitTransfer(ev){ev.preventDefault();const data=readFields('transferFields',TRANSFER_FIELDS);data['Record ID']=el('transferRecordId').value;const btn=el('transferSave');btn.disabled=true;callServer('saveRecord',['Transfer Monitoring',data],r=>{btn.disabled=false;showStatus(true,r.message,'Transfer ID: '+r.transferId);closeModal('transferModal');loadRecords()},()=>btn.disabled=false)}
+function quickStatus(rec,status){const data={};TRANSFER_FIELDS.forEach(d=>data[d[0]]=rec[d[0]]??'');data.Status=status;data['Record ID']=rec['Record ID'];callServer('saveRecord',['Transfer Monitoring',data],r=>{showStatus(true,'Status updated',rec['Transfer ID']+' — '+status);loadRecords()})}
+function removeTransfer(rec){if(!confirm('Delete this entire transfer and all QC allocations linked to it? Transfer ID: '+rec['Transfer ID']))return;callServer('deleteTransfer',[rec['Record ID']],r=>{showStatus(true,r.message,rec['Transfer ID']+' deleted.');loadRecords()})}
+function openAllocations(rec){activeTransfer=rec;el('allocationTitle').textContent='FGTS / QC Allocation';el('allocationSubtitle').textContent='Transfer ID: '+rec['Transfer ID']+' | Transfer Qty: '+rec.Qty;makeFields('allocationFields',ALLOCATION_FIELDS);resetAllocationForm();openModal('allocationModal');loadAllocations()}
+function resetAllocationForm(){el('allocationForm').reset();el('allocationId').value='';el('allocationFormTitle').textContent='Add QC Allocation';el('allocationSave').textContent='Save Allocation';makeFields('allocationFields',ALLOCATION_FIELDS);updateAllocationHint()}
+function updateAllocationHint(){if(!activeTransfer)return;const total=allocations.reduce((s,a)=>s+(Number(a.Qty)||0),0),remaining=Math.max(0,(Number(activeTransfer.Qty)||0)-total);el('allocationQtyHint').textContent='Allocated: '+total+' | Remaining available: '+remaining}
+function loadAllocations(){callServer('getAllocations',[activeTransfer['Transfer ID']],r=>{allocations=r.allocations||[];renderAllocations();updateAllocationHint();loadRecords()})}
+function renderAllocations(){const body=el('allocationRows');body.innerHTML='';if(!allocations.length){body.innerHTML='<tr><td colspan="5" class="empty">No allocations yet.</td></tr>';return}allocations.forEach(a=>{const tr=document.createElement('tr');['QC In Charge','FGTS No.','Qty','Date Finished'].forEach(h=>{const td=document.createElement('td');td.textContent=a[h]||'';tr.appendChild(td)});const td=document.createElement('td');td.append(button('Edit','small',()=>editAllocation(a)),document.createTextNode(' '),button('Delete','small danger',()=>removeAllocation(a)));tr.appendChild(td);body.appendChild(tr)})}
+function editAllocation(a){el('allocationId').value=a['Allocation ID'];el('allocationFormTitle').textContent='Edit QC Allocation';el('allocationSave').textContent='Save Changes';makeFields('allocationFields',ALLOCATION_FIELDS,a)}
+function submitAllocation(ev){ev.preventDefault();const data=readFields('allocationFields',ALLOCATION_FIELDS);data['Allocation ID']=el('allocationId').value;const btn=el('allocationSave');btn.disabled=true;callServer('saveAllocation',[activeTransfer['Transfer ID'],data],r=>{btn.disabled=false;showStatus(true,r.message,activeTransfer['Transfer ID']);resetAllocationForm();loadAllocations()},()=>btn.disabled=false)}
+function removeAllocation(a){if(!confirm('Delete allocation for '+a['QC In Charge']+' ('+a['FGTS No.']+')?'))return;callServer('deleteAllocation',[activeTransfer['Transfer ID'],a['Allocation ID']],r=>{showStatus(true,r.message,'Transfer ID: '+activeTransfer['Transfer ID']);loadAllocations()})}
+function openAddJO(){const defs=[['J.O No','text',true],['S.O No','text',false],['Customer','text',false],['Item No','text',false],['Description','textarea',false],['Quantity','number',false],['Date Received','date',false],['Target Date','date',false],['Status','select',false],['Remarks','textarea',false]];joModalDefs=defs;el('transferForm').reset();el('transferRecordId').value='';el('transferTitle').textContent='Add J.O Register Record';el('transferSave').textContent='Save Record';makeFields('transferFields',defs);openModal('transferModal')}
+let joModalDefs=null;
+function openEditJO(rec){const defs=[['J.O No','text',true],['S.O No','text',false],['Customer','text',false],['Item No','text',false],['Description','textarea',false],['Quantity','number',false],['Date Received','date',false],['Target Date','date',false],['Status','select',false],['Remarks','textarea',false]];joModalDefs=defs;el('transferRecordId').value=rec['Record ID'];el('transferTitle').textContent='Edit J.O Register Record';el('transferSave').textContent='Save Changes';makeFields('transferFields',defs,rec);openModal('transferModal')}
+function removeJO(rec){if(!confirm('Delete this J.O record?'))return;callServer('deleteJO',[rec['Record ID']],r=>{showStatus(true,r.message,'');loadRecords()})}
+const originalSubmitTransfer=submitTransfer;
+submitTransfer=function(ev){ev.preventDefault();if(currentPage==='J.O Register'){const data=readFields('transferFields',joModalDefs);data['Record ID']=el('transferRecordId').value;callServer('saveRecord',['J.O Register',data],r=>{showStatus(true,r.message,'');closeModal('transferModal');loadRecords()});return}originalSubmitTransfer(ev)}
+document.addEventListener('DOMContentLoaded',()=>{checkStatus()});
+</script></body></html>
