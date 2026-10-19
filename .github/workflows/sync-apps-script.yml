@@ -1,17 +1,11 @@
 name: Sync QAQC code to Google Apps Script
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    env:
-      CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
-      CLASP_JSON: ${{ secrets.CLASP_JSON }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -20,6 +14,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Require Google authentication
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          if [ -z "$CLASPRC_JSON" ]; then
+            echo "::error::Missing repository Actions secret CLASPRC_JSON. Configure Google clasp authentication before running sync."
+            exit 1
+          fi
 
       - name: Prepare Apps Script source folder
         run: |
@@ -33,20 +36,19 @@ jobs:
             "runtimeVersion": "V8"
           }
           EOF
-
-      - name: Explain setup is pending
-        if: ${{ env.CLASPRC_JSON == '' || env.CLASP_JSON == '' }}
-        run: |
-          echo "Automatic sync is not connected yet."
-          echo "Add repository secrets CLASPRC_JSON and CLASP_JSON after clasp authentication."
+          cat > deploy/.clasp.json <<'EOF'
+          {
+            "scriptId": "1hVB26FX7FZB3_lxbGfUcZFQvLRlqdm-Ylnr8QoZTf0iU36jorn2p_xYv",
+            "rootDir": "."
+          }
+          EOF
 
       - name: Configure clasp credentials
-        if: ${{ env.CLASPRC_JSON != '' && env.CLASP_JSON != '' }}
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
           printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
-          printf '%s' "$CLASP_JSON" > .clasp.json
 
       - name: Push source to Google Apps Script
-        if: ${{ env.CLASPRC_JSON != '' && env.CLASP_JSON != '' }}
-        run: |
-          npx --yes @google/clasp push --force
+        working-directory: deploy
+        run: npx --yes @google/clasp push --force
