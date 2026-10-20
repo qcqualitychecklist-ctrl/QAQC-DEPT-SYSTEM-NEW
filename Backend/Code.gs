@@ -122,7 +122,7 @@ function saveTransfer(input) {
 }
 
 function saveTransfersBatch(common, items) {
-  if(!common||!Array.isArray(items)||items.length<2)throw new Error('Add at least two items to use multi-item save.');
+  if(!common||!Array.isArray(items)||items.length<1)throw new Error('Add at least one item to save.');
   if(String(common['Record ID']||''))throw new Error('Multi-item save is only available when adding a new transfer.');
   const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(TRANSFER_SHEET);
   if(!sh)throw new Error('Click Prepare Database first.');
