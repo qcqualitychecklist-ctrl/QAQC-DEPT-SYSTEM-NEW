@@ -124,6 +124,7 @@ function saveAllocationsBatch(transferId, common, entries) {
   if(!transferId||!common||!Array.isArray(entries)||(!entries.length&&!common['Replace All']))throw new Error('Transfer and at least one QC allocation are required.');
   const ss=SpreadsheetApp.openById(DATABASE_ID), transfer=ss.getSheetByName(TRANSFER_SHEET), sh=ss.getSheetByName(ALLOCATION_SHEET);
   if(!transfer||!sh)throw new Error('Click Prepare Database first.');
+  ensureAllocationCategoryColumn_(sh);
   const tr=transfer.getDataRange().getValues().find((r,i)=>i>0&&String(r[3])===String(transferId));
   if(!tr)throw new Error('Parent transfer not found.');
   const fgts=String(common['FGTS No.']||'').trim(), category=String(common.Category||'').trim();
@@ -146,6 +147,12 @@ function saveAllocationsBatch(transferId, common, entries) {
   if(common['Replace All']){for(let i=rows.length-1;i>=1;i--){if(String(rows[i][1])===String(transferId)&&!currentIds.includes(String(rows[i][0]))){sh.deleteRow(i+1);}}}
   syncTransferSummary_(transferId);
   return {ok:true,message:common['Replace All']?'QC allocation changes saved.':(ids.length?'QC allocation changes saved.':'All QC allocations saved.')};
+}
+
+function ensureAllocationCategoryColumn_(sh) {
+  const lastCol=Math.max(sh.getLastColumn(),1);
+  const headers=sh.getRange(1,1,1,lastCol).getDisplayValues()[0];
+  if(headers.indexOf('Category')<0){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue('Category').setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');}
 }
 
 function getAllocations(transferId) {
