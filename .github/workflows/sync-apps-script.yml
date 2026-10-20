@@ -67,4 +67,4 @@ jobs:
 
       - name: Update live web app deployment
         working-directory: deploy
-        run: npx --yes @google/clasp deploy --description "Auto-deploy from GitHub commit $GITHUB_SHA"
+        run: npx --yes @google/clasp deploy --deploymentId 'AKfycbxRcTDJJSXCRZhi9DlsWi9oF2V0e1PwU1tizUCuw0prLZzW9eNhqpMKyJrBOnKoACkqig' --description "Auto-deploy from GitHub commit $GITHUB_SHA"
