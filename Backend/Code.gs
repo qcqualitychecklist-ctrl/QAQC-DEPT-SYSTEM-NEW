@@ -83,6 +83,64 @@ function saveRecord(moduleName,input) {
   return {ok:true,recordId:recordId,message:row>0?'J.O record updated.':'J.O record saved.'};
 }
 
+
+function getExternalJORecords_(searchText) {
+  const source=SpreadsheetApp.openById(JO_SOURCE_ID);
+  const sourceSheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
+  if(!sourceSheet) throw new Error('Could not find source sheet tab gid '+JO_SOURCE_GID+'.');
+  const last=sourceSheet.getLastRow();
+  if(last<JO_SOURCE_START_ROW) return {ok:true,records:[],fields:JO_OVERRIDE_HEADERS.slice(2)};
+  const sourceRows=sourceSheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,14).getDisplayValues();
+  const db=SpreadsheetApp.openById(DATABASE_ID), overrideSheet=db.getSheetByName(JO_OVERRIDE_SHEET);
+  const saved=overrideSheet&&overrideSheet.getLastRow()>1?overrideSheet.getDataRange().getDisplayValues().slice(1):[];
+  const overrides={}; saved.forEach(r=>{if(r[0])overrides[String(r[0])]=r;});
+  const transfers=getTransferRecords('').records||[], allocSheet=db.getSheetByName(ALLOCATION_SHEET);
+  const allocs=allocSheet&&allocSheet.getLastRow()>1?allocSheet.getDataRange().getValues().slice(1):[];
+  const q=String(searchText||'').trim().toLowerCase(), records=[];
+  sourceRows.forEach((r,i)=>{
+    const row=JO_SOURCE_START_ROW+i, jo=String(r[0]||'').trim(); if(!jo)return;
+    const key='SRC-'+row, qty=Number(String(r[3]||'').replace(/,/g,''))||0;
+    const o={'Record ID':key,'CLASSIFICATION':r[6]||'','J.O':jo,'S.O':r[1]||'','Received':joDate_(r[10]),'Delivery Date':joDate_(r[13]),'Client':r[7]||'','Item No.':r[8]||'','Panel Name':r[9]||'','Qty':qty,'Unit':r[4]||'','Transferred':0,'Balance':qty,'FGTS No.':'','Date Served':'','Remarks':'','Status':'Not Served','Timeliness':'Pending'};
+    const matching=transfers.filter(t=>String(t['S.O']||'').trim()===String(o['S.O']).trim()&&String(t['Item No.']||'').trim()===String(o['Item No.']).trim()&&String(t['J.O']||'').trim()===jo);
+    const ids=new Set(matching.map(t=>String(t['Transfer ID']||''))), linked=allocs.filter(a=>ids.has(String(a[1])));
+    o.Transferred=matching.reduce((n,t)=>n+(Number(t['Done Qty'])||0),0); o.Balance=Math.max(0,qty-o.Transferred);
+    o['FGTS No.']=[...new Set(linked.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
+    const dates=linked.map(a=>a[5]).filter(v=>v instanceof Date||String(v||'').trim()).map(v=>formatCell_(v)).filter(Boolean).sort();
+    o['Date Served']=dates.length?dates[dates.length-1]:'';
+    if(qty>0&&o.Balance<=0)o.Status='Finished';else if(o.Transferred>0)o.Status='Partial';
+    const due=joParseDate_(o['Delivery Date']), served=joParseDate_(o['Date Served']);
+    if(served&&due)o.Timeliness=served.getTime()<=due.getTime()?'On Time':'Delayed';
+    else if(due)o.Timeliness=due.getTime()<new Date(new Date().setHours(0,0,0,0)).getTime()?'Delayed':'Pending';
+    const ov=overrides[key];
+    if(ov)JO_OVERRIDE_HEADERS.slice(2).forEach((h,j)=>{if(ov[j+2]!==''&&ov[j+2]!=null)o[h]=ov[j+2];});
+    ['Qty','Transferred','Balance'].forEach(h=>o[h]=Number(String(o[h]||0).replace(/,/g,''))||0);
+    if(!q||Object.values(o).join(' ').toLowerCase().includes(q))records.push(o);
+  });
+  return {ok:true,records:records,fields:JO_OVERRIDE_HEADERS.slice(2)};
+}
+function saveJOOverride_(input) {
+  if(!input)throw new Error('No J.O changes received.');
+  const id=String(input['Record ID']||'');
+  if(!/^SRC-\d+$/.test(id))throw new Error('J.O source row key is invalid. Refresh and try again.');
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(JO_OVERRIDE_SHEET);
+  if(!sh)throw new Error('Click Prepare Database first.');
+  const rows=sh.getLastRow()>1?sh.getRange(2,1,sh.getLastRow()-1,JO_OVERRIDE_HEADERS.length).getDisplayValues():[];
+  const found=rows.findIndex(r=>String(r[0])===id), target=found>=0?found+2:0, now=new Date();
+  const out=JO_OVERRIDE_HEADERS.map(h=>h==='Source Row'?id:h==='Updated At'?now:(input[h]??''));
+  if(target)sh.getRange(target,1,1,out.length).setValues([out]);else sh.appendRow(out);
+  return {ok:true,message:'J.O changes saved for source row '+id.slice(4)+'.'};
+}
+function joDate_(v){const s=String(v||'').trim();if(!s)return '';const d=joParseDate_(s);return d?Utilities.formatDate(d,Session.getScriptTimeZone(),'yyyy-MM-dd'):s;}
+function joParseDate_(v){
+  if(v instanceof Date&&!isNaN(v.getTime()))return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+  const s=String(v||'').trim();if(!s)return null;
+  let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if(m){const d=new Date(+m[1],+m[2]-1,+m[3]);return isNaN(d.getTime())?null:d;}
+  m=s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+  if(m){let d=new Date(+m[3],+m[2]-1,+m[1]);if(!isNaN(d.getTime()))return d;d=new Date(+m[3],+m[1]-1,+m[2]);return isNaN(d.getTime())?null:d;}
+  const d=new Date(s);return isNaN(d.getTime())?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
+}
+
 function getTransferRecords(searchText) {
   const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(TRANSFER_SHEET), allocSh=ss.getSheetByName(ALLOCATION_SHEET);
   if(!sh) return {ok:true,records:[],fields:TRANSFER_HEADERS};
