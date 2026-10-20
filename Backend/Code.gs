@@ -94,19 +94,53 @@ function getExternalJORecords_(searchText) {
   const db=SpreadsheetApp.openById(DATABASE_ID), overrideSheet=db.getSheetByName(JO_OVERRIDE_SHEET);
   const saved=overrideSheet&&overrideSheet.getLastRow()>1?overrideSheet.getDataRange().getDisplayValues().slice(1):[];
   const overrides={}; saved.forEach(r=>{if(r[0])overrides[String(r[0])]=r;});
-  const transfers=getTransferRecords('').records||[], allocSheet=db.getSheetByName(ALLOCATION_SHEET);
+
+  // Build indexes once instead of repeatedly scanning every transfer/allocation
+  // for every source J.O row. This keeps the work close to linear as data grows.
+  const transferSheet=db.getSheetByName(TRANSFER_SHEET), allocSheet=db.getSheetByName(ALLOCATION_SHEET);
+  const transferRows=transferSheet&&transferSheet.getLastRow()>1
+    ?transferSheet.getRange(2,1,transferSheet.getLastRow()-1,TRANSFER_HEADERS.length).getDisplayValues():[];
   const allocs=allocSheet&&allocSheet.getLastRow()>1?allocSheet.getDataRange().getValues().slice(1):[];
+  const allocsByTransfer={};
+  allocs.forEach(a=>{
+    const id=String(a[1]||''); if(!id)return;
+    if(!allocsByTransfer[id])allocsByTransfer[id]=[];
+    allocsByTransfer[id].push(a);
+  });
+  const summaryByJob={};
+  const jobKey=(so,item,jo)=>JSON.stringify([String(so||'').trim(),String(item||'').trim(),String(jo||'').trim()]);
+  const joIndex=TRANSFER_HEADERS.indexOf('J.O'), soIndex=TRANSFER_HEADERS.indexOf('S.O');
+  const itemIndex=TRANSFER_HEADERS.indexOf('Item No.'), transferIdIndex=TRANSFER_HEADERS.indexOf('Transfer ID');
+  transferRows.forEach(t=>{
+    const id=String(t[transferIdIndex]||'');
+    const linked=allocsByTransfer[id]||[];
+    if(!linked.length)return;
+    const key=jobKey(t[soIndex],t[itemIndex],t[joIndex]);
+    if(!summaryByJob[key])summaryByJob[key]={transferred:0,fgts:new Set(),dates:[]};
+    const summary=summaryByJob[key];
+    linked.forEach(a=>{
+      summary.transferred+=Number(a[4])||0;
+      const fgts=String(a[3]||'').trim(); if(fgts)summary.fgts.add(fgts);
+      const date=a[5];
+      if(date instanceof Date||String(date||'').trim()){
+        const formatted=formatCell_(date); if(formatted)summary.dates.push(formatted);
+      }
+    });
+  });
+
   const q=String(searchText||'').trim().toLowerCase(), records=[];
   sourceRows.forEach((r,i)=>{
     const row=JO_SOURCE_START_ROW+i, jo=String(r[0]||'').trim(); if(!jo)return;
     const key='SRC-'+row, qty=Number(String(r[3]||'').replace(/,/g,''))||0;
     const o={'Record ID':key,'CLASSIFICATION':r[6]||'','J.O':jo,'S.O':r[1]||'','Received':joDate_(r[10]),'Delivery Date':joDate_(r[13]),'Client':r[7]||'','Item No.':r[8]||'','Panel Name':r[9]||'','Qty':qty,'Unit':r[4]||'','Transferred':0,'Balance':qty,'FGTS No.':'','Date Served':'','Remarks':'','Status':'Not Served','Timeliness':'Pending'};
-    const matching=transfers.filter(t=>String(t['S.O']||'').trim()===String(o['S.O']).trim()&&String(t['Item No.']||'').trim()===String(o['Item No.']).trim()&&String(t['J.O']||'').trim()===jo);
-    const ids=new Set(matching.map(t=>String(t['Transfer ID']||''))), linked=allocs.filter(a=>ids.has(String(a[1])));
-    o.Transferred=matching.reduce((n,t)=>n+(Number(t['Done Qty'])||0),0); o.Balance=Math.max(0,qty-o.Transferred);
-    o['FGTS No.']=[...new Set(linked.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
-    const dates=linked.map(a=>a[5]).filter(v=>v instanceof Date||String(v||'').trim()).map(v=>formatCell_(v)).filter(Boolean).sort();
-    o['Date Served']=dates.length?dates[dates.length-1]:'';
+    const summary=summaryByJob[jobKey(o['S.O'],o['Item No.'],jo)];
+    if(summary){
+      o.Transferred=summary.transferred;
+      o.Balance=Math.max(0,qty-o.Transferred);
+      o['FGTS No.']=[...summary.fgts].join(', ');
+      summary.dates.sort();
+      o['Date Served']=summary.dates.length?summary.dates[summary.dates.length-1]:'';
+    }
     if(qty>0&&o.Balance<=0)o.Status='Finished';else if(o.Transferred>0)o.Status='Partial';
     const due=joParseDate_(o['Delivery Date']), served=joParseDate_(o['Date Served']);
     if(served&&due)o.Timeliness=served.getTime()<=due.getTime()?'On Time':'Delayed';
