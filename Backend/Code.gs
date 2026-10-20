@@ -91,7 +91,7 @@ function getTransferRecords(searchText) {
     obj['QC In Charge']=[...new Set(linked.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', ');
     obj['FGTS No.']=[...new Set(linked.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
     obj['Date Finished']=[...new Set(linked.map(a=>formatCell_(a[5])).filter(Boolean))].join(', ');
-    if(['Ongoing','For line up'].includes(String(obj.Status)) && obj['Date Received']){
+    if(['Ongoing','Hold','For line up'].includes(String(obj.Status)) && obj['Date Received']){
       const received=new Date(obj['Date Received']); const days=Math.floor((new Date().setHours(0,0,0,0)-received.setHours(0,0,0,0))/86400000);
       obj.Reminders=days>=REMINDER_AFTER_DAYS?'DELAYED ('+days+' days)':'';
     } else obj.Reminders='';
@@ -112,12 +112,24 @@ function saveTransfer(input) {
   const linkedAllocations=getAllocationRows_(transferId);
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
+  if(String(input.Status||'')==='Passed'&&alreadyAllocated<qty)throw new Error('Status cannot be Passed until Done Qty meets the required Qty.');
   const inputObj=Object.assign({},input,{'Transfer ID':transferId,'Done Qty':alreadyAllocated,'Remaining Qty':qty-alreadyAllocated,'QC In Charge':[...new Set(linkedAllocations.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', '),'FGTS No.':[...new Set(linkedAllocations.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', '),'Date Finished':[...new Set(linkedAllocations.map(a=>formatCell_(a[5])).filter(Boolean))].join(', '),'Reminders':''});
   if(old && !String(input['Time Received']||'').trim()) inputObj['Time Received']=formatTimeCell_(old[5]);
   const out=TRANSFER_HEADERS.map((h,j)=>h==='Record ID'?recordId:h==='Created At'?(old?old[1]:now):h==='Updated At'?now:(inputObj[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
   syncTransferSummary_(transferId);
   return {ok:true,recordId:recordId,transferId:transferId,message:row>0?'Transfer updated.':'Transfer saved.'};
+}
+
+function saveTransfersBatch(common, items) {
+  if(!common||!Array.isArray(items)||items.length<2)throw new Error('Add at least two items to use multi-item save.');
+  if(String(common['Record ID']||''))throw new Error('Multi-item save is only available when adding a new transfer.');
+  const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(TRANSFER_SHEET);
+  if(!sh)throw new Error('Click Prepare Database first.');
+  items.forEach((item,i)=>{if(!isFinite(Number(item.Qty))||Number(item.Qty)<=0)throw new Error('Item '+(i+1)+' Qty must be greater than zero.');});
+  const saved=[];
+  items.forEach(item=>{const input=Object.assign({},common,item,{'Record ID':'','Status':String(common.Status||'Ongoing')==='Passed'?'Ongoing':(common.Status||'Ongoing')});saved.push(saveTransfer(input));});
+  return {ok:true,count:saved.length,transferIds:saved.map(r=>r.transferId),message:'All '+saved.length+' item rows saved successfully.'};
 }
 
 function saveAllocationsBatch(transferId, common, entries) {
@@ -221,9 +233,11 @@ function syncTransferSummary_(transferId) {
   const finished=[...new Set(allocs.map(a=>formatCell_(a[5])).filter(Boolean))].join(', ');
   const qty=Number(tr[13])||0;
   sh.getRange(rowIndex,17,1,5).setValues([[done,Math.max(0,qty-done),qc,fgts,finished]]);
-  const status=String(tr[15]||''),received=tr[4];
+  let status=String(tr[15]||''),received=tr[4];
+  if(qty>0&&done>=qty){status='Passed';sh.getRange(rowIndex,16).setValue(status);}
+  else if(status==='Passed'){status='Ongoing';sh.getRange(rowIndex,16).setValue(status);}
   let reminder='';
-  if(['Ongoing','For line up'].includes(status)&&received){const d=new Date(received);const days=Math.floor((new Date().setHours(0,0,0,0)-d.setHours(0,0,0,0))/86400000);if(days>=REMINDER_AFTER_DAYS)reminder='DELAYED ('+days+' days)';}
+  if(['Ongoing','Hold','For line up'].includes(status)&&received){const d=new Date(received);const days=Math.floor((new Date().setHours(0,0,0,0)-d.setHours(0,0,0,0))/86400000);if(days>=REMINDER_AFTER_DAYS)reminder='DELAYED ('+days+' days)';}
   sh.getRange(rowIndex,24).setValue(reminder);
 }
 
