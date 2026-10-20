@@ -41,7 +41,11 @@ jobs:
           {
             "timeZone": "Asia/Manila",
             "exceptionLogging": "STACKDRIVER",
-            "runtimeVersion": "V8"
+            "runtimeVersion": "V8",
+            "webapp": {
+              "executeAs": "USER_DEPLOYING",
+              "access": "ANYONE_ANONYMOUS"
+            }
           }
           EOF
           cat > deploy/.clasp.json <<'EOF'
@@ -63,4 +67,4 @@ jobs:
 
       - name: Update live web app deployment
         working-directory: deploy
-        run: npx --yes @google/clasp deploy --deploymentId 'AKfycbw2VqfKcewpSQtxVYY3Rzi3sjrGJA4vzipGu0-i2lZkVZaNWvBNghz9j9R8cL4ON4HZSw' --description "Auto-deploy from GitHub commit $GITHUB_SHA"
+        run: npx --yes @google/clasp deploy --description "Auto-deploy from GitHub commit $GITHUB_SHA"
