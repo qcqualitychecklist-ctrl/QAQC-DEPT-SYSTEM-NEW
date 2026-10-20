@@ -3,7 +3,7 @@
  * Uses only the NEW QAQC MONITORING DATABASE.
  * Transfer ID links every QC allocation to its parent transfer.
  */
-const DATABASE_ID = '1pcXfWZFIcM00EG5_VzDGLK7ERrCL0WOkvjMx-Y2aBSI';
+const DATABASE_ID = '1pcXWZFIcM00EG5_VzDGLK7ERrCL0WOkvjMx-Y2aBSI';
 const JO_SHEET = 'JO Register';
 const TRANSFER_SHEET = 'Transfer Monitoring';
 const ALLOCATION_SHEET = 'QC Allocation Details';
