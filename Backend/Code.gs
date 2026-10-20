@@ -82,7 +82,7 @@ function getTransferRecords(searchText) {
   const query=String(searchText||'').trim().toLowerCase(), records=[];
   for(let i=1;i<vals.length;i++){
     if(!vals[i][0])continue;
-    const obj={}; TRANSFER_HEADERS.forEach((h,j)=>obj[h]=formatCell_(vals[i][j]));
+    const obj={}; TRANSFER_HEADERS.forEach((h,j)=>obj[h]=h==='Time Received'?formatTimeCell_(vals[i][j]):formatCell_(vals[i][j]));
     const linked=allocations.filter(a=>String(a[1])===String(obj['Transfer ID']));
     const done=linked.reduce((sum,a)=>sum+(Number(a[4])||0),0);
     obj['Done Qty']=done;
@@ -112,10 +112,37 @@ function saveTransfer(input) {
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
   const inputObj=Object.assign({},input,{'Transfer ID':transferId,'Done Qty':alreadyAllocated,'Remaining Qty':qty-alreadyAllocated,'QC In Charge':[...new Set(linkedAllocations.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', '),'FGTS No.':[...new Set(linkedAllocations.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', '),'Date Finished':[...new Set(linkedAllocations.map(a=>formatCell_(a[5])).filter(Boolean))].join(', '),'Reminders':''});
+  if(old && !String(input['Time Received']||'').trim()) inputObj['Time Received']=formatTimeCell_(old[5]);
   const out=TRANSFER_HEADERS.map((h,j)=>h==='Record ID'?recordId:h==='Created At'?(old?old[1]:now):h==='Updated At'?now:(inputObj[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
   syncTransferSummary_(transferId);
   return {ok:true,recordId:recordId,transferId:transferId,message:row>0?'Transfer updated.':'Transfer saved.'};
+}
+
+function saveAllocationsBatch(transferId, common, entries) {
+  if(!transferId||!common||!Array.isArray(entries)||!entries.length)throw new Error('Transfer and at least one QC allocation are required.');
+  const ss=SpreadsheetApp.openById(DATABASE_ID), transfer=ss.getSheetByName(TRANSFER_SHEET), sh=ss.getSheetByName(ALLOCATION_SHEET);
+  if(!transfer||!sh)throw new Error('Click Prepare Database first.');
+  const tr=transfer.getDataRange().getValues().find((r,i)=>i>0&&String(r[3])===String(transferId));
+  if(!tr)throw new Error('Parent transfer not found.');
+  const fgts=String(common['FGTS No.']||'').trim();
+  if(!fgts)throw new Error('FGTS No. is required.');
+  const rows=sh.getDataRange().getValues(), ids=entries.map(e=>String(e['Allocation ID']||'')).filter(Boolean);
+  const cleaned=entries.map(e=>({id:String(e['Allocation ID']||''),qc:String(e['QC In Charge']||'').trim(),qty:Number(e.Qty)}));
+  cleaned.forEach(e=>{if(!e.qc)throw new Error('QC In Charge is required for every row.');if(!isFinite(e.qty)||e.qty<=0)throw new Error('Every QC Qty must be greater than zero.');});
+  const existingTotal=rows.slice(1).reduce((sum,r)=>sum+(String(r[1])===String(transferId)&&!ids.includes(String(r[0]))?(Number(r[4])||0):0),0);
+  const incomingTotal=cleaned.reduce((sum,e)=>sum+e.qty,0);
+  if(existingTotal+incomingTotal>Number(tr[13]))throw new Error('Total allocated quantity ('+(existingTotal+incomingTotal)+') cannot exceed transfer Qty ('+tr[13]+').');
+  const now=new Date();
+  cleaned.forEach(e=>{
+    let row=-1, old=null;
+    if(e.id){for(let i=1;i<rows.length;i++)if(String(rows[i][0])===e.id&&String(rows[i][1])===String(transferId)){row=i+1;old=rows[i];break;}if(row<0)throw new Error('Allocation not found. Refresh and try again.');}
+    const aid=e.id||Utilities.getUuid();
+    const out=ALLOCATION_HEADERS.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?transferId:h==='QC In Charge'?e.qc:h==='FGTS No.'?fgts:h==='Qty'?e.qty:h==='Date Finished'?(common['Date Finished']||''):h==='Allocation Remarks'?'':h==='Created At'?(old?old[7]:now):h==='Updated At'?now:'');
+    if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
+  });
+  syncTransferSummary_(transferId);
+  return {ok:true,message:ids.length?'QC allocation changes saved.':'All QC allocations saved.'};
 }
 
 function getAllocations(transferId) {
@@ -196,3 +223,4 @@ function deleteJO(recordId) {
   throw new Error('J.O record not found.');
 }
 function formatCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'yyyy-MM-dd');return v==null?'':v;}
+function formatTimeCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'HH:mm');return v==null?'':String(v).trim();}
