@@ -110,7 +110,7 @@ function getExternalJORecords_(searchText) {
     if(qty>0&&o.Balance<=0)o.Status='Finished';else if(o.Transferred>0)o.Status='Partial';
     const due=joParseDate_(o['Delivery Date']), served=joParseDate_(o['Date Served']);
     if(served&&due)o.Timeliness=served.getTime()<=due.getTime()?'On Time':'Delayed';
-    else if(due)o.Timeliness=due.getTime()<new Date(new Date().setHours(0,0,0,0)).getTime()?'Delayed':'Pending';
+    else o.Timeliness='Pending';
     const ov=overrides[key];
     if(ov)JO_OVERRIDE_HEADERS.slice(2).forEach((h,j)=>{if(ov[j+2]!==''&&ov[j+2]!=null)o[h]=ov[j+2];});
     ['Qty','Transferred','Balance'].forEach(h=>o[h]=Number(String(o[h]||0).replace(/,/g,''))||0);
