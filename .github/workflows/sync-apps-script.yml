@@ -1,6 +1,14 @@
 name: Sync QAQC code to Google Apps Script
 
 on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'Backend/**'
+      - 'Frontend/**'
+      - '.github/workflows/sync-apps-script.yml'
   workflow_dispatch:
 
 jobs:
@@ -52,3 +60,7 @@ jobs:
       - name: Push source to Google Apps Script
         working-directory: deploy
         run: npx --yes @google/clasp push --force
+
+      - name: Update live web app deployment
+        working-directory: deploy
+        run: npx --yes @google/clasp deploy --deploymentId 'AKfycbztP7Fo1jKcW-P2l8wkFCjej56AB2kyZTpRMGn2f-NR7UTAO-tDvmt49vg0W1IokCm70Q' --description "Auto-deploy from GitHub commit $GITHUB_SHA"
