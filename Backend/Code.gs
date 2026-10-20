@@ -170,7 +170,7 @@ function getFGTSMonitoringRecords_(searchText) {
   if(!fgtsSheet)throw new Error('Could not find FGTS source sheet tab gid '+FGTS_SOURCE_GID+'.');
   const last=fgtsSheet.getLastRow();
   if(last<FGTS_SOURCE_START_ROW)return {ok:true,records:[],fields:FGTS_HEADERS};
-  const rows=fgtsSheet.getRange(FGTS_SOURCE_START_ROW,1,last-FGTS_SOURCE_START_ROW+1,14).getDisplayValues();
+  const rows=fgtsSheet.getRange(FGTS_SOURCE_START_ROW,1,last-FGTS_SOURCE_START_ROW+1,14).getValues();
   const joSS=SpreadsheetApp.openById(JO_SOURCE_ID);
   const joSheet=joSS.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
   const classByJob={}, joRows=[];
@@ -189,7 +189,7 @@ function getFGTSMonitoringRecords_(searchText) {
   const query=String(searchText||'').trim().toLowerCase(),records=[];
   rows.forEach(r=>{
     const so=String(r[4]||'').trim(),item=String(r[6]||'').trim();
-    const received=joDate_(r[2]),finished=joDate_(r[3]);
+    const received=joDate_(formatCell_(r[2])),finished=joDate_(formatCell_(r[3]));
     if(!so&&!item&&!String(r[9]||'').trim()&&!String(r[10]||'').trim())return;
     const rd=joParseDate_(received),fd=joParseDate_(finished);
     const leadDays=rd&&fd?Math.round((fd.getTime()-rd.getTime())/86400000):'';
