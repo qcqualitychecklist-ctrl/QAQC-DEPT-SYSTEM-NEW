@@ -5,6 +5,11 @@
  */
 const DATABASE_ID = '1pcXfWZFIcM00EG5_VzDGLK7ERrCL0WOkvjMx-Y2aBSI';
 const JO_SHEET = 'JO Register';
+const JO_OVERRIDE_SHEET = 'JO Register Overrides';
+const JO_SOURCE_ID = '1QZ7_R2e2Kl5ylC6ag1Va9KPUQdg02wVvKLiFEJGy2is';
+const JO_SOURCE_GID = 1597956270;
+const JO_SOURCE_START_ROW = 2273;
+const JO_OVERRIDE_HEADERS = ['Source Row','Updated At','CLASSIFICATION','J.O','S.O','Received','Delivery Date','Client','Item No.','Panel Name','Qty','Unit','Transferred','Balance','FGTS No.','Date Served','Remarks','Status','Timeliness'];
 const TRANSFER_SHEET = 'Transfer Monitoring';
 const ALLOCATION_SHEET = 'QC Allocation Details';
 const JO_HEADERS = ['Record ID','Created At','Updated At','J.O No','S.O No','Customer','Item No','Description','Quantity','Date Received','Target Date','Status','Remarks'];
@@ -24,14 +29,14 @@ function getSystemStatus() {
   try {
     const ss = SpreadsheetApp.openById(DATABASE_ID);
     return {ok:true,databaseName:ss.getName(),existingSheets:ss.getSheets().map(s=>s.getName()),
-      requiredSheets:[JO_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET]};
+      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET]};
   } catch (e) { return {ok:false,message:String(e.message||e)}; }
 }
 
 function setupDatabase() {
   const ss = SpreadsheetApp.openById(DATABASE_ID);
   const created = [];
-  [[JO_SHEET,JO_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS]].forEach(pair=>{
+  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS]].forEach(pair=>{
     let sh=ss.getSheetByName(pair[0]);
     if (!sh) { sh=ss.insertSheet(pair[0]); created.push(pair[0]); }
     if (sh.getLastRow()===0) {
@@ -49,7 +54,8 @@ function setupDatabase() {
 
 function getModuleData(moduleName, searchText) {
   if (moduleName==='Transfer Monitoring') return getTransferRecords(searchText);
-  if (moduleName!=='J.O Register') throw new Error('QC Allocation is managed inside Transfer Monitoring.');
+  if (moduleName==='J.O Register') return getExternalJORecords_(searchText);
+  throw new Error('QC Allocation is managed inside Transfer Monitoring.');
   const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(JO_SHEET);
   if (!sh) return {ok:true,records:[],fields:JO_FIELDS};
   const values=sh.getDataRange().getValues(), query=String(searchText||'').toLowerCase().trim(), records=[];
@@ -63,7 +69,8 @@ function getModuleData(moduleName, searchText) {
 
 function saveRecord(moduleName,input) {
   if(moduleName==='Transfer Monitoring') return saveTransfer(input);
-  if(moduleName!=='J.O Register') throw new Error('Unsupported module.');
+  if(moduleName==='J.O Register') return saveJOOverride_(input);
+  throw new Error('Unsupported module.');
   if(!input) throw new Error('No record data received.');
   const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(JO_SHEET);
   if(!sh) throw new Error('Click Prepare Database first.');
