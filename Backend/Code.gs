@@ -9,6 +9,10 @@ const JO_OVERRIDE_SHEET = 'JO Register Overrides';
 const JO_SOURCE_ID = '1QZ7_R2e2Kl5ylC6ag1Va9KPUQdg02wVvKLiFEJGy2is';
 const JO_SOURCE_GID = 1597956270;
 const JO_SOURCE_START_ROW = 2273;
+const FGTS_SOURCE_ID = '1he8ext1x_5p8BROaxoaHQkEV7eBBSI09nIZoQeDRe54';
+const FGTS_SOURCE_GID = 91015752;
+const FGTS_SOURCE_START_ROW = 6;
+const FGTS_HEADERS = ['Classification','Lead Days','Date Received','Date Finish','S.O. no.','Client','Item no.','Panel Name','Qty','FGTS no.','QC-In Charge','Remarks','Category'];
 const JO_OVERRIDE_HEADERS = ['Source Row','Updated At','CLASSIFICATION','J.O','S.O','Received','Delivery Date','Client','Item No.','Panel Name','Qty','Unit','Transferred','Balance','FGTS No.','Date Served','Remarks','Status','Timeliness'];
 const TRANSFER_SHEET = 'Transfer Monitoring';
 const ALLOCATION_SHEET = 'QC Allocation Details';
@@ -55,7 +59,8 @@ function setupDatabase() {
 function getModuleData(moduleName, searchText) {
   if (moduleName==='Transfer Monitoring') return getTransferRecords(searchText);
   if (moduleName==='J.O Register') return getExternalJORecords_(searchText);
-  throw new Error('QC Allocation is managed inside Transfer Monitoring.');
+  if (moduleName==='FGTS Monitoring') return getFGTSMonitoringRecords_(searchText);
+  throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(JO_SHEET);
   if (!sh) return {ok:true,records:[],fields:JO_FIELDS};
   const values=sh.getDataRange().getValues(), query=String(searchText||'').toLowerCase().trim(), records=[];
@@ -154,6 +159,47 @@ function getExternalJORecords_(searchText) {
   });
   return {ok:true,records:records,fields:JO_OVERRIDE_HEADERS.slice(2)};
 }
+
+/**
+ * FGTS Monitoring reads the external FGTS sheet. Classification is looked up
+ * from the J.O Register source using S.O + Item No. Source data is not modified.
+ */
+function getFGTSMonitoringRecords_(searchText) {
+  const fgtsSS=SpreadsheetApp.openById(FGTS_SOURCE_ID);
+  const fgtsSheet=fgtsSS.getSheets().find(s=>s.getSheetId()===FGTS_SOURCE_GID);
+  if(!fgtsSheet)throw new Error('Could not find FGTS source sheet tab gid '+FGTS_SOURCE_GID+'.');
+  const last=fgtsSheet.getLastRow();
+  if(last<FGTS_SOURCE_START_ROW)return {ok:true,records:[],fields:FGTS_HEADERS};
+  const rows=fgtsSheet.getRange(FGTS_SOURCE_START_ROW,1,last-FGTS_SOURCE_START_ROW+1,14).getDisplayValues();
+  const joSS=SpreadsheetApp.openById(JO_SOURCE_ID);
+  const joSheet=joSS.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
+  const classByJob={}, joRows=[];
+  if(joSheet&&joSheet.getLastRow()>=JO_SOURCE_START_ROW){
+    joRows.push(...joSheet.getRange(JO_SOURCE_START_ROW,1,joSheet.getLastRow()-JO_SOURCE_START_ROW+1,14).getDisplayValues());
+    joRows.forEach(r=>{const so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(!so||!item)return;const key=fgtsJobKey_(so,item);if(!classByJob[key]&&String(r[6]||'').trim())classByJob[key]=String(r[6]).trim();});
+    const db=SpreadsheetApp.openById(DATABASE_ID),overrideSheet=db.getSheetByName(JO_OVERRIDE_SHEET);
+    if(overrideSheet&&overrideSheet.getLastRow()>1){
+      overrideSheet.getDataRange().getDisplayValues().slice(1).forEach(o=>{
+        const m=String(o[0]||'').match(/^SRC-(\d+)$/),classification=String(o[2]||'').trim();if(!m||!classification)return;
+        const idx=Number(m[1])-JO_SOURCE_START_ROW;if(idx<0||idx>=joRows.length)return;
+        const r=joRows[idx],so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(so&&item)classByJob[fgtsJobKey_(so,item)]=classification;
+      });
+    }
+  }
+  const query=String(searchText||'').trim().toLowerCase(),records=[];
+  rows.forEach(r=>{
+    const so=String(r[4]||'').trim(),item=String(r[6]||'').trim();
+    const received=joDate_(r[2]),finished=joDate_(r[3]);
+    if(!so&&!item&&!String(r[9]||'').trim()&&!String(r[10]||'').trim())return;
+    const rd=joParseDate_(received),fd=joParseDate_(finished);
+    const leadDays=rd&&fd?Math.round((fd.getTime()-rd.getTime())/86400000):'';
+    const record={'Classification':classByJob[fgtsJobKey_(so,item)]||'','Lead Days':leadDays,'Date Received':received,'Date Finish':finished,'S.O. no.':so,'Client':r[5]||'','Item no.':item,'Panel Name':r[7]||'','Qty':Number(String(r[8]||'').replace(/,/g,''))||r[8]||'','FGTS no.':r[9]||'','QC-In Charge':r[10]||'','Remarks':r[11]||'','Category':r[13]||''};
+    if(!query||Object.values(record).join(' ').toLowerCase().includes(query))records.push(record);
+  });
+  records.reverse();return {ok:true,records:records,fields:FGTS_HEADERS};
+}
+function fgtsJobKey_(so,item){return JSON.stringify([String(so||'').trim().toUpperCase(),String(item||'').trim().toUpperCase()]);}
+
 function saveJOOverride_(input) {
   if(!input)throw new Error('No J.O changes received.');
   const id=String(input['Record ID']||'');
