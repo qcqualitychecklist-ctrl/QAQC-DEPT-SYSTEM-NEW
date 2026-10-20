@@ -174,14 +174,15 @@ function getFGTSMonitoringRecords_(searchText) {
   const joSS=SpreadsheetApp.openById(JO_SOURCE_ID);
   const joSheet=joSS.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
   const classByJob={}, joRows=[];
-  if(joSheet&&joSheet.getLastRow()>=JO_SOURCE_START_ROW){
-    joRows.push(...joSheet.getRange(JO_SOURCE_START_ROW,1,joSheet.getLastRow()-JO_SOURCE_START_ROW+1,14).getDisplayValues());
+  const classificationStartRow=Math.min(2272,JO_SOURCE_START_ROW);
+  if(joSheet&&joSheet.getLastRow()>=classificationStartRow){
+    joRows.push(...joSheet.getRange(classificationStartRow,1,joSheet.getLastRow()-classificationStartRow+1,14).getDisplayValues());
     joRows.forEach(r=>{const so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(!so||!item)return;const key=fgtsJobKey_(so,item);if(!classByJob[key]&&String(r[6]||'').trim())classByJob[key]=String(r[6]).trim();});
     const db=SpreadsheetApp.openById(DATABASE_ID),overrideSheet=db.getSheetByName(JO_OVERRIDE_SHEET);
     if(overrideSheet&&overrideSheet.getLastRow()>1){
       overrideSheet.getDataRange().getDisplayValues().slice(1).forEach(o=>{
         const m=String(o[0]||'').match(/^SRC-(\d+)$/),classification=String(o[2]||'').trim();if(!m||!classification)return;
-        const idx=Number(m[1])-JO_SOURCE_START_ROW;if(idx<0||idx>=joRows.length)return;
+        const idx=Number(m[1])-classificationStartRow;if(idx<0||idx>=joRows.length)return;
         const r=joRows[idx],so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(so&&item)classByJob[fgtsJobKey_(so,item)]=classification;
       });
     }
@@ -192,8 +193,8 @@ function getFGTSMonitoringRecords_(searchText) {
     const received=joDate_(formatCell_(r[2])),finished=joDate_(formatCell_(r[3]));
     if(!so&&!item&&!String(r[9]||'').trim()&&!String(r[10]||'').trim())return;
     const rd=joParseDate_(received),fd=joParseDate_(finished);
-    const leadDays=rd&&fd?Math.round((fd.getTime()-rd.getTime())/86400000):'';
-    const record={'Classification':classByJob[fgtsJobKey_(so,item)]||'','Lead Days':leadDays,'Date Received':received,'Date Finish':finished,'S.O. no.':so,'Client':r[5]||'','Item no.':item,'Panel Name':r[7]||'','Qty':Number(String(r[8]||'').replace(/,/g,''))||r[8]||'','FGTS no.':r[9]||'','QC-In Charge':r[10]||'','Remarks':r[11]||'','Category':r[13]||''};
+    const leadDays=rd&&fd?Math.max(1,Math.round((fd.getTime()-rd.getTime())/86400000)+1):'';
+    const record={'Classification':classByJob[fgtsJobKey_(so,item)]||'Others','Lead Days':leadDays,'Date Received':received,'Date Finish':finished,'S.O. no.':so,'Client':r[5]||'','Item no.':item,'Panel Name':r[7]||'','Qty':Number(String(r[8]||'').replace(/,/g,''))||r[8]||'','FGTS no.':r[9]||'','QC-In Charge':r[10]||'','Remarks':r[11]||'','Category':r[13]||''};
     if(!query||Object.values(record).join(' ').toLowerCase().includes(query))records.push(record);
   });
   records.reverse();return {ok:true,records:records,fields:FGTS_HEADERS};
