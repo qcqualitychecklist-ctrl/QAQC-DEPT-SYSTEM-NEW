@@ -90,7 +90,7 @@ function getTransferRecords(searchText) {
     obj['Remaining Qty']=Math.max(0,(Number(obj['Qty'])||0)-done);
     obj['QC In Charge']=[...new Set(linked.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', ');
     obj['FGTS No.']=[...new Set(linked.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
-    obj['Date Finished']=[...new Set(linked.map(a=>formatCell_(a[5])).filter(Boolean))].join(', ');
+    obj['Date Finished']=latestFinishedDate_(linked);
     if(['Ongoing','Hold','For line up'].includes(String(obj.Status)) && obj['Date Received']){
       const received=new Date(obj['Date Received']); const days=Math.floor((new Date().setHours(0,0,0,0)-received.setHours(0,0,0,0))/86400000);
       obj.Reminders=days>=REMINDER_AFTER_DAYS?'DELAYED ('+days+' days)':'';
@@ -113,7 +113,7 @@ function saveTransfer(input) {
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
   if(String(input.Status||'')==='Passed'&&alreadyAllocated<qty)throw new Error('Status cannot be Passed until Done Qty meets the required Qty.');
-  const inputObj=Object.assign({},input,{'Transfer ID':transferId,'Done Qty':alreadyAllocated,'Remaining Qty':qty-alreadyAllocated,'QC In Charge':[...new Set(linkedAllocations.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', '),'FGTS No.':[...new Set(linkedAllocations.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', '),'Date Finished':[...new Set(linkedAllocations.map(a=>formatCell_(a[5])).filter(Boolean))].join(', '),'Reminders':''});
+  const inputObj=Object.assign({},input,{'Transfer ID':transferId,'Done Qty':alreadyAllocated,'Remaining Qty':qty-alreadyAllocated,'QC In Charge':[...new Set(linkedAllocations.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', '),'FGTS No.':[...new Set(linkedAllocations.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', '),'Date Finished':latestFinishedDate_(linkedAllocations),'Reminders':''});
   if(old && !String(input['Time Received']||'').trim()) inputObj['Time Received']=formatTimeCell_(old[5]);
   const out=TRANSFER_HEADERS.map((h,j)=>h==='Record ID'?recordId:h==='Created At'?(old?old[1]:now):h==='Updated At'?now:(inputObj[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
@@ -130,6 +130,32 @@ function saveTransfersBatch(common, items) {
   const saved=[];
   items.forEach(item=>{const input=Object.assign({},common,item,{'Record ID':'','Status':String(common.Status||'Ongoing')==='Passed'?'Ongoing':(common.Status||'Ongoing')});saved.push(saveTransfer(input));});
   return {ok:true,count:saved.length,transferIds:saved.map(r=>r.transferId),message:'All '+saved.length+' item rows saved successfully.'};
+}
+
+function saveAdditionalTransfersBatch(common, items) {
+  if(!common||!Array.isArray(items)||items.length<1)throw new Error('Add at least one additional item.');
+  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
+  if(!sh)throw new Error('Click Prepare Database first.');
+  const now=new Date(),saved=[];
+  items.forEach(item=>{
+    const transferId='TR-'+Utilities.getUuid().toUpperCase(),recordId=Utilities.getUuid();
+    const inputObj=Object.assign({},common,item,{'Record ID':recordId,'Created At':now,'Updated At':now,'Transfer ID':transferId,'Done Qty':0,'Remaining Qty':Number(item.Qty)||0,'QC In Charge':'','FGTS No.':'','Date Finished':'','Reminders':'','Status':String(common.Status||'Ongoing')});
+    const out=TRANSFER_HEADERS.map(h=>h==='Record ID'?recordId:h==='Created At'||h==='Updated At'?now:(inputObj[h]??''));
+    sh.appendRow(out);saved.push(transferId);
+  });
+  return {ok:true,count:saved.length,transferIds:saved,message:'Saved '+saved.length+' additional item row(s) in free-form mode.'};
+}
+
+function latestFinishedDate_(allocations) {
+  const dates=allocations.map(a=>a[5]).filter(v=>v!==''&&v!=null);
+  if(!dates.length)return '';
+  dates.sort((a,b)=>{
+    const da=a instanceof Date?a:new Date(a),db=b instanceof Date?b:new Date(b);
+    const ta=da.getTime(),tb=db.getTime();
+    if(!isNaN(ta)&&!isNaN(tb))return tb-ta;
+    return String(b).localeCompare(String(a));
+  });
+  return formatCell_(dates[0]);
 }
 
 function saveAllocationsBatch(transferId, common, entries) {
@@ -230,7 +256,7 @@ function syncTransferSummary_(transferId) {
   const done=allocs.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   const qc=[...new Set(allocs.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', ');
   const fgts=[...new Set(allocs.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
-  const finished=[...new Set(allocs.map(a=>formatCell_(a[5])).filter(Boolean))].join(', ');
+  const finished=latestFinishedDate_(allocs);
   const qty=Number(tr[13])||0;
   sh.getRange(rowIndex,17,1,5).setValues([[done,Math.max(0,qty-done),qc,fgts,finished]]);
   let status=String(tr[15]||''),received=tr[4];
