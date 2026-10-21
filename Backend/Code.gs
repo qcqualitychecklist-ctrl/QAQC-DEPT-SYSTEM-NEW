@@ -243,8 +243,9 @@ function saveJOOverride_(input) {
   if(!/^SRC-\d+$/.test(id))throw new Error('J.O source row key is invalid. Refresh and try again.');
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(JO_OVERRIDE_SHEET);
   if(!sh)throw new Error('Click Prepare Database first.');
-  const rows=sh.getLastRow()>1?sh.getRange(2,1,sh.getLastRow()-1,JO_OVERRIDE_HEADERS.length).getDisplayValues():[];
-  const found=rows.findIndex(r=>String(r[0])===id), target=found>=0?found+2:0, now=new Date();
+  const lastRow=sh.getLastRow();let target=0;
+  if(lastRow>1){const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(id).matchEntireCell(true).findNext();if(match)target=match.getRow();}
+  const now=new Date();
   const out=JO_OVERRIDE_HEADERS.map(h=>h==='Source Row'?id:h==='Updated At'?now:(input[h]??''));
   if(target)sh.getRange(target,1,1,out.length).setValues([out]);else sh.appendRow(out);
   return {ok:true,message:'J.O changes saved for source row '+id.slice(4)+'.'};
@@ -264,11 +265,13 @@ function getTransferRecords(searchText) {
   const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(TRANSFER_SHEET), allocSh=ss.getSheetByName(ALLOCATION_SHEET);
   if(!sh) return {ok:true,records:[],fields:TRANSFER_HEADERS};
   const vals=sh.getDataRange().getValues(), allocations=allocSh&&allocSh.getLastRow()>1?allocSh.getDataRange().getValues().slice(1):[];
+  const allocationsByTransfer=Object.create(null);
+  allocations.forEach(a=>{const id=String(a[1]||'');if(!id)return;(allocationsByTransfer[id]||(allocationsByTransfer[id]=[])).push(a)});
   const query=String(searchText||'').trim().toLowerCase(), records=[];
   for(let i=1;i<vals.length;i++){
     if(!vals[i][0])continue;
     const obj={}; TRANSFER_HEADERS.forEach((h,j)=>obj[h]=h==='Time Received'?formatTimeCell_(vals[i][j]):formatCell_(vals[i][j]));
-    const linked=allocations.filter(a=>String(a[1])===String(obj['Transfer ID']));
+    const linked=allocationsByTransfer[String(obj['Transfer ID'])]||[];
     const done=linked.reduce((sum,a)=>sum+(Number(a[4])||0),0);
     obj['Done Qty']=done;
     obj['Remaining Qty']=Math.max(0,(Number(obj['Qty'])||0)-done);
@@ -290,9 +293,9 @@ function saveTransfer(input) {
   if(!sh)throw new Error('Click Prepare Database first.');
   const qty=Number(input.Qty);
   if(!isFinite(qty)||qty<=0)throw new Error('Qty must be greater than zero.');
-  const id=String(input['Record ID']||''), data=sh.getDataRange().getValues(), now=new Date(); let row=-1;
-  if(id){for(let i=1;i<data.length;i++)if(String(data[i][0])===id){row=i+1;break;}if(row<0)throw new Error('Transfer record not found. Refresh and try again.');}
-  const old=row>0?data[row-1]:null,recordId=id||Utilities.getUuid(),transferId=old?String(old[3]):('TR-'+Utilities.getUuid().toUpperCase());
+  const id=String(input['Record ID']||''), now=new Date(); let row=-1,old=null;
+  if(id){const lastRow=sh.getLastRow();if(lastRow>1){const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(id).matchEntireCell(true).findNext();if(match){row=match.getRow();old=sh.getRange(row,1,1,TRANSFER_HEADERS.length).getValues()[0];}}if(row<0)throw new Error('Transfer record not found. Refresh and try again.');}
+  const recordId=id||Utilities.getUuid(),transferId=old?String(old[3]):('TR-'+Utilities.getUuid().toUpperCase());
   const linkedAllocations=getAllocationRows_(transferId);
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
