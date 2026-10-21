@@ -78,7 +78,7 @@ function getModuleData(moduleName, searchText) {
   const cacheKey='qaqc_module_v2_'+moduleName.replace(/[^a-z0-9]/gi,'_');
   if(!query){
     const cacheStarted=Date.now(),cached=readModuleCache_(cacheKey),cacheReadMs=Date.now()-cacheStarted;
-    if(cached)return Object.assign({},cached,{_diagnostics:{cache:'HIT',cacheReadMs:cacheReadMs,serverMs:Date.now()-startedAt,recordCount:Array.isArray(cached.records)?cached.records.length:0}});
+    if(cached)return Object.assign({},cached,{_diagnostics:{cache:'HIT',cacheReadMs:cacheReadMs,serverMs:Date.now()-startedAt,recordCount:Array.isArray(cached.records)?cached.records.length:0,source:cached._sourceDiagnostics||null}});
   }
   let result;
   if(moduleName==='Transfer Monitoring')result=getTransferRecords(query);
@@ -87,7 +87,7 @@ function getModuleData(moduleName, searchText) {
   let cacheInfo=null;
   if(!query&&result&&result.ok)cacheInfo=writeModuleCache_(cacheKey,result);
   result=result||{};
-  result._diagnostics={cache:query?'BYPASSED (search query)':'MISS',serverMs:Date.now()-startedAt,recordCount:Array.isArray(result.records)?result.records.length:0,cacheStored:cacheInfo?cacheInfo.stored:null,cachePackedChars:cacheInfo&&cacheInfo.packedChars||null,cacheReason:cacheInfo&&cacheInfo.reason||null};
+  result._diagnostics={cache:query?'BYPASSED (search query)':'MISS',serverMs:Date.now()-startedAt,recordCount:Array.isArray(result.records)?result.records.length:0,cacheStored:cacheInfo?cacheInfo.stored:null,cachePackedChars:cacheInfo&&cacheInfo.packedChars||null,cacheReason:cacheInfo&&cacheInfo.reason||null,source:result._sourceDiagnostics||null};
   return result;
 }
 
@@ -109,14 +109,24 @@ function saveRecord(moduleName,input) {
 
 
 function getExternalJORecords_(searchText) {
+  const sourceStarted=Date.now(),sourceDiag={module:'J.O Register'};
+  let phaseStarted=Date.now();
   const source=SpreadsheetApp.openById(JO_SOURCE_ID);
+  sourceDiag.joOpenMs=Date.now()-phaseStarted;
   const sourceSheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
   if(!sourceSheet) throw new Error('Could not find source sheet tab gid '+JO_SOURCE_GID+'.');
   const last=sourceSheet.getLastRow();
-  if(last<JO_SOURCE_START_ROW) return {ok:true,records:[],fields:JO_OVERRIDE_HEADERS.slice(2)};
+  sourceDiag.joLastRow=last;
+  if(last<JO_SOURCE_START_ROW){sourceDiag.joRowsRead=0;sourceDiag.totalMs=Date.now()-sourceStarted;return {ok:true,records:[],fields:JO_OVERRIDE_HEADERS.slice(2),_sourceDiagnostics:sourceDiag};}
+  phaseStarted=Date.now();
   const sourceRows=sourceSheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,14).getDisplayValues();
+  sourceDiag.joReadMs=Date.now()-phaseStarted;sourceDiag.joRowsRead=sourceRows.length;
+  phaseStarted=Date.now();
   const db=SpreadsheetApp.openById(DATABASE_ID), overrideSheet=db.getSheetByName(JO_OVERRIDE_SHEET);
+  sourceDiag.databaseOpenMs=Date.now()-phaseStarted;
+  phaseStarted=Date.now();
   const saved=overrideSheet&&overrideSheet.getLastRow()>1?overrideSheet.getDataRange().getDisplayValues().slice(1):[];
+  sourceDiag.overrideReadMs=Date.now()-phaseStarted;sourceDiag.overrideRowsRead=saved.length;
   const overrides={}; saved.forEach(r=>{if(r[0])overrides[String(r[0])]=r;});
 
   // Build J.O transfer summaries by S.O. + Item No. (FGTS source has no J.O number).
@@ -150,11 +160,16 @@ function getExternalJORecords_(searchText) {
   };
 
   // External FGTS Monitoring is the primary record source for FGTS allocations.
+  phaseStarted=Date.now();
   const fgtsSS=SpreadsheetApp.openById(FGTS_SOURCE_ID);
   const fgtsSheet=fgtsSS.getSheets().find(s=>s.getSheetId()===FGTS_SOURCE_GID);
+  sourceDiag.fgtsOpenMs=Date.now()-phaseStarted;
   if(!fgtsSheet)throw new Error('Could not find FGTS source sheet tab gid '+FGTS_SOURCE_GID+'.');
-  if(fgtsSheet.getLastRow()>=FGTS_SOURCE_START_ROW){
-    const fgtsRows=fgtsSheet.getRange(FGTS_SOURCE_START_ROW,1,fgtsSheet.getLastRow()-FGTS_SOURCE_START_ROW+1,14).getValues();
+  const fgtsLast=fgtsSheet.getLastRow();sourceDiag.fgtsLastRow=fgtsLast;
+  if(fgtsLast>=FGTS_SOURCE_START_ROW){
+    phaseStarted=Date.now();
+    const fgtsRows=fgtsSheet.getRange(FGTS_SOURCE_START_ROW,1,fgtsLast-FGTS_SOURCE_START_ROW+1,14).getValues();
+    sourceDiag.fgtsReadMs=Date.now()-phaseStarted;sourceDiag.fgtsRowsRead=fgtsRows.length;
     fgtsRows.forEach((r,i)=>{
       const so=String(r[4]||'').trim(),item=String(r[6]||'').trim();
       if(!so||!item)return;
@@ -166,11 +181,16 @@ function getExternalJORecords_(searchText) {
 
   // Include internal allocations as well, but skip any allocation already
   // represented by the same FGTS/QC/Qty/finish-date combination above.
+  phaseStarted=Date.now();
   const transferSheet=db.getSheetByName(TRANSFER_SHEET), allocSheet=db.getSheetByName(ALLOCATION_SHEET);
-  const transferRows=transferSheet&&transferSheet.getLastRow()>1
-    ?transferSheet.getRange(2,1,transferSheet.getLastRow()-1,TRANSFER_HEADERS.length).getDisplayValues():[];
-  const allocs=allocSheet&&allocSheet.getLastRow()>1
-    ?allocSheet.getRange(2,1,allocSheet.getLastRow()-1,ALLOCATION_HEADERS.length).getValues():[];
+  const transferLast=transferSheet?transferSheet.getLastRow():0,allocLast=allocSheet?allocSheet.getLastRow():0;
+  const transferRows=transferSheet&&transferLast>1
+    ?transferSheet.getRange(2,1,transferLast-1,TRANSFER_HEADERS.length).getDisplayValues():[];
+  const allocs=allocSheet&&allocLast>1
+    ?allocSheet.getRange(2,1,allocLast-1,ALLOCATION_HEADERS.length).getValues():[];
+  sourceDiag.transferLastRow=transferLast;sourceDiag.transferRowsRead=transferRows.length;
+  sourceDiag.allocationLastRow=allocLast;sourceDiag.allocationRowsRead=allocs.length;
+  sourceDiag.internalRowsReadMs=Date.now()-phaseStarted;
   const allocsByTransfer={};
   allocs.forEach(a=>{
     const id=String(a[1]||'');if(!id)return;
@@ -212,7 +232,8 @@ function getExternalJORecords_(searchText) {
     ['Qty','Transferred','Balance'].forEach(h=>o[h]=Number(String(o[h]||0).replace(/,/g,''))||0);
     if(!q||Object.values(o).join(' ').toLowerCase().includes(q))records.push(o);
   });
-  return {ok:true,records:records,fields:JO_OVERRIDE_HEADERS.slice(2)};
+  sourceDiag.recordsBuilt=records.length;sourceDiag.totalMs=Date.now()-sourceStarted;
+  return {ok:true,records:records,fields:JO_OVERRIDE_HEADERS.slice(2),_sourceDiagnostics:sourceDiag};
 }
 
 /**
@@ -220,22 +241,37 @@ function getExternalJORecords_(searchText) {
  * from the J.O Register source using S.O + Item No. Source data is not modified.
  */
 function getFGTSMonitoringRecords_(searchText) {
+  const sourceStarted=Date.now(),sourceDiag={module:'FGTS Monitoring'};
+  let phaseStarted=Date.now();
   const fgtsSS=SpreadsheetApp.openById(FGTS_SOURCE_ID);
+  sourceDiag.fgtsOpenMs=Date.now()-phaseStarted;
   const fgtsSheet=fgtsSS.getSheets().find(s=>s.getSheetId()===FGTS_SOURCE_GID);
   if(!fgtsSheet)throw new Error('Could not find FGTS source sheet tab gid '+FGTS_SOURCE_GID+'.');
-  const last=fgtsSheet.getLastRow();
-  if(last<FGTS_SOURCE_START_ROW)return {ok:true,records:[],fields:FGTS_HEADERS};
+  const last=fgtsSheet.getLastRow();sourceDiag.fgtsLastRow=last;
+  if(last<FGTS_SOURCE_START_ROW){sourceDiag.fgtsRowsRead=0;sourceDiag.recordsBuilt=0;sourceDiag.totalMs=Date.now()-sourceStarted;return {ok:true,records:[],fields:FGTS_HEADERS,_sourceDiagnostics:sourceDiag};}
+  phaseStarted=Date.now();
   const rows=fgtsSheet.getRange(FGTS_SOURCE_START_ROW,1,last-FGTS_SOURCE_START_ROW+1,14).getValues();
+  sourceDiag.fgtsReadMs=Date.now()-phaseStarted;sourceDiag.fgtsRowsRead=rows.length;
+  phaseStarted=Date.now();
   const joSS=SpreadsheetApp.openById(JO_SOURCE_ID);
   const joSheet=joSS.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
+  sourceDiag.joOpenMs=Date.now()-phaseStarted;
   const classByJob={}, joRows=[];
   const classificationStartRow=Math.min(2272,JO_SOURCE_START_ROW);
-  if(joSheet&&joSheet.getLastRow()>=classificationStartRow){
-    joRows.push(...joSheet.getRange(classificationStartRow,1,joSheet.getLastRow()-classificationStartRow+1,14).getDisplayValues());
+  const joLast=joSheet?joSheet.getLastRow():0;sourceDiag.joLastRow=joLast;
+  if(joSheet&&joLast>=classificationStartRow){
+    phaseStarted=Date.now();
+    joRows.push(...joSheet.getRange(classificationStartRow,1,joLast-classificationStartRow+1,14).getDisplayValues());
+    sourceDiag.joReadMs=Date.now()-phaseStarted;sourceDiag.joRowsRead=joRows.length;
     joRows.forEach(r=>{const so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(!so||!item)return;const key=fgtsJobKey_(so,item);if(!classByJob[key]&&String(r[6]||'').trim())classByJob[key]=String(r[6]).trim();});
+    phaseStarted=Date.now();
     const db=SpreadsheetApp.openById(DATABASE_ID),overrideSheet=db.getSheetByName(JO_OVERRIDE_SHEET);
+    sourceDiag.databaseOpenMs=Date.now()-phaseStarted;
     if(overrideSheet&&overrideSheet.getLastRow()>1){
-      overrideSheet.getDataRange().getDisplayValues().slice(1).forEach(o=>{
+      phaseStarted=Date.now();
+      const overrideRows=overrideSheet.getDataRange().getDisplayValues().slice(1);
+      sourceDiag.overrideReadMs=Date.now()-phaseStarted;sourceDiag.overrideRowsRead=overrideRows.length;
+      overrideRows.forEach(o=>{
         const m=String(o[0]||'').match(/^SRC-(\d+)$/),classification=String(o[2]||'').trim();if(!m||!classification)return;
         const idx=Number(m[1])-classificationStartRow;if(idx<0||idx>=joRows.length)return;
         const r=joRows[idx],so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(so&&item)classByJob[fgtsJobKey_(so,item)]=classification;
@@ -252,7 +288,8 @@ function getFGTSMonitoringRecords_(searchText) {
     const record={'Classification':classByJob[fgtsJobKey_(so,item)]||'Others','Lead Days':leadDays,'Date Received':received,'Date Finish':finished,'S.O. no.':so,'Client':r[5]||'','Item no.':item,'Panel Name':r[7]||'','Qty':Number(String(r[8]||'').replace(/,/g,''))||r[8]||'','FGTS no.':r[9]||'','QC-In Charge':r[10]||'','Remarks':r[11]||'','Category':r[13]||''};
     if(!query||Object.values(record).join(' ').toLowerCase().includes(query))records.push(record);
   });
-  records.reverse();return {ok:true,records:records,fields:FGTS_HEADERS};
+  records.reverse();sourceDiag.recordsBuilt=records.length;sourceDiag.totalMs=Date.now()-sourceStarted;
+  return {ok:true,records:records,fields:FGTS_HEADERS,_sourceDiagnostics:sourceDiag};
 }
 function fgtsJobKey_(so,item){return JSON.stringify([String(so||'').trim().toUpperCase(),String(item||'').trim().toUpperCase()]);}
 
