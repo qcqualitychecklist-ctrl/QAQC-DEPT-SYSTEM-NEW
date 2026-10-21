@@ -73,22 +73,30 @@ function setupDatabase() {
 
 function getModuleData(moduleName, searchText) {
   const startedAt=Date.now();
-  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
-  const query=String(searchText||'').trim();
-  const cacheKey='qaqc_module_v2_'+moduleName.replace(/[^a-z0-9]/gi,'_');
-  if(!query){
-    const cacheStarted=Date.now(),cached=readModuleCache_(cacheKey),cacheReadMs=Date.now()-cacheStarted;
-    if(cached)return Object.assign({},cached,{_diagnostics:{cache:'HIT',cacheReadMs:cacheReadMs,serverMs:Date.now()-startedAt,recordCount:Array.isArray(cached.records)?cached.records.length:0,source:cached._sourceDiagnostics||null}});
+  let stage='validate module';
+  try {
+    if (!['Transfer Monitoring','J.O Register','FGTS Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
+    const query=String(searchText||'').trim();
+    const cacheKey='qaqc_module_v2_'+moduleName.replace(/[^a-z0-9]/gi,'_');
+    if(!query){
+      stage='read module cache';
+      const cacheStarted=Date.now(),cached=readModuleCache_(cacheKey),cacheReadMs=Date.now()-cacheStarted;
+      if(cached)return Object.assign({},cached,{_diagnostics:{cache:'HIT',cacheReadMs:cacheReadMs,serverMs:Date.now()-startedAt,recordCount:Array.isArray(cached.records)?cached.records.length:0,source:cached._sourceDiagnostics||null}});
+    }
+    stage='read '+moduleName+' source data';
+    let result;
+    if(moduleName==='Transfer Monitoring')result=getTransferRecords(query);
+    else if(moduleName==='J.O Register')result=getExternalJORecords_(query);
+    else result=getFGTSMonitoringRecords_(query);
+    stage='write module cache';
+    let cacheInfo=null;
+    if(!query&&result&&result.ok)cacheInfo=writeModuleCache_(cacheKey,result);
+    result=result||{};
+    result._diagnostics={cache:query?'BYPASSED (search query)':'MISS',serverMs:Date.now()-startedAt,recordCount:Array.isArray(result.records)?result.records.length:0,cacheStored:cacheInfo?cacheInfo.stored:null,cachePackedChars:cacheInfo&&cacheInfo.packedChars||null,cacheReason:cacheInfo&&cacheInfo.reason||null,source:result._sourceDiagnostics||null};
+    return result;
+  } catch(e) {
+    return {ok:false,message:String(e&&e.message||e),records:[],_diagnostics:{cache:'ERROR',serverMs:Date.now()-startedAt,recordCount:0,failedAt:stage}};
   }
-  let result;
-  if(moduleName==='Transfer Monitoring')result=getTransferRecords(query);
-  else if(moduleName==='J.O Register')result=getExternalJORecords_(query);
-  else result=getFGTSMonitoringRecords_(query);
-  let cacheInfo=null;
-  if(!query&&result&&result.ok)cacheInfo=writeModuleCache_(cacheKey,result);
-  result=result||{};
-  result._diagnostics={cache:query?'BYPASSED (search query)':'MISS',serverMs:Date.now()-startedAt,recordCount:Array.isArray(result.records)?result.records.length:0,cacheStored:cacheInfo?cacheInfo.stored:null,cachePackedChars:cacheInfo&&cacheInfo.packedChars||null,cacheReason:cacheInfo&&cacheInfo.reason||null,source:result._sourceDiagnostics||null};
-  return result;
 }
 
 function saveRecord(moduleName,input) {
