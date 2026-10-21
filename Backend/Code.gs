@@ -37,7 +37,7 @@ function writeModuleCache_(key,value){
   try{const packed=Utilities.base64Encode(Utilities.gzip(Utilities.newBlob(JSON.stringify(value),'application/json')).getBytes());if(packed.length<95000)CacheService.getScriptCache().put(key,packed,20);}catch(e){}
 }
 function invalidateModuleCache_(){
-  try{const cache=CacheService.getScriptCache();['Transfer_Monitoring','J_O_Register','FGTS_Monitoring'].forEach(k=>cache.remove('qaqc_module_v2_'+k));}catch(e){}
+  try{const cache=CacheService.getScriptCache();const names=arguments.length?Array.from(arguments):['Transfer Monitoring','J.O Register','FGTS Monitoring'];names.forEach(name=>cache.remove('qaqc_module_v2_'+String(name).replace(/[^a-z0-9]/gi,'_')));}catch(e){}
 }
 
 function getSystemStatus() {
@@ -265,7 +265,7 @@ function saveJOOverride_(input) {
   const now=new Date();
   const out=JO_OVERRIDE_HEADERS.map(h=>h==='Source Row'?id:h==='Updated At'?now:(input[h]??''));
   if(target)sh.getRange(target,1,1,out.length).setValues([out]);else sh.appendRow(out);
-  invalidateModuleCache_();
+  invalidateModuleCache_('J.O Register','FGTS Monitoring');
   return {ok:true,message:'J.O changes saved for source row '+id.slice(4)+'.'};
 }
 function joDate_(v){const s=String(v||'').trim();if(!s)return '';const d=joParseDate_(s);return d?Utilities.formatDate(d,Session.getScriptTimeZone(),'yyyy-MM-dd'):s;}
@@ -323,7 +323,7 @@ function saveTransfer(input) {
   const out=TRANSFER_HEADERS.map((h,j)=>h==='Record ID'?recordId:h==='Created At'?(old?old[1]:now):h==='Updated At'?now:(inputObj[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
   syncTransferSummary_(transferId);
-  invalidateModuleCache_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,recordId:recordId,transferId:transferId,message:row>0?'Transfer updated.':'Transfer saved.'};
 }
 
@@ -335,7 +335,7 @@ function saveTransfersBatch(common, items) {
   items.forEach((item,i)=>{if(!isFinite(Number(item.Qty))||Number(item.Qty)<=0)throw new Error('Item '+(i+1)+' Qty must be greater than zero.');});
   const saved=[];
   items.forEach(item=>{const input=Object.assign({},common,item,{'Record ID':'','Status':String(common.Status||'Ongoing')==='Passed'?'Ongoing':(common.Status||'Ongoing')});saved.push(saveTransfer(input));});
-  invalidateModuleCache_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,count:saved.length,transferIds:saved.map(r=>r.transferId),message:'All '+saved.length+' item rows saved successfully.'};
 }
 
@@ -350,7 +350,7 @@ function saveAdditionalTransfersBatch(common, items) {
     const out=TRANSFER_HEADERS.map(h=>h==='Record ID'?recordId:h==='Created At'||h==='Updated At'?now:(inputObj[h]??''));
     sh.appendRow(out);saved.push(transferId);
   });
-  invalidateModuleCache_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,count:saved.length,transferIds:saved,message:'Saved '+saved.length+' additional item row(s) in free-form mode.'};
 }
 
@@ -392,7 +392,7 @@ function saveAllocationsBatch(transferId, common, entries) {
   const currentIds=cleaned.map(e=>e.id).filter(Boolean);
   if(common['Replace All']){for(let i=rows.length-1;i>=1;i--){if(String(rows[i][1])===String(transferId)&&!currentIds.includes(String(rows[i][0]))){sh.deleteRow(i+1);}}}
   syncTransferSummary_(transferId);
-  invalidateModuleCache_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,message:common['Replace All']?'QC allocation changes saved.':(ids.length?'QC allocation changes saved.':'All QC allocations saved.')};
 }
 
@@ -426,7 +426,7 @@ function saveAllocation(transferId,input) {
   const now=new Date(),aid=id||Utilities.getUuid(),out=ALLOCATION_HEADERS.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?transferId:h==='Created At'?(row>0?rows[row-1][7]:now):h==='Updated At'?now:(input[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
   syncTransferSummary_(transferId);
-  invalidateModuleCache_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,message:row>0?'QC allocation updated.':'QC allocation saved.'};
 }
 
@@ -434,7 +434,7 @@ function deleteAllocation(transferId,allocationId) {
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ALLOCATION_SHEET);
   if(!sh)throw new Error('Allocation sheet not found.');
   const rows=sh.getDataRange().getValues();
-  for(let i=1;i<rows.length;i++)if(String(rows[i][0])===String(allocationId)&&String(rows[i][1])===String(transferId)){sh.deleteRow(i+1);syncTransferSummary_(transferId);invalidateModuleCache_();return {ok:true,message:'Allocation deleted.'};}
+  for(let i=1;i<rows.length;i++)if(String(rows[i][0])===String(allocationId)&&String(rows[i][1])===String(transferId)){sh.deleteRow(i+1);syncTransferSummary_(transferId);invalidateModuleCache_('Transfer Monitoring','J.O Register');return {ok:true,message:'Allocation deleted.'};}
   throw new Error('Allocation not found.');
 }
 
@@ -446,7 +446,7 @@ function deleteTransfer(recordId) {
   if(row<0)throw new Error('Transfer record not found.');
   if(alloc&&alloc.getLastRow()>1){const a=alloc.getDataRange().getValues();for(let i=a.length-1;i>=1;i--)if(String(a[i][1])===transferId)alloc.deleteRow(i+1);}
   sh.deleteRow(row);
-  invalidateModuleCache_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,message:'Transfer and its linked QC allocations were deleted.'};
 }
 
