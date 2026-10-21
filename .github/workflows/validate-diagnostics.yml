@@ -1,0 +1,83 @@
+name: Validate QAQC diagnostic branch syntax
+
+on:
+  push:
+    branches:
+      - 'diagnose/module-loading-time'
+    paths:
+      - 'Backend/**'
+      - 'Frontend/**'
+      - '.github/workflows/validate-diagnostics.yml'
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check Apps Script backend JavaScript syntax
+        run: node --check < Backend/Code.gs
+
+      - name: Check inline frontend JavaScript syntax
+        shell: bash
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class ScriptExtractor(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.scripts = []
+                  self.current = None
+
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() != "script":
+                      return
+                  attrs = dict(attrs)
+                  kind = (attrs.get("type") or "").lower()
+                  if "src" in attrs or kind in {
+                      "application/json", "application/ld+json", "importmap"
+                  }:
+                      self.current = None
+                      return
+                  self.current = []
+                  self.scripts.append(self.current)
+
+              def handle_data(self, data):
+                  if self.current is not None:
+                      self.current.append(data)
+
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script":
+                      self.current = None
+
+          html = Path("Frontend/index.html").read_text(encoding="utf-8")
+          parser = ScriptExtractor()
+          parser.feed(html)
+          if not parser.scripts:
+              raise SystemExit("No inline JavaScript script blocks found.")
+          for i, pieces in enumerate(parser.scripts, start=1):
+              Path(f"/tmp/qaqc-inline-script-{i}.js").write_text(
+                  "".join(pieces), encoding="utf-8"
+              )
+          print(f"Extracted {len(parser.scripts)} inline script block(s).")
+          PY
+
+          shopt -s nullglob
+          scripts=(/tmp/qaqc-inline-script-*.js)
+          if [ ${#scripts[@]} -eq 0 ]; then
+            echo "::error::No inline frontend scripts were extracted."
+            exit 1
+          fi
+          for script in "${scripts[@]}"; do
+            echo "Checking ${script}"
+            node --check "${script}"
+          done
+          echo "Backend and frontend JavaScript syntax checks passed."
