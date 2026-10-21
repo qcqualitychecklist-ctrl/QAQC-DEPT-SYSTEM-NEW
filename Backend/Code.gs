@@ -78,15 +78,7 @@ function getModuleData(moduleName, searchText) {
   else result=getFGTSMonitoringRecords_(query);
   if(!query&&result&&result.ok)writeModuleCache_(cacheKey,result);
   return result;
-  const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(JO_SHEET);
-  if (!sh) return {ok:true,records:[],fields:JO_FIELDS};
-  const values=sh.getDataRange().getValues(), query=String(searchText||'').toLowerCase().trim(), records=[];
-  for(let i=1;i<values.length;i++){
-    if(!values[i][0]) continue;
-    const obj={}; JO_HEADERS.forEach((h,j)=>obj[h]=formatCell_(values[i][j]));
-    if(!query||values[i].join(' ').toLowerCase().includes(query)) records.push(obj);
-  }
-  records.reverse(); return {ok:true,records:records,fields:JO_FIELDS};
+
 }
 
 function saveRecord(moduleName,input) {
