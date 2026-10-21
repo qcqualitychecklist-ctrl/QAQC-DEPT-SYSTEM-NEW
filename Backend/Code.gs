@@ -425,18 +425,17 @@ function deleteTransfer(recordId) {
 
 function getAllocationRows_(transferId) {
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ALLOCATION_SHEET);
-  if(!sh||sh.getLastRow()<2)return [];
-  return sh.getDataRange().getValues().slice(1).filter(r=>String(r[1])===String(transferId));
+  const lastRow=sh?sh.getLastRow():0;if(lastRow<2)return [];
+  const matches=sh.getRange(2,2,lastRow-1,1).createTextFinder(String(transferId)).matchEntireCell(true).findAll();
+  return matches.map(cell=>sh.getRange(cell.getRow(),1,1,ALLOCATION_HEADERS.length).getValues()[0]);
 }
 
 function syncTransferSummary_(transferId) {
   const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
-  if(!sh||sh.getLastRow()<2)return;
-  const values=sh.getDataRange().getValues();
-  let rowIndex=-1;
-  for(let i=1;i<values.length;i++)if(String(values[i][3])===String(transferId)){rowIndex=i+1;break;}
-  if(rowIndex<0)return;
-  const tr=values[rowIndex-1],allocs=getAllocationRows_(transferId);
+  const lastRow=sh?sh.getLastRow():0;if(lastRow<2)return;
+  const match=sh.getRange(2,4,lastRow-1,1).createTextFinder(String(transferId)).matchEntireCell(true).findNext();
+  if(!match)return;
+  const rowIndex=match.getRow(),tr=sh.getRange(rowIndex,1,1,TRANSFER_HEADERS.length).getValues()[0],allocs=getAllocationRows_(transferId);
   const done=allocs.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   const qc=[...new Set(allocs.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', ');
   const fgts=[...new Set(allocs.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
