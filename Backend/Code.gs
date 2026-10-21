@@ -121,7 +121,9 @@ function getExternalJORecords_(searchText) {
   let phaseStarted=Date.now();
   const source=SpreadsheetApp.openById(JO_SOURCE_ID);
   sourceDiag.joOpenMs=Date.now()-phaseStarted;
+  phaseStarted=Date.now();
   const sourceSheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
+  sourceDiag.joSheetLookupMs=Date.now()-phaseStarted;
   if(!sourceSheet) throw new Error('Could not find source sheet tab gid '+JO_SOURCE_GID+'.');
   const last=sourceSheet.getLastRow();
   sourceDiag.joLastRow=last;
@@ -170,8 +172,10 @@ function getExternalJORecords_(searchText) {
   // External FGTS Monitoring is the primary record source for FGTS allocations.
   phaseStarted=Date.now();
   const fgtsSS=SpreadsheetApp.openById(FGTS_SOURCE_ID);
-  const fgtsSheet=fgtsSS.getSheets().find(s=>s.getSheetId()===FGTS_SOURCE_GID);
   sourceDiag.fgtsOpenMs=Date.now()-phaseStarted;
+  phaseStarted=Date.now();
+  const fgtsSheet=fgtsSS.getSheets().find(s=>s.getSheetId()===FGTS_SOURCE_GID);
+  sourceDiag.fgtsSheetLookupMs=Date.now()-phaseStarted;
   if(!fgtsSheet)throw new Error('Could not find FGTS source sheet tab gid '+FGTS_SOURCE_GID+'.');
   const fgtsLast=fgtsSheet.getLastRow();sourceDiag.fgtsLastRow=fgtsLast;
   if(fgtsLast>=FGTS_SOURCE_START_ROW){
@@ -217,6 +221,7 @@ function getExternalJORecords_(searchText) {
   });
 
   const q=String(searchText||'').trim().toLowerCase(), records=[];
+  phaseStarted=Date.now();
   sourceRows.forEach((r,i)=>{
     const row=JO_SOURCE_START_ROW+i, jo=String(r[0]||'').trim(); if(!jo)return;
     const key='SRC-'+row, qty=Number(String(r[3]||'').replace(/,/g,''))||0;
@@ -240,7 +245,7 @@ function getExternalJORecords_(searchText) {
     ['Qty','Transferred','Balance'].forEach(h=>o[h]=Number(String(o[h]||0).replace(/,/g,''))||0);
     if(!q||Object.values(o).join(' ').toLowerCase().includes(q))records.push(o);
   });
-  sourceDiag.recordsBuilt=records.length;sourceDiag.totalMs=Date.now()-sourceStarted;
+  sourceDiag.recordBuildMs=Date.now()-phaseStarted;sourceDiag.recordsBuilt=records.length;sourceDiag.totalMs=Date.now()-sourceStarted;
   return {ok:true,records:records,fields:JO_OVERRIDE_HEADERS.slice(2),_sourceDiagnostics:sourceDiag};
 }
 
@@ -262,8 +267,10 @@ function getFGTSMonitoringRecords_(searchText) {
   sourceDiag.fgtsReadMs=Date.now()-phaseStarted;sourceDiag.fgtsRowsRead=rows.length;
   phaseStarted=Date.now();
   const joSS=SpreadsheetApp.openById(JO_SOURCE_ID);
-  const joSheet=joSS.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
   sourceDiag.joOpenMs=Date.now()-phaseStarted;
+  phaseStarted=Date.now();
+  const joSheet=joSS.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
+  sourceDiag.joSheetLookupMs=Date.now()-phaseStarted;
   const classByJob={}, joRows=[];
   const classificationStartRow=Math.min(2272,JO_SOURCE_START_ROW);
   const joLast=joSheet?joSheet.getLastRow():0;sourceDiag.joLastRow=joLast;
@@ -271,7 +278,9 @@ function getFGTSMonitoringRecords_(searchText) {
     phaseStarted=Date.now();
     joRows.push(...joSheet.getRange(classificationStartRow,1,joLast-classificationStartRow+1,14).getDisplayValues());
     sourceDiag.joReadMs=Date.now()-phaseStarted;sourceDiag.joRowsRead=joRows.length;
+    phaseStarted=Date.now();
     joRows.forEach(r=>{const so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(!so||!item)return;const key=fgtsJobKey_(so,item);if(!classByJob[key]&&String(r[6]||'').trim())classByJob[key]=String(r[6]).trim();});
+    sourceDiag.classificationMapBuildMs=Date.now()-phaseStarted;
     phaseStarted=Date.now();
     const db=SpreadsheetApp.openById(DATABASE_ID),overrideSheet=db.getSheetByName(JO_OVERRIDE_SHEET);
     sourceDiag.databaseOpenMs=Date.now()-phaseStarted;
@@ -287,6 +296,7 @@ function getFGTSMonitoringRecords_(searchText) {
     }
   }
   const query=String(searchText||'').trim().toLowerCase(),records=[];
+  phaseStarted=Date.now();
   rows.forEach(r=>{
     const so=String(r[4]||'').trim(),item=String(r[6]||'').trim();
     const received=joDate_(formatCell_(r[2])),finished=joDate_(formatCell_(r[3]));
@@ -296,7 +306,7 @@ function getFGTSMonitoringRecords_(searchText) {
     const record={'Classification':classByJob[fgtsJobKey_(so,item)]||'Others','Lead Days':leadDays,'Date Received':received,'Date Finish':finished,'S.O. no.':so,'Client':r[5]||'','Item no.':item,'Panel Name':r[7]||'','Qty':Number(String(r[8]||'').replace(/,/g,''))||r[8]||'','FGTS no.':r[9]||'','QC-In Charge':r[10]||'','Remarks':r[11]||'','Category':r[13]||''};
     if(!query||Object.values(record).join(' ').toLowerCase().includes(query))records.push(record);
   });
-  records.reverse();sourceDiag.recordsBuilt=records.length;sourceDiag.totalMs=Date.now()-sourceStarted;
+  records.reverse();sourceDiag.recordBuildMs=Date.now()-phaseStarted;sourceDiag.recordsBuilt=records.length;sourceDiag.totalMs=Date.now()-sourceStarted;
   return {ok:true,records:records,fields:FGTS_HEADERS,_sourceDiagnostics:sourceDiag};
 }
 function fgtsJobKey_(so,item){return JSON.stringify([String(so||'').trim().toUpperCase(),String(item||'').trim().toUpperCase()]);}
