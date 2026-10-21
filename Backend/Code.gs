@@ -100,37 +100,73 @@ function getExternalJORecords_(searchText) {
   const saved=overrideSheet&&overrideSheet.getLastRow()>1?overrideSheet.getDataRange().getDisplayValues().slice(1):[];
   const overrides={}; saved.forEach(r=>{if(r[0])overrides[String(r[0])]=r;});
 
-  // Build indexes once instead of repeatedly scanning every transfer/allocation
-  // for every source J.O row. This keeps the work close to linear as data grows.
+  // Build J.O transfer summaries by S.O. + Item No. (FGTS source has no J.O number).
+  // FGTS source rows and internal QC allocations are merged, with cross-source
+  // duplicate protection so the same allocation is not counted twice.
+  const summaryByJob={};
+  const allocationSeenByJob={};
+  const ensureSummary=(key)=>{
+    if(!summaryByJob[key])summaryByJob[key]={transferred:0,fgts:new Set(),dates:[]};
+    if(!allocationSeenByJob[key])allocationSeenByJob[key]=new Set();
+    return summaryByJob[key];
+  };
+  const addAllocation=(key,fgts,qc,qty,date,uniqueHint)=>{
+    if(!key||!key) return;
+    const summary=ensureSummary(key);
+    const fgtsText=String(fgts||'').trim();
+    const qcText=String(qc||'').trim().toUpperCase();
+    const qtyNum=Number(String(qty||0).replace(/,/g,''))||0;
+    const dateText=formatCell_(date);
+    // With an FGTS number, dedupe the same FGTS/QC/Qty/finish-date allocation
+    // across the external FGTS sheet and internal Transfer Monitoring.
+    // Without an FGTS number, keep separate source rows/allocations distinct.
+    const identity=fgtsText
+      ?JSON.stringify([fgtsText.toUpperCase(),qcText,qtyNum,dateText])
+      :JSON.stringify(['NO-FGTS',qcText,qtyNum,dateText,String(uniqueHint||'')]);
+    if(allocationSeenByJob[key].has(identity))return;
+    allocationSeenByJob[key].add(identity);
+    summary.transferred+=qtyNum;
+    if(fgtsText)summary.fgts.add(fgtsText);
+    if(dateText)summary.dates.push(dateText);
+  };
+
+  // External FGTS Monitoring is the primary record source for FGTS allocations.
+  const fgtsSS=SpreadsheetApp.openById(FGTS_SOURCE_ID);
+  const fgtsSheet=fgtsSS.getSheets().find(s=>s.getSheetId()===FGTS_SOURCE_GID);
+  if(!fgtsSheet)throw new Error('Could not find FGTS source sheet tab gid '+FGTS_SOURCE_GID+'.');
+  if(fgtsSheet.getLastRow()>=FGTS_SOURCE_START_ROW){
+    const fgtsRows=fgtsSheet.getRange(FGTS_SOURCE_START_ROW,1,fgtsSheet.getLastRow()-FGTS_SOURCE_START_ROW+1,14).getValues();
+    fgtsRows.forEach((r,i)=>{
+      const so=String(r[4]||'').trim(),item=String(r[6]||'').trim();
+      if(!so||!item)return;
+      if(!String(r[9]||'').trim()&&!String(r[10]||'').trim()&&!String(r[8]||'').trim())return;
+      const key=fgtsJobKey_(so,item);
+      addAllocation(key,r[9],r[10],r[8],r[3],'FGTS-ROW-'+(FGTS_SOURCE_START_ROW+i));
+    });
+  }
+
+  // Include internal allocations as well, but skip any allocation already
+  // represented by the same FGTS/QC/Qty/finish-date combination above.
   const transferSheet=db.getSheetByName(TRANSFER_SHEET), allocSheet=db.getSheetByName(ALLOCATION_SHEET);
   const transferRows=transferSheet&&transferSheet.getLastRow()>1
     ?transferSheet.getRange(2,1,transferSheet.getLastRow()-1,TRANSFER_HEADERS.length).getDisplayValues():[];
-  const allocs=allocSheet&&allocSheet.getLastRow()>1?allocSheet.getDataRange().getValues().slice(1):[];
+  const allocs=allocSheet&&allocSheet.getLastRow()>1
+    ?allocSheet.getRange(2,1,allocSheet.getLastRow()-1,ALLOCATION_HEADERS.length).getValues():[];
   const allocsByTransfer={};
   allocs.forEach(a=>{
-    const id=String(a[1]||''); if(!id)return;
+    const id=String(a[1]||'');if(!id)return;
     if(!allocsByTransfer[id])allocsByTransfer[id]=[];
     allocsByTransfer[id].push(a);
   });
-  const summaryByJob={};
-  const jobKey=(so,item,jo)=>JSON.stringify([String(so||'').trim(),String(item||'').trim(),String(jo||'').trim()]);
-  const joIndex=TRANSFER_HEADERS.indexOf('J.O'), soIndex=TRANSFER_HEADERS.indexOf('S.O');
-  const itemIndex=TRANSFER_HEADERS.indexOf('Item No.'), transferIdIndex=TRANSFER_HEADERS.indexOf('Transfer ID');
+  const soIndex=TRANSFER_HEADERS.indexOf('S.O'),itemIndex=TRANSFER_HEADERS.indexOf('Item No.');
+  const transferIdIndex=TRANSFER_HEADERS.indexOf('Transfer ID');
   transferRows.forEach(t=>{
-    const id=String(t[transferIdIndex]||'');
-    const linked=allocsByTransfer[id]||[];
+    const id=String(t[transferIdIndex]||''),linked=allocsByTransfer[id]||[];
     if(!linked.length)return;
-    const key=jobKey(t[soIndex],t[itemIndex],t[joIndex]);
-    if(!summaryByJob[key])summaryByJob[key]={transferred:0,fgts:new Set(),dates:[]};
-    const summary=summaryByJob[key];
-    linked.forEach(a=>{
-      summary.transferred+=Number(a[4])||0;
-      const fgts=String(a[3]||'').trim(); if(fgts)summary.fgts.add(fgts);
-      const date=a[5];
-      if(date instanceof Date||String(date||'').trim()){
-        const formatted=formatCell_(date); if(formatted)summary.dates.push(formatted);
-      }
-    });
+    const so=String(t[soIndex]||'').trim(),item=String(t[itemIndex]||'').trim();
+    if(!so||!item)return;
+    const key=fgtsJobKey_(so,item);
+    linked.forEach((a,i)=>addAllocation(key,a[3],a[2],a[4],a[5],'ALLOC-'+id+'-'+i));
   });
 
   const q=String(searchText||'').trim().toLowerCase(), records=[];
@@ -138,7 +174,7 @@ function getExternalJORecords_(searchText) {
     const row=JO_SOURCE_START_ROW+i, jo=String(r[0]||'').trim(); if(!jo)return;
     const key='SRC-'+row, qty=Number(String(r[3]||'').replace(/,/g,''))||0;
     const o={'Record ID':key,'CLASSIFICATION':r[6]||'','J.O':jo,'S.O':r[1]||'','Received':joDate_(r[10]),'Delivery Date':joDate_(r[13]),'Client':r[7]||'','Item No.':r[8]||'','Panel Name':r[9]||'','Qty':qty,'Unit':r[4]||'','Transferred':0,'Balance':qty,'FGTS No.':'','Date Served':'','Remarks':'','Status':'Not Served','Timeliness':'Pending'};
-    const summary=summaryByJob[jobKey(o['S.O'],o['Item No.'],jo)];
+    const summary=summaryByJob[fgtsJobKey_(o['S.O'],o['Item No.'])];
     if(summary){
       o.Transferred=summary.transferred;
       o.Balance=Math.max(0,qty-o.Transferred);
