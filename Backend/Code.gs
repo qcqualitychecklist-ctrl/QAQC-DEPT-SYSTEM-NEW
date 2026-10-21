@@ -34,7 +34,11 @@ function readModuleCache_(key){
   try{const packed=CacheService.getScriptCache().get(key);if(!packed)return null;const bytes=Utilities.base64Decode(packed);const json=Utilities.ungzip(Utilities.newBlob(bytes)).getDataAsString('UTF-8');return JSON.parse(json);}catch(e){return null;}
 }
 function writeModuleCache_(key,value){
-  try{const packed=Utilities.base64Encode(Utilities.gzip(Utilities.newBlob(JSON.stringify(value),'application/json')).getBytes());if(packed.length<95000)CacheService.getScriptCache().put(key,packed,20);}catch(e){}
+  try{
+    const packed=Utilities.base64Encode(Utilities.gzip(Utilities.newBlob(JSON.stringify(value),'application/json')).getBytes());
+    if(packed.length<95000){CacheService.getScriptCache().put(key,packed,20);return {stored:true,packedChars:packed.length};}
+    return {stored:false,packedChars:packed.length,reason:'response exceeds cache size limit'};
+  }catch(e){return {stored:false,reason:String(e&&e.message||e)};}
 }
 function invalidateModuleCache_(){
   try{const cache=CacheService.getScriptCache();const names=arguments.length?Array.from(arguments):['Transfer Monitoring','J.O Register','FGTS Monitoring'];names.forEach(name=>cache.remove('qaqc_module_v2_'+String(name).replace(/[^a-z0-9]/gi,'_')));}catch(e){}
@@ -68,17 +72,23 @@ function setupDatabase() {
 }
 
 function getModuleData(moduleName, searchText) {
+  const startedAt=Date.now();
   if (!['Transfer Monitoring','J.O Register','FGTS Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const query=String(searchText||'').trim();
   const cacheKey='qaqc_module_v2_'+moduleName.replace(/[^a-z0-9]/gi,'_');
-  if(!query){const cached=readModuleCache_(cacheKey);if(cached)return cached;}
+  if(!query){
+    const cacheStarted=Date.now(),cached=readModuleCache_(cacheKey),cacheReadMs=Date.now()-cacheStarted;
+    if(cached)return Object.assign({},cached,{_diagnostics:{cache:'HIT',cacheReadMs:cacheReadMs,serverMs:Date.now()-startedAt,recordCount:Array.isArray(cached.records)?cached.records.length:0}});
+  }
   let result;
   if(moduleName==='Transfer Monitoring')result=getTransferRecords(query);
   else if(moduleName==='J.O Register')result=getExternalJORecords_(query);
   else result=getFGTSMonitoringRecords_(query);
-  if(!query&&result&&result.ok)writeModuleCache_(cacheKey,result);
+  let cacheInfo=null;
+  if(!query&&result&&result.ok)cacheInfo=writeModuleCache_(cacheKey,result);
+  result=result||{};
+  result._diagnostics={cache:query?'BYPASSED (search query)':'MISS',serverMs:Date.now()-startedAt,recordCount:Array.isArray(result.records)?result.records.length:0,cacheStored:cacheInfo?cacheInfo.stored:null,cachePackedChars:cacheInfo&&cacheInfo.packedChars||null,cacheReason:cacheInfo&&cacheInfo.reason||null};
   return result;
-
 }
 
 function saveRecord(moduleName,input) {
