@@ -314,7 +314,7 @@ function saveTransfer(input) {
   const id=String(input['Record ID']||''), now=new Date(); let row=-1,old=null;
   if(id){const lastRow=sh.getLastRow();if(lastRow>1){const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(id).matchEntireCell(true).findNext();if(match){row=match.getRow();old=sh.getRange(row,1,1,TRANSFER_HEADERS.length).getValues()[0];}}if(row<0)throw new Error('Transfer record not found. Refresh and try again.');}
   const recordId=id||Utilities.getUuid(),transferId=old?String(old[3]):('TR-'+Utilities.getUuid().toUpperCase());
-  const linkedAllocations=getAllocationRows_(transferId);
+  const linkedAllocations=old?getAllocationRows_(transferId):[];
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
   if(String(input.Status||'')==='Passed'&&alreadyAllocated<qty)throw new Error('Status cannot be Passed until Done Qty meets the required Qty.');
@@ -322,7 +322,7 @@ function saveTransfer(input) {
   if(old && !String(input['Time Received']||'').trim()) inputObj['Time Received']=formatTimeCell_(old[5]);
   const out=TRANSFER_HEADERS.map((h,j)=>h==='Record ID'?recordId:h==='Created At'?(old?old[1]:now):h==='Updated At'?now:(inputObj[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
-  syncTransferSummary_(transferId);
+  if(old)syncTransferSummary_(transferId,linkedAllocations);
   invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,recordId:recordId,transferId:transferId,message:row>0?'Transfer updated.':'Transfer saved.'};
 }
@@ -457,12 +457,12 @@ function getAllocationRows_(transferId) {
   return matches.map(cell=>sh.getRange(cell.getRow(),1,1,ALLOCATION_HEADERS.length).getValues()[0]);
 }
 
-function syncTransferSummary_(transferId) {
+function syncTransferSummary_(transferId,allocationRows) {
   const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
   const lastRow=sh?sh.getLastRow():0;if(lastRow<2)return;
   const match=sh.getRange(2,4,lastRow-1,1).createTextFinder(String(transferId)).matchEntireCell(true).findNext();
   if(!match)return;
-  const rowIndex=match.getRow(),tr=sh.getRange(rowIndex,1,1,TRANSFER_HEADERS.length).getValues()[0],allocs=getAllocationRows_(transferId);
+  const rowIndex=match.getRow(),tr=sh.getRange(rowIndex,1,1,TRANSFER_HEADERS.length).getValues()[0],allocs=Array.isArray(allocationRows)?allocationRows:getAllocationRows_(transferId);
   const done=allocs.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   const qc=[...new Set(allocs.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', ');
   const fgts=[...new Set(allocs.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
