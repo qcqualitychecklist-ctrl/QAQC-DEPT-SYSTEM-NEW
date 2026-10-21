@@ -111,7 +111,7 @@ function getExternalJORecords_(searchText) {
     return summaryByJob[key];
   };
   const addAllocation=(key,fgts,qc,qty,date,uniqueHint)=>{
-    if(!key||!key) return;
+    if(!key) return;
     const summary=ensureSummary(key);
     const fgtsText=String(fgts||'').trim();
     const qcText=String(qc||'').trim().toUpperCase();
