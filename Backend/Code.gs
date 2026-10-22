@@ -16,6 +16,8 @@ const FGTS_HEADERS = ['Classification','Lead Days','Date Received','Date Finish'
 const JO_OVERRIDE_HEADERS = ['Source Row','Updated At','CLASSIFICATION','J.O','S.O','Received','Delivery Date','Client','Item No.','Panel Name','Qty','Unit','Transferred','Balance','FGTS No.','Date Served','Remarks','Status','Timeliness'];
 const TRANSFER_SHEET = 'Transfer Monitoring';
 const ALLOCATION_SHEET = 'QC Allocation Details';
+const REWORK_SHEET = 'Rework Monitoring';
+const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
 const JO_HEADERS = ['Record ID','Created At','Updated At','J.O No','S.O No','Customer','Item No','Description','Quantity','Date Received','Target Date','Status','Remarks'];
 const TRANSFER_HEADERS = ['Record ID','Created At','Updated At','Transfer ID','Date Received','Time Received','Section','Transfer No.','J.O','S.O','Client','Item No.','Panel Name','Qty','Location','Status','Done Qty','Remaining Qty','QC In Charge','FGTS No.','Date Finished','Status Remark','Remarks','Reminders'];
 const ALLOCATION_HEADERS = ['Allocation ID','Transfer ID','QC In Charge','FGTS No.','Qty','Date Finished','Allocation Remarks','Created At','Updated At','Category'];
@@ -44,14 +46,14 @@ function getSystemStatus() {
   try {
     const ss = SpreadsheetApp.openById(DATABASE_ID);
     return {ok:true,databaseName:ss.getName(),existingSheets:ss.getSheets().map(s=>s.getName()),
-      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET]};
+      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,REWORK_SHEET]};
   } catch (e) { return {ok:false,message:String(e.message||e)}; }
 }
 
 function setupDatabase() {
   const ss = SpreadsheetApp.openById(DATABASE_ID);
   const created = [];
-  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS]].forEach(pair=>{
+  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_SHEET,REWORK_HEADERS]].forEach(pair=>{
     let sh=ss.getSheetByName(pair[0]);
     if (!sh) { sh=ss.insertSheet(pair[0]); created.push(pair[0]); }
     if (sh.getLastRow()===0) {
@@ -68,7 +70,7 @@ function setupDatabase() {
 }
 
 function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) {
-  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
+  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const query=String(searchText||'').trim();
   // v3 stores the records already sorted, avoiding a full-array sort on the
   // immediate follow-up request used by the first-50 loading flow.
@@ -81,6 +83,7 @@ function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) 
   if(!result){
     if(moduleName==='Transfer Monitoring')result=getTransferRecords(query);
     else if(moduleName==='J.O Register')result=getExternalJORecords_(query);
+    else if(moduleName==='Rework Monitoring')result=getReworkRecords_(query);
     else result=getFGTSMonitoringRecords_(query);
   }
   if(!result||!result.ok)return result;
@@ -99,8 +102,22 @@ function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) 
   });
 }
 
+
+function getReworkRecords_(searchText) {
+  const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(REWORK_SHEET);
+  if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:REWORK_HEADERS};
+  const values=sh.getDataRange().getDisplayValues(), headers=values[0].map(v=>String(v||'').trim());
+  const query=String(searchText||'').trim().toLowerCase(), records=[];
+  values.slice(1).forEach(row=>{
+    const record={}; headers.forEach((header,i)=>{if(header)record[header]=row[i]||'';});
+    if(!REWORK_HEADERS.some(header=>Object.prototype.hasOwnProperty.call(record,header)))return;
+    if(!query||Object.values(record).join(' ').toLowerCase().includes(query))records.push(record);
+  });
+  return {ok:true,records:records,fields:REWORK_HEADERS};
+}
+
 function sortModuleRecordsNewestFirst_(moduleName, records) {
-  const dateField=moduleName==='J.O Register'?'Received':'Date Received';
+  const dateField=moduleName==='J.O Register'?'Received':moduleName==='Rework Monitoring'?'Date Issue':'Date Received';
   return (records||[]).map((record,index)=>({record:record,index:index,date:joParseDate_(record&&record[dateField])}))
     .sort((a,b)=>{
       const at=a.date?a.date.getTime():-Infinity,bt=b.date?b.date.getTime():-Infinity;
