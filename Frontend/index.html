@@ -150,7 +150,7 @@ function loadRecords(useCache=false){
  const hasCachedFull=useCache&&Object.prototype.hasOwnProperty.call(recordCache,cacheKey);
  tablePage=1;
  if(hasCachedFull){records=recordCache[cacheKey];recordsLoadedFully=true;renderTable()}
- else{records=[];recordsLoadedFully=false;el('tbody').innerHTML='<tr><td class="empty">Loading first 50 records…</td></tr>'}
+ else{records=[];recordsLoadedFully=false;renderTable()}
  callServer('getModuleData',[requestedModule,'',1,PAGE_SIZE,false],first=>{
    if(token!==loadRequestToken||currentPage!==requestedModule||!first||!first.ok)return;
    if(!hasCachedFull){records=first.records||[];recordsLoadedFully=false;renderTable()}
