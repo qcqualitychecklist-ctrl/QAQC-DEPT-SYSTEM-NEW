@@ -105,7 +105,7 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 .fgts-category-badge.category-motor-control-center{background:#f3e8ff;border-color:#d8b4fe;color:#6b21a8}
 .fgts-category-badge.category-panelboards{background:#fef9c3;border-color:#fde047;color:#854d0e}
 .fgts-category-badge.category-switchgear{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
-.pagination{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:12px 2px;flex-wrap:wrap}.pagination button{min-width:84px}.pagination-label{color:var(--muted);font-size:12px;min-width:110px;text-align:center}</style></head><body>
+.pagination{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:9px 2px;flex-wrap:wrap}.pagination .page-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:64px;padding:5px 9px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#334155;font-size:10px;font-weight:700;line-height:1.2;box-shadow:0 1px 2px #0f172a0a;transition:background .15s,border-color .15s,box-shadow .15s}.pagination .page-btn:not(:disabled):hover{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8;box-shadow:0 2px 5px #1d4ed81a}.pagination .page-btn:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}.pagination .page-btn:disabled{opacity:.42;cursor:not-allowed;background:#f8fafc}.pagination-label{color:var(--muted);font-size:10px;min-width:80px;text-align:center}.pagination-label.is-loading{display:inline-flex;align-items:center;justify-content:center;min-width:auto;padding:4px 8px;border:1px solid #bfdbfe;border-radius:6px;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:700;line-height:1.2}</style></head><body>
 <div class="app">
 <aside class="sidebar"><div class="brand"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></div><div class="navlabel">Main Menu</div>
 <nav class="nav"><button class="active" data-page="Transfer Monitoring" onclick="switchPage('Transfer Monitoring')"><span>⇄</span>Transfer Monitoring</button><button data-page="J.O Register" onclick="switchPage('J.O Register')"><span>▦</span>J.O Register</button><button data-page="FGTS Monitoring" onclick="switchPage('FGTS Monitoring')"><span>▤</span>FGTS Monitoring</button></nav></aside>
@@ -176,9 +176,9 @@ if(tablePage>totalPages)tablePage=totalPages;
 const pageStart=(tablePage-1)*PAGE_SIZE;
 const pageRows=shown.slice(pageStart,pageStart+PAGE_SIZE);
 el('thead').innerHTML='';el('tbody').innerHTML='';const hr=document.createElement('tr');heads.forEach(h=>{const th=document.createElement('th');th.textContent=isJO&&h==='CLASSIFICATION'?'Classification':h;hr.appendChild(th)});el('thead').appendChild(hr);
-el('count').textContent=recordsLoadedFully?(filteredCount?'Showing '+(pageStart+1)+'–'+Math.min(pageStart+PAGE_SIZE,filteredCount)+' of '+filteredCount+' records':'0 records'):'Showing '+Math.min(records.length,PAGE_SIZE)+' records · loading remaining records…';
+el('count').textContent=recordsLoadedFully?(filteredCount?'Showing '+(pageStart+1)+'–'+Math.min(pageStart+PAGE_SIZE,filteredCount)+' of '+filteredCount+' records':'0 records'):'Showing '+Math.min(records.length,PAGE_SIZE)+' records';
 renderPagination(filteredCount);
-if(!pageRows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent=recordsLoadedFully?'No records found.':'Loading remaining records…';tr.appendChild(td);el('tbody').appendChild(tr);return}
+if(!pageRows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent=recordsLoadedFully?'No records found.':'Loading';tr.appendChild(td);el('tbody').appendChild(tr);return}
 pageRows.forEach(rec=>{const tr=document.createElement('tr');heads.forEach(h=>{const td=document.createElement('td');if(h==='Action'){td.className='actioncell';if(!isFGTS&&!isJO){td.append(button('FGTS/QC Allocation','small primary',()=>openAllocations(rec)),document.createTextNode(' '),button('Edit','small',()=>openEdit(rec)),document.createTextNode(' '),button('Delete','small danger',()=>removeTransfer(rec)))}else if(isJO)td.append(button('Edit','small',()=>openEditJO(rec)))}
 else if(!isJO&&h==='Status'){const s=document.createElement('select');[...STATUS_OPTIONS,...(rec.Status==='Passed'?['Passed']:[])].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o)});s.value=rec.Status||'Ongoing';s.className='status-select '+statusClass(rec.Status);s.onchange=()=>{if(s.value==='Passed'){alert('Passed will be set automatically only when Done Qty meets the required Qty.');s.value=rec.Status||'Ongoing';return}quickStatus(rec,s.value)};td.appendChild(s)}
 else if(!isJO&&!isFGTS&&h==='Reminders'){if(rec.Reminders){const p=document.createElement('span');p.className='pill delay';p.textContent=rec.Reminders;td.appendChild(p)}}
@@ -186,12 +186,15 @@ else{let value=rec[h]??'';if((isFGTS&&(h==='Classification'||h==='Category'))||(
 function renderPagination(filteredCount){
  const host=el('pagination');if(!host)return;host.innerHTML='';
  const pages=Math.max(1,Math.ceil(filteredCount/PAGE_SIZE));
- const prev=button('Previous','',()=>{if(tablePage>1){tablePage--;renderTable()}});
+ const prev=button('‹ Prev','page-btn',()=>{if(tablePage>1){tablePage--;renderTable()}});
+ prev.type='button';prev.title='Previous 50 records';prev.setAttribute('aria-label','Previous page');
  prev.disabled=tablePage<=1;host.appendChild(prev);
  const label=document.createElement('span');label.className='pagination-label';
- label.textContent=recordsLoadedFully?'Page '+tablePage+' of '+pages:(records.length?'Preparing pages…':'Loading…');
+ if(recordsLoadedFully){label.textContent='Page '+tablePage+' of '+pages}
+ else{label.textContent='Loading';label.classList.add('is-loading');label.setAttribute('role','status');label.setAttribute('aria-live','polite')}
  host.appendChild(label);
- const next=button('Next','',()=>{if(recordsLoadedFully&&tablePage<pages){tablePage++;renderTable()}});
+ const next=button('Next ›','page-btn',()=>{if(recordsLoadedFully&&tablePage<pages){tablePage++;renderTable()}});
+ next.type='button';next.title='Next 50 records';next.setAttribute('aria-label','Next page');
  next.disabled=!recordsLoadedFully||tablePage>=pages;host.appendChild(next);
 }
 
