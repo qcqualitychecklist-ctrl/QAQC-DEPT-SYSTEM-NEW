@@ -70,17 +70,24 @@ function setupDatabase() {
 function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) {
   if (!['Transfer Monitoring','J.O Register','FGTS Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const query=String(searchText||'').trim();
-  const cacheKey='qaqc_module_v2_'+moduleName.replace(/[^a-z0-9]/gi,'_');
-  let result=null;
-  if(!query)result=readModuleCache_(cacheKey);
+  // v3 stores the records already sorted, avoiding a full-array sort on the
+  // immediate follow-up request used by the first-50 loading flow.
+  const cacheKey='qaqc_module_v3_'+moduleName.replace(/[^a-z0-9]/gi,'_');
+  let result=null,loadedFromCache=false;
+  if(!query){
+    result=readModuleCache_(cacheKey);
+    loadedFromCache=!!(result&&result.ok);
+  }
   if(!result){
     if(moduleName==='Transfer Monitoring')result=getTransferRecords(query);
     else if(moduleName==='J.O Register')result=getExternalJORecords_(query);
     else result=getFGTSMonitoringRecords_(query);
-    if(!query&&result&&result.ok)writeModuleCache_(cacheKey,result);
   }
   if(!result||!result.ok)return result;
-  result.records=sortModuleRecordsNewestFirst_(moduleName,result.records||[]);
+  if(!loadedFromCache){
+    result.records=sortModuleRecordsNewestFirst_(moduleName,result.records||[]);
+    if(!query)writeModuleCache_(cacheKey,result);
+  }
   if(returnAll===true)return result;
   const page=Math.max(1,parseInt(pageNumber,10)||1);
   const size=Math.min(100,Math.max(1,parseInt(pageSize,10)||50));
