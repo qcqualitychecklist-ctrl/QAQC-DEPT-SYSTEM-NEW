@@ -48,7 +48,7 @@ function writeModuleCache_(key,value){
   try{const packed=Utilities.base64Encode(Utilities.gzip(Utilities.newBlob(JSON.stringify(value),'application/json')).getBytes());if(packed.length<95000)CacheService.getScriptCache().put(key,packed,20);}catch(e){}
 }
 function invalidateModuleCache_(){
-  try{const cache=CacheService.getScriptCache();const names=arguments.length?Array.from(arguments):['Transfer Monitoring','J.O Register','FGTS Monitoring'];names.forEach(name=>cache.remove('qaqc_module_v2_'+String(name).replace(/[^a-z0-9]/gi,'_')));}catch(e){}
+  try{const cache=CacheService.getScriptCache();const names=arguments.length?Array.from(arguments):['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring'];names.forEach(name=>{const key=String(name).replace(/[^a-z0-9]/gi,'_');cache.remove('qaqc_module_v2_'+key);cache.remove('qaqc_module_v3_'+key);});}catch(e){}
 }
 
 function getSystemStatus() {
