@@ -164,6 +164,39 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 @media(max-width:900px){#recordFilters.rework-filterbar{grid-template-columns:repeat(2,minmax(0,1fr))}.rework-dashboard .dash-value{font-size:20px}}
 @media(max-width:700px){#dashboardCards.rework-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}.rework-detail-grid{grid-template-columns:1fr}.rework-assignment-row{grid-template-columns:1fr}.rework-table{min-width:900px}#reworkModal .dialog{padding:12px}#reworkModal .dialoghead{top:-12px}.rework-detail-meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:460px){#recordFilters.rework-filterbar{grid-template-columns:1fr}.rework-dashboard .dash-card{padding:9px}.rework-dashboard .dash-label{white-space:normal}}
+
+/* Rework UI refinement — clearer hierarchy, table scanning, and mobile form layout */
+#dashboardCards.rework-dashboard .dash-card{position:relative;overflow:hidden;min-height:78px}
+#dashboardCards.rework-dashboard .dash-card:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:currentColor;opacity:.22}
+#recordFilters.rework-filterbar{align-items:end;border:1px solid #e1e8f1;border-radius:10px;background:#f8fafc}
+.rework-table thead th{position:sticky;top:0;z-index:2;box-shadow:0 1px 0 #d8e1ed}
+.rework-table tbody tr{transition:background-color .12s ease}
+.rework-table tbody tr:not(.rework-details-row):nth-child(even) td{background:#fbfcfe}
+.rework-table tbody tr:not(.rework-details-row):hover td{background:#eef6ff}
+.rework-table .rework-details-row:hover td{background:#f1f6fc}
+.rework-detail-card h4{display:flex;align-items:center;gap:7px}
+.rework-detail-card h4:before{content:"";width:4px;height:15px;flex:0 0 4px;border-radius:3px;background:#5b8bd9}
+.rework-detail-meta>div{border:1px solid #edf1f6}
+.rework-form-detail{position:relative}
+.rework-form-detail-head h4{font-size:13px}
+.rework-assignment-row{padding:9px;border:1px solid #e1e8f1;border-radius:8px;background:#fff}
+#reworkModal .dialog{max-height:92vh;overflow:auto}
+#reworkModal .field input:hover,#reworkModal .field select:hover,#reworkModal .field textarea:hover{border-color:#9db4d1}
+#reworkModal .actions button{min-height:36px}
+#reworkModal #reworkSave{font-weight:700}
+@media(max-width:760px){
+ #dashboardCards.rework-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #recordFilters.rework-filterbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .rework-detail-grid{grid-template-columns:minmax(0,1fr)}
+ #reworkModal .dialog{width:calc(100vw - 16px);max-height:94vh;padding:14px}
+ #reworkModal .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #reworkModal .rework-assignment-row{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:420px){
+ #recordFilters.rework-filterbar{grid-template-columns:minmax(0,1fr)}
+ #reworkModal .fields{grid-template-columns:minmax(0,1fr)}
+ #dashboardCards.rework-dashboard .dash-value{font-size:20px}
+}
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
