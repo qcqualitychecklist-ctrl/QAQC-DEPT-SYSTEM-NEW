@@ -1,9 +1,10 @@
-name: Validate Gmail-style pagination branch
+name: Validate QAQC frontend/backend syntax
 
 on:
   push:
     branches:
       - 'feature/gmail-style-pagination'
+      - 'fix/module-dashboard-switch-loading'
     paths:
       - 'Backend/**'
       - 'Frontend/**'
@@ -55,11 +56,11 @@ jobs:
           if not parser.scripts:
               raise SystemExit("No inline JavaScript script blocks found.")
           for i, pieces in enumerate(parser.scripts, start=1):
-              Path(f"/tmp/qaqc-pagination-{i}.js").write_text("".join(pieces), encoding="utf-8")
+              Path(f"/tmp/qaqc-syntax-{i}.js").write_text("".join(pieces), encoding="utf-8")
           print(f"Extracted {len(parser.scripts)} inline script block(s).")
           PY
           shopt -s nullglob
-          scripts=(/tmp/qaqc-pagination-*.js)
+          scripts=(/tmp/qaqc-syntax-*.js)
           if [ ${#scripts[@]} -eq 0 ]; then
             echo "::error::No inline frontend scripts were extracted."
             exit 1
