@@ -571,11 +571,28 @@ function saveReworkCase_(input) {
   const caseId=id||Utilities.getUuid();
   const mainRecord={'Rework ID':caseId,'Created At':oldMain?oldMain[1]:now,'Updated At':now,'Date Issue':input['Date Issue']||'','S.O':input['S.O']||'','J.O':input['J.O']||'','Client Name':input['Client Name']||'','Item no.':input['Item no.']||'','Panel Name':input['Panel Name']||'','Qty':input.Qty||'','Date Received':input['Date Received']||''};
   const mainOut=REWORK_MAIN_HEADERS.map(h=>mainRecord[h]??'');
-  if(mainRow>0)main.getRange(mainRow,1,1,mainOut.length).setValues([mainOut]);else main.appendRow(mainOut);
   const oldDetailRows=details.getLastRow()>1?details.getDataRange().getValues().slice(1):[];
   const oldAssignmentRows=assignments.getLastRow()>1?assignments.getDataRange().getValues().slice(1):[];
   const existingDetails=oldDetailRows.filter(r=>String(r[1])===caseId);
   const existingDetailMap=Object.create(null);existingDetails.forEach(r=>existingDetailMap[String(r[0])]=r);
+  const allDetailById=Object.create(null);oldDetailRows.forEach(r=>{const key=String(r[0]||'');if(key)allDetailById[key]=r;});
+  const allAssignmentById=Object.create(null);oldAssignmentRows.forEach(r=>{const key=String(r[0]||'');if(key)allAssignmentById[key]=r;});
+  // Validate submitted child IDs before any database writes. Existing IDs must belong to this case/detail.
+  detailsInput.forEach((d,i)=>{
+    const suppliedDetailId=String(d['Detail ID']||'').trim();
+    if(suppliedDetailId&&(!allDetailById[suppliedDetailId]||String(allDetailById[suppliedDetailId][1])!==caseId))
+      throw new Error('Detail '+(i+1)+' has an invalid Detail ID. Refresh the record and try again.');
+    const detailId=suppliedDetailId||'';
+    (Array.isArray(d.Assignments)?d.Assignments:[]).forEach((a,j)=>{
+      const suppliedAssignmentId=String(a['Assignment ID']||'').trim();
+      if(suppliedAssignmentId){
+        const oldAssignment=allAssignmentById[suppliedAssignmentId];
+        if(!detailId||!existingDetailMap[detailId]||!oldAssignment||String(oldAssignment[1])!==detailId)
+          throw new Error('Assignment '+(j+1)+' in detail '+(i+1)+' has an invalid Assignment ID. Refresh the record and try again.');
+      }
+    });
+  });
+  if(mainRow>0)main.getRange(mainRow,1,1,mainOut.length).setValues([mainOut]);else main.appendRow(mainOut);
   const savedDetailIds=[],detailOutput=[],assignmentOutput=[];
   detailsInput.forEach(d=>{
     const detailId=String(d['Detail ID']||'')||Utilities.getUuid(),old=existingDetailMap[detailId];
