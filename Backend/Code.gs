@@ -67,18 +67,39 @@ function setupDatabase() {
   return {ok:true,created:created,message:created.length?'Database tabs are ready.':'Database tabs already exist; existing records were preserved.'};
 }
 
-function getModuleData(moduleName, searchText) {
+function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) {
   if (!['Transfer Monitoring','J.O Register','FGTS Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const query=String(searchText||'').trim();
   const cacheKey='qaqc_module_v2_'+moduleName.replace(/[^a-z0-9]/gi,'_');
-  if(!query){const cached=readModuleCache_(cacheKey);if(cached)return cached;}
-  let result;
-  if(moduleName==='Transfer Monitoring')result=getTransferRecords(query);
-  else if(moduleName==='J.O Register')result=getExternalJORecords_(query);
-  else result=getFGTSMonitoringRecords_(query);
-  if(!query&&result&&result.ok)writeModuleCache_(cacheKey,result);
-  return result;
+  let result=null;
+  if(!query)result=readModuleCache_(cacheKey);
+  if(!result){
+    if(moduleName==='Transfer Monitoring')result=getTransferRecords(query);
+    else if(moduleName==='J.O Register')result=getExternalJORecords_(query);
+    else result=getFGTSMonitoringRecords_(query);
+    if(!query&&result&&result.ok)writeModuleCache_(cacheKey,result);
+  }
+  if(!result||!result.ok)return result;
+  result.records=sortModuleRecordsNewestFirst_(moduleName,result.records||[]);
+  if(returnAll===true)return result;
+  const page=Math.max(1,parseInt(pageNumber,10)||1);
+  const size=Math.min(100,Math.max(1,parseInt(pageSize,10)||50));
+  const total=result.records.length;
+  const start=(page-1)*size;
+  return Object.assign({},result,{
+    records:result.records.slice(start,start+size),
+    pagination:{page:page,pageSize:size,totalRecords:total,totalPages:Math.max(1,Math.ceil(total/size))}
+  });
+}
 
+function sortModuleRecordsNewestFirst_(moduleName, records) {
+  const dateField=moduleName==='J.O Register'?'Received':'Date Received';
+  return (records||[]).map((record,index)=>({record:record,index:index,date:joParseDate_(record&&record[dateField])}))
+    .sort((a,b)=>{
+      const at=a.date?a.date.getTime():-Infinity,bt=b.date?b.date.getTime():-Infinity;
+      if(at!==bt)return bt-at;
+      return a.index-b.index;
+    }).map(item=>item.record);
 }
 
 function saveRecord(moduleName,input) {
