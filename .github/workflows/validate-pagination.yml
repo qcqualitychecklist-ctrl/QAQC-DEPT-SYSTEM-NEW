@@ -5,6 +5,7 @@ on:
     branches:
       - 'feature/gmail-style-pagination'
       - 'fix/module-dashboard-switch-loading'
+      - 'ui/compact-pagination-loading'
     paths:
       - 'Backend/**'
       - 'Frontend/**'
