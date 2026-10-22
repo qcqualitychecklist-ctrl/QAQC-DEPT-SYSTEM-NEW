@@ -60,7 +60,7 @@ jobs:
           print(f"Extracted {len(parser.scripts)} inline script block(s).")
           PY
           shopt -s nullglob
-          scripts=(/tmp/qaqc-pagination-*.js)
+          scripts=(/tmp/qaqc-syntax-*.js)
           if [ ${#scripts[@]} -eq 0 ]; then
             echo "::error::No inline frontend scripts were extracted."
             exit 1
