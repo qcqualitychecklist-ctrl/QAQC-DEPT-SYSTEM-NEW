@@ -62,6 +62,17 @@ function getSystemStatus() {
 function setupDatabase() {
   const ss = SpreadsheetApp.openById(DATABASE_ID);
   const created = [];
+  // Preflight Rework headers before setup makes any changes. Rework readers/writers
+  // use fixed column positions, so an existing tab with missing/reordered headers
+  // must be stopped safely instead of appending headers into the wrong positions.
+  [[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS]].forEach(pair=>{
+    const existingSheet=ss.getSheetByName(pair[0]);
+    if(!existingSheet || existingSheet.getLastRow()===0) return;
+    const existingHeaders=existingSheet.getRange(1,1,1,Math.max(existingSheet.getLastColumn(),1)).getDisplayValues()[0];
+    const expected=pair[1];
+    const matches=expected.every((header,index)=>existingHeaders[index]===header);
+    if(!matches) throw new Error('The sheet "'+pair[0]+'" has missing or reordered headers. No setup changes were made. Check that the first '+expected.length+' columns match the Rework template before running Prepare Database again.');
+  });
   [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS]].forEach(pair=>{
     let sh=ss.getSheetByName(pair[0]);
     if (!sh) { sh=ss.insertSheet(pair[0]); created.push(pair[0]); }
