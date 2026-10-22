@@ -105,7 +105,7 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 .fgts-category-badge.category-motor-control-center{background:#f3e8ff;border-color:#d8b4fe;color:#6b21a8}
 .fgts-category-badge.category-panelboards{background:#fef9c3;border-color:#fde047;color:#854d0e}
 .fgts-category-badge.category-switchgear{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
-.pagination{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:12px 2px;flex-wrap:wrap}.pagination button{min-width:84px}.pagination-label{color:var(--muted);font-size:12px;min-width:110px;text-align:center}</style></head><body>
+.pagination{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:14px 2px;flex-wrap:wrap}.pagination button{min-width:104px;min-height:36px;padding:8px 14px;border:1px solid #cbd7e6;border-radius:9px;background:#fff;color:#24466f;font-size:12px;font-weight:700;box-shadow:0 1px 2px #142b4a0d;transition:background .15s,border-color .15s,transform .15s}.pagination button:not(:disabled):hover{background:#edf4ff;border-color:#7da5df;transform:translateY(-1px)}.pagination button:disabled{opacity:.42;box-shadow:none;cursor:not-allowed}.pagination-label{color:var(--muted);font-size:12px;min-width:112px;text-align:center;font-weight:600;padding:0 4px}.loading-state{display:flex;align-items:center;justify-content:center;gap:10px;padding:24px 12px;color:var(--muted);font-size:12px;font-weight:600}.loading-spinner{width:17px;height:17px;flex:0 0 17px;border:2px solid #d8e5f5;border-top-color:var(--blue);border-radius:50%;animation:qaqc-spin .75s linear infinite}@keyframes qaqc-spin{to{transform:rotate(360deg)}}</style></head><body>
 <div class="app">
 <aside class="sidebar"><div class="brand"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></div><div class="navlabel">Main Menu</div>
 <nav class="nav"><button class="active" data-page="Transfer Monitoring" onclick="switchPage('Transfer Monitoring')"><span>⇄</span>Transfer Monitoring</button><button data-page="J.O Register" onclick="switchPage('J.O Register')"><span>▦</span>J.O Register</button><button data-page="FGTS Monitoring" onclick="switchPage('FGTS Monitoring')"><span>▤</span>FGTS Monitoring</button></nav></aside>
@@ -178,7 +178,7 @@ const pageRows=shown.slice(pageStart,pageStart+PAGE_SIZE);
 el('thead').innerHTML='';el('tbody').innerHTML='';const hr=document.createElement('tr');heads.forEach(h=>{const th=document.createElement('th');th.textContent=isJO&&h==='CLASSIFICATION'?'Classification':h;hr.appendChild(th)});el('thead').appendChild(hr);
 el('count').textContent=recordsLoadedFully?(filteredCount?'Showing '+(pageStart+1)+'–'+Math.min(pageStart+PAGE_SIZE,filteredCount)+' of '+filteredCount+' records':'0 records'):'Showing '+Math.min(records.length,PAGE_SIZE)+' records · loading remaining records…';
 renderPagination(filteredCount);
-if(!pageRows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent=recordsLoadedFully?'No records found.':'Loading remaining records…';tr.appendChild(td);el('tbody').appendChild(tr);return}
+if(!pageRows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;if(recordsLoadedFully){td.className='empty';td.textContent='No records found.'}else{td.innerHTML='<div class="loading-state"><span class="loading-spinner" aria-hidden="true"></span><span>Loading records, please wait…</span></div>'}tr.appendChild(td);el('tbody').appendChild(tr);return}
 pageRows.forEach(rec=>{const tr=document.createElement('tr');heads.forEach(h=>{const td=document.createElement('td');if(h==='Action'){td.className='actioncell';if(!isFGTS&&!isJO){td.append(button('FGTS/QC Allocation','small primary',()=>openAllocations(rec)),document.createTextNode(' '),button('Edit','small',()=>openEdit(rec)),document.createTextNode(' '),button('Delete','small danger',()=>removeTransfer(rec)))}else if(isJO)td.append(button('Edit','small',()=>openEditJO(rec)))}
 else if(!isJO&&h==='Status'){const s=document.createElement('select');[...STATUS_OPTIONS,...(rec.Status==='Passed'?['Passed']:[])].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o)});s.value=rec.Status||'Ongoing';s.className='status-select '+statusClass(rec.Status);s.onchange=()=>{if(s.value==='Passed'){alert('Passed will be set automatically only when Done Qty meets the required Qty.');s.value=rec.Status||'Ongoing';return}quickStatus(rec,s.value)};td.appendChild(s)}
 else if(!isJO&&!isFGTS&&h==='Reminders'){if(rec.Reminders){const p=document.createElement('span');p.className='pill delay';p.textContent=rec.Reminders;td.appendChild(p)}}
@@ -186,13 +186,13 @@ else{let value=rec[h]??'';if((isFGTS&&(h==='Classification'||h==='Category'))||(
 function renderPagination(filteredCount){
  const host=el('pagination');if(!host)return;host.innerHTML='';
  const pages=Math.max(1,Math.ceil(filteredCount/PAGE_SIZE));
- const prev=button('Previous','',()=>{if(tablePage>1){tablePage--;renderTable()}});
- prev.disabled=tablePage<=1;host.appendChild(prev);
+ const prev=button('‹  Previous','',()=>{if(tablePage>1){tablePage--;renderTable()}});
+ prev.setAttribute('aria-label','Previous page');prev.disabled=tablePage<=1;host.appendChild(prev);
  const label=document.createElement('span');label.className='pagination-label';
- label.textContent=recordsLoadedFully?'Page '+tablePage+' of '+pages:(records.length?'Preparing pages…':'Loading…');
+ label.textContent=recordsLoadedFully?'Page '+tablePage+' of '+pages:(records.length?'Loading pages…':'Loading records…');
  host.appendChild(label);
- const next=button('Next','',()=>{if(recordsLoadedFully&&tablePage<pages){tablePage++;renderTable()}});
- next.disabled=!recordsLoadedFully||tablePage>=pages;host.appendChild(next);
+ const next=button('Next  ›','',()=>{if(recordsLoadedFully&&tablePage<pages){tablePage++;renderTable()}});
+ next.setAttribute('aria-label','Next page');next.disabled=!recordsLoadedFully||tablePage>=pages;host.appendChild(next);
 }
 
 function statusClass(status){return status==='Ongoing'?'status-ongoing':status==='Hold'?'status-hold':status==='For line up'?'status-lineup':status==='Passed'?'status-passed':''}
