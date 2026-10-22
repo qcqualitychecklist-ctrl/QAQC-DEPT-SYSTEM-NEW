@@ -259,6 +259,13 @@ const REWORK_CORRECTIVE=['To Correct Workmanship','To Complete Missing Component
 let reworkDetailCounter=0;
 const expandedReworkIds=new Set();
 function renderReworkTable(){
+ const fromLabel=el('monthFrom')?.parentElement?.querySelector('label'),toLabel=el('monthTo')?.parentElement?.querySelector('label');
+ if(fromLabel)fromLabel.textContent='Month From (Date Issue)';if(toLabel)toLabel.textContent='Month To (Date Issue)';
+ const statusSelect=el('statusFilter');const previousStatus=String(statusSelect.value||'');
+ if(![...statusSelect.options].some(o=>o.value==='Open'&&o.textContent==='Open')||![...statusSelect.options].some(o=>o.value==='Closed'&&o.textContent==='Closed')){
+  statusSelect.innerHTML='<option value="">All Statuses</option><option value="Open">Open</option><option value="Closed">Closed</option>';
+ }
+ if(previousStatus==='Open'||previousStatus==='Closed')statusSelect.value=previousStatus;
  const from=el('monthFrom')?.value||'',to=el('monthTo')?.value||'',status=el('statusFilter')?.value||'',q=String(el('search').value||'').trim().toLowerCase();
  let shown=records.filter(r=>{const date=String(r['Date Issue']||'').slice(0,7);if(from&&(!date||date<from))return false;if(to&&(!date||date>to))return false;if(status&&r['Status Summary']!==status)return false;if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;return true});
  const closed=shown.filter(r=>r['Status Summary']==='Closed').length,open=shown.filter(r=>r['Status Summary']==='Open').length,details=shown.reduce((n,r)=>n+(r.Details||[]).length,0);
