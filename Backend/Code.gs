@@ -578,13 +578,20 @@ function saveReworkCase_(input) {
   const allDetailById=Object.create(null);oldDetailRows.forEach(r=>{const key=String(r[0]||'');if(key)allDetailById[key]=r;});
   const allAssignmentById=Object.create(null);oldAssignmentRows.forEach(r=>{const key=String(r[0]||'');if(key)allAssignmentById[key]=r;});
   // Validate submitted child IDs before any database writes. Existing IDs must belong to this case/detail.
+  const seenDetailIds=Object.create(null),seenAssignmentIds=Object.create(null);
   detailsInput.forEach((d,i)=>{
     const suppliedDetailId=String(d['Detail ID']||'').trim();
+    if(suppliedDetailId&&seenDetailIds[suppliedDetailId])
+      throw new Error('The same Detail ID was submitted more than once. Refresh the record and try again.');
+    if(suppliedDetailId)seenDetailIds[suppliedDetailId]=true;
     if(suppliedDetailId&&(!allDetailById[suppliedDetailId]||String(allDetailById[suppliedDetailId][1])!==caseId))
       throw new Error('Detail '+(i+1)+' has an invalid Detail ID. Refresh the record and try again.');
     const detailId=suppliedDetailId||'';
     (Array.isArray(d.Assignments)?d.Assignments:[]).forEach((a,j)=>{
       const suppliedAssignmentId=String(a['Assignment ID']||'').trim();
+      if(suppliedAssignmentId&&seenAssignmentIds[suppliedAssignmentId])
+        throw new Error('The same Assignment ID was submitted more than once. Refresh the record and try again.');
+      if(suppliedAssignmentId)seenAssignmentIds[suppliedAssignmentId]=true;
       if(suppliedAssignmentId){
         const oldAssignment=allAssignmentById[suppliedAssignmentId];
         if(!detailId||!existingDetailMap[detailId]||!oldAssignment||String(oldAssignment[1])!==detailId)
@@ -601,7 +608,8 @@ function saveReworkCase_(input) {
     detailOutput.push(REWORK_DETAILS_HEADERS.map(h=>detailRecord[h]??''));
     (Array.isArray(d.Assignments)?d.Assignments:[]).forEach(a=>{
       const assignmentId=String(a['Assignment ID']||'')||Utilities.getUuid();
-      assignmentOutput.push([assignmentId,detailId,String(a['Person In-Charge']||'').trim(),String(a['Concern Section']||''),now,now]);
+      const oldAssignment=allAssignmentById[assignmentId];
+      assignmentOutput.push([assignmentId,detailId,String(a['Person In-Charge']||'').trim(),String(a['Concern Section']||''),oldAssignment?oldAssignment[4]:now,now]);
     });
   });
   const keptDetails=oldDetailRows.filter(r=>String(r[1])!==caseId);
