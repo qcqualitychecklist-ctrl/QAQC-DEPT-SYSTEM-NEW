@@ -282,7 +282,7 @@ function renderReworkTable(){
  });
 }
 function buildReworkDetailSummary(rec){
- const wrap=document.createElement('div'),grid=document.createElement('div');wrap.className='rework-detail-grid';
+ const wrap=document.createElement('div'),grid=document.createElement('div');grid.className='rework-detail-grid';
  const details=rec.Details||[];
  if(!details.length){wrap.textContent='No descriptions have been added yet.';return wrap}
  details.forEach((d,i)=>{
