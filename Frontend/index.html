@@ -253,14 +253,14 @@ function renderReworkTable(){
  const closed=shown.filter(r=>r['Status Summary']==='Closed').length,open=shown.filter(r=>r['Status Summary']==='Open').length,details=shown.reduce((n,r)=>n+(r.Details||[]).length,0);
  el('dashboardCards').innerHTML='';el('dashboardCards').classList.add('rework-dashboard');[['Rework Cases',shown.length,'rework-total'],['Open Cases',open,'rework-open'],['Closed Cases',closed,'rework-closed'],['Descriptions',details,'rework-descriptions']].forEach(v=>{const c=document.createElement('div');c.className='dash-card '+v[2];const l=document.createElement('div');l.className='dash-label';l.textContent=v[0];const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];c.append(l,n);el('dashboardCards').append(c)});
  const totalPages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));if(tablePage>totalPages)tablePage=totalPages;const start=(tablePage-1)*PAGE_SIZE,rows=shown.slice(start,start+PAGE_SIZE);
- const heads=['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description(s)','QC - in - Charge','Concern Section','Date Received','Lead Time','Status','Action'];el('thead').innerHTML='';el('tbody').innerHTML='';el('thead').closest('table').classList.remove('jo-table','fgts-table');el('thead').closest('table').classList.add('rework-table');
+ const heads=['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description(s)','QC - in - Charge','Concern Section','Lead Time','Status','Action'];el('thead').innerHTML='';el('tbody').innerHTML='';el('thead').closest('table').classList.remove('jo-table','fgts-table');el('thead').closest('table').classList.add('rework-table');
  const hr=document.createElement('tr');heads.forEach(x=>{const th=document.createElement('th');th.textContent=x;hr.append(th)});el('thead').append(hr);
  el('count').textContent=shown.length?(start+1)+'–'+Math.min(start+PAGE_SIZE,shown.length)+' of '+shown.length+' rework cases':'0 rework cases';
  renderPagination(shown.length);
  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent=recordsLoadedFully?'No rework records found.':'Loading rework records…';tr.append(td);el('tbody').append(tr);return}
  rows.forEach(rec=>{
   const tr=document.createElement('tr');
-  const vals={'Date Issue':rec['Date Issue'],'S.O':rec['S.O'],'J.O':rec['J.O'],'Client Name':rec['Client Name'],'Item no.':rec['Item no.'],'Panel Name':rec['Panel Name'],'Qty':rec.Qty,'Description(s)':rec['Description Summary']||((rec.Details||[]).length+' description(s)'),'QC - in - Charge':rec['QC - in - Charge'],'Concern Section':rec['Concern Section Summary'],'Date Received':rec['Date Received'],'Lead Time':rec['Lead Time'],'Status':rec['Status Summary']};
+  const vals={'Date Issue':rec['Date Issue'],'S.O':rec['S.O'],'J.O':rec['J.O'],'Client Name':rec['Client Name'],'Item no.':rec['Item no.'],'Panel Name':rec['Panel Name'],'Qty':rec.Qty,'Description(s)':rec['Description Summary']||((rec.Details||[]).length+' description(s)'),'QC - in - Charge':rec['QC - in - Charge'],'Concern Section':rec['Concern Section Summary'],'Lead Time':rec['Lead Time'],'Status':rec['Status Summary']};
   heads.forEach(key=>{const td=document.createElement('td');
    if(key==='Action'){td.className='actioncell';td.append(button(expandedReworkIds.has(rec['Rework ID'])?'Hide Details':'View Details','small',()=>{if(expandedReworkIds.has(rec['Rework ID']))expandedReworkIds.delete(rec['Rework ID']);else expandedReworkIds.add(rec['Rework ID']);renderReworkTable()}),document.createTextNode(' '),button('Edit','small primary',()=>openEditRework(rec)))}
    else if(key==='Status'){const p=document.createElement('span');p.className='rework-summary-pill '+(rec['Status Summary']==='Closed'?'closed':'');p.textContent=vals[key]||'No details';td.append(p)}
@@ -296,7 +296,7 @@ function reworkField(label,type,value,required,options){
  if(options)input=makeReworkSelect(options,value,!required);else{input=document.createElement(type==='textarea'?'textarea':'input');if(type!=='textarea')input.type=type;if(type==='number'){input.min='0';input.step='any'}}
  input.value=value==null?'':value;input.required=!!required;box.append(l,input);return {box,input};
 }
-const REWORK_MAIN_FIELDS=[['Date Issue','date',true],['S.O','text',false],['J.O','text',false],['Client Name','text',false],['Item no.','text',false],['Panel Name','text',false],['Qty','number',false],['Date Received','date',false],['QC - in - Charge','text',false]];
+const REWORK_MAIN_FIELDS=[['Date Issue','date',true],['S.O','text',false],['J.O','text',false],['Client Name','text',false],['Item no.','text',false],['Panel Name','text',false],['Qty','number',false],['QC - in - Charge','text',false]];
 const REWORK_SECTIONS=['Engineering','Machineries','Fabrication','PC','Busbarring','Final Assy','Warehouse','Wiring'];
 const REWORK_STATUSES=['Closed','Open'];
 const REWORK_TYPES=['Rework','Backjob'];
@@ -344,7 +344,15 @@ function submitRework(ev){
  ev.preventDefault();const data=collectReworkData();
  if(!data.Details.length){showStatus(false,'Add a description','Add at least one Rework Description.');return}
  for(let i=0;i<data.Details.length;i++){const d=data.Details[i];if(!d['Description of Rework']){showStatus(false,'Description required','Enter Description of Rework for entry '+(i+1)+'.');return}if(!d['Concern Section']){showStatus(false,'Concern Section required','Choose a Concern Section for description '+(i+1)+'.');return}if(!d.Assignments.length){showStatus(false,'Person required','Enter at least one Person In-Charge for description '+(i+1)+'.');return}}
- const btn=el('reworkSave');btn.disabled=true;callServer('saveRecord',['Rework Monitoring',data],r=>{btn.disabled=false;delete recordCache['Rework Monitoring::'];expandedReworkIds.add(r.recordId||data['Rework ID']);showStatus(true,r.message||'Rework saved.','Rework case and descriptions saved.');closeModal('reworkModal');loadRecords()},()=>btn.disabled=false);
+ const btn=el('reworkSave'),originalText=btn.textContent;btn.disabled=true;btn.textContent='Saving...';
+ const restoreButton=()=>{btn.disabled=false;btn.textContent=originalText};
+ try{
+  callServer('saveRecord',['Rework Monitoring',data],r=>{
+   restoreButton();
+   if(!r||r.ok===false){showStatus(false,'Save failed',r&&r.message?r.message:'No confirmation was returned by the server.');return}
+   delete recordCache['Rework Monitoring::'];expandedReworkIds.add(r.recordId||data['Rework ID']);showStatus(true,r.message||'Rework saved.','Rework case and descriptions saved.');closeModal('reworkModal');loadRecords();
+  },restoreButton);
+ }catch(err){restoreButton();showStatus(false,'Save failed',err&&err.message?err.message:String(err))}
 }
 
 
