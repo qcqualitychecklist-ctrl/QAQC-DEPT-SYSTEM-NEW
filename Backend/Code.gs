@@ -366,6 +366,9 @@ function saveReworkCase_(input) {
   const ss=SpreadsheetApp.openById(DATABASE_ID);
   const main=ss.getSheetByName(REWORK_MAIN_SHEET),details=ss.getSheetByName(REWORK_DETAILS_SHEET),assignments=ss.getSheetByName(REWORK_ASSIGNMENTS_SHEET);
   if(!main||!details||!assignments)throw new Error('Rework database tabs are missing. Use Prepare Database after this feature is deployed.');
+  const closedAtCol=REWORK_DETAILS_HEADERS.indexOf('Closed At')+1;
+  const detailHeader=details.getRange(1,1,1,Math.max(details.getLastColumn(),closedAtCol)).getDisplayValues()[0];
+  if(!detailHeader.includes('Closed At'))details.getRange(1,closedAtCol).setValue('Closed At').setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');
   const id=String(input['Rework ID']||''),now=new Date();
   const mainRows=main.getDataRange().getValues();let mainRow=-1,oldMain=null;
   if(id){for(let i=1;i<mainRows.length;i++)if(String(mainRows[i][0])===id){mainRow=i+1;oldMain=mainRows[i];break;}if(mainRow<0)throw new Error('Rework record not found. Refresh and try again.');}
