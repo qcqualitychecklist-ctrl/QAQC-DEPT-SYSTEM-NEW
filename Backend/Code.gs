@@ -75,7 +75,7 @@ function setupDatabase() {
     } else {
       const existing=sh.getRange(1,1,1,Math.max(sh.getLastColumn(),1)).getDisplayValues()[0];
       if (existing.indexOf(pair[1][0])<0) throw new Error('The sheet "'+pair[0]+'" already contains a different layout. No data was changed; please check the headers before continuing.');
-      pair[1].forEach(header=>{if(existing.indexOf(header)<0){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue(header).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');existing.push(header);}});
+      pair[1].forEach(header=>{if(existing.indexOf(header)<0){const expectedCol=pair[1].indexOf(header)+1;const col=!String(existing[expectedCol-1]||'').trim()?expectedCol:sh.getLastColumn()+1;sh.getRange(1,col).setValue(header).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');existing[col-1]=header;}});
     }
   });
   return {ok:true,created:created,message:created.length?'Database tabs are ready.':'Database tabs already exist; existing records were preserved.'};
