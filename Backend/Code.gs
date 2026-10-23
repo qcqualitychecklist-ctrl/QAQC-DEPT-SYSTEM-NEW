@@ -22,7 +22,7 @@ const REWORK_MAIN_SHEET = 'Rework Main';
 const REWORK_DETAILS_SHEET = 'Rework Details';
 const REWORK_ASSIGNMENTS_SHEET = 'Rework Assignments';
 const REWORK_MAIN_HEADERS = ['Rework ID','Created At','Updated At','Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Date Received','QC - in - Charge']; // Date Received is retained only for legacy storage.
-const REWORK_DETAILS_HEADERS = ['Detail ID','Rework ID','Created At','Updated At','Description of Rework','QC - in - Charge','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution','Concern Section','Closed At'];
+const REWORK_DETAILS_HEADERS = ['Detail ID','Rework ID','Created At','Updated At','Description of Rework','QC - in - Charge','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution','Concern Section','Closed At','Item no.','Panel Name','Qty'];
 const REWORK_ASSIGNMENT_HEADERS = ['Assignment ID','Detail ID','Person In-Charge','Concern Section','Created At','Updated At'];
 const REWORK_CONCERN_SECTIONS = ['Engineering','Machineries','Fabrication','PC','Busbarring','Final Assy','Warehouse','Wiring'];
 const REWORK_STATUS_OPTIONS = ['Closed','Open'];
@@ -156,6 +156,7 @@ function getReworkRecords_(searchText) {
       'Corrective Action / Resolution':String(d[10]||''),
       'Concern Section':String(d[11]||'')||(people.map(a=>a['Concern Section']).filter(Boolean)[0]||''),
       'Closed At':formatCell_(d[12]||(String(d[7]||'').trim().toLowerCase()==='closed'?d[3]:'')),
+      'Item no.':String(d[13]||''),'Panel Name':String(d[14]||''),'Qty':d[15]==null?'':String(d[15]),
       Assignments:people
     };
     (detailsByCase[caseId]||(detailsByCase[caseId]=[])).push(item);
@@ -164,6 +165,7 @@ function getReworkRecords_(searchText) {
   mainRows.forEach(r=>{
     const id=String(r[0]||'');if(!id)return;
     const detailList=detailsByCase[id]||[];
+    detailList.forEach(d=>{const isClosed=String(d.Status||'Open').trim().toLowerCase()==='closed';d['Lead Time']=reworkLeadTimeDays_(r[3],isClosed?(d['Closed At']||''):new Date());});
     const qc=String(r[11]||detailList.map(d=>d['QC - in - Charge']).find(Boolean)||'');
     const allClosed=detailList.length>0&&detailList.every(d=>String(d.Status||'Open').trim().toLowerCase()==='closed');
     const closureDates=allClosed?detailList.map(d=>String(d['Closed At']||'')).filter(Boolean).sort():[];
@@ -386,9 +388,8 @@ function saveReworkCase_(input) {
   const ss=SpreadsheetApp.openById(DATABASE_ID);
   const main=ss.getSheetByName(REWORK_MAIN_SHEET),details=ss.getSheetByName(REWORK_DETAILS_SHEET),assignments=ss.getSheetByName(REWORK_ASSIGNMENTS_SHEET);
   if(!main||!details||!assignments)throw new Error('Rework database tabs are missing. Use Prepare Database after this feature is deployed.');
-  const closedAtCol=REWORK_DETAILS_HEADERS.indexOf('Closed At')+1;
-  const detailHeader=details.getRange(1,1,1,Math.max(details.getLastColumn(),closedAtCol)).getDisplayValues()[0];
-  if(!detailHeader.includes('Closed At'))details.getRange(1,closedAtCol).setValue('Closed At').setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');
+  const detailHeader=details.getRange(1,1,1,Math.max(details.getLastColumn(),1)).getDisplayValues()[0];
+  REWORK_DETAILS_HEADERS.forEach((header,index)=>{if(!detailHeader.includes(header)){const expected=index+1;const col=!String(detailHeader[expected-1]||'').trim()?expected:details.getLastColumn()+1;details.getRange(1,col).setValue(header).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');detailHeader[col-1]=header;}});
   const id=String(input['Rework ID']||''),now=new Date();
   const mainRows=main.getDataRange().getValues();let mainRow=-1,oldMain=null;
   if(id){for(let i=1;i<mainRows.length;i++)if(String(mainRows[i][0])===id){mainRow=i+1;oldMain=mainRows[i];break;}if(mainRow<0)throw new Error('Rework record not found. Refresh and try again.');}
@@ -402,7 +403,7 @@ function saveReworkCase_(input) {
     if(!Array.isArray(d.Assignments)||!d.Assignments.length||d.Assignments.some(a=>!String(a['Person In-Charge']||'').trim()))throw new Error('Each description needs at least one Person In-Charge.');
   });
   const caseId=id||Utilities.getUuid();
-  const mainRecord={'Rework ID':caseId,'Created At':oldMain?oldMain[1]:now,'Updated At':now,'Date Issue':input['Date Issue']||'','S.O':input['S.O']||'','J.O':input['J.O']||'','Client Name':input['Client Name']||'','Item no.':input['Item no.']||'','Panel Name':input['Panel Name']||'','Qty':input.Qty||'','Date Received':oldMain?oldMain[10]:'','QC - in - Charge':String(input['QC - in - Charge']||'').trim()};
+  const mainRecord={'Rework ID':caseId,'Created At':oldMain?oldMain[1]:now,'Updated At':now,'Date Issue':input['Date Issue']||'','S.O':input['S.O']||'','J.O':input['J.O']||'','Client Name':input['Client Name']||'','Item no.':(detailsInput[0]&&detailsInput[0]['Item no.'])||input['Item no.']||'','Panel Name':(detailsInput[0]&&detailsInput[0]['Panel Name'])||input['Panel Name']||'','Qty':(detailsInput[0]&&detailsInput[0].Qty)||input.Qty||'','Date Received':oldMain?oldMain[10]:'','QC - in - Charge':String(input['QC - in - Charge']||'').trim()};
   const mainOut=REWORK_MAIN_HEADERS.map(h=>mainRecord[h]??'');
   const oldDetailRows=details.getLastRow()>1?details.getDataRange().getValues().slice(1):[];
   const oldAssignmentRows=assignments.getLastRow()>1?assignments.getDataRange().getValues().slice(1):[];
@@ -447,7 +448,7 @@ function saveReworkCase_(input) {
   detailsInput.forEach((d,detailIndex)=>{
     const detailId=String(d['Detail ID']||'')||Utilities.getUuid(),old=existingDetailMap[detailId],status=String(d.Status||'Open').trim();
     savedDetailIds.push(detailId);
-    const detailRecord={'Detail ID':detailId,'Rework ID':caseId,'Created At':old?old[2]:now,'Updated At':now,'Description of Rework':String(d['Description of Rework']||'').trim(),'QC - in - Charge':String(input['QC - in - Charge']||'').trim(),'Lead Time':caseLeadTime,'Status':status,'Rework or Back Job':String(d['Rework or Back Job']||'Rework'),'Category Issue':String(d['Category Issue']||''),'Corrective Action / Resolution':String(d['Corrective Action / Resolution']||''),'Concern Section':String(d['Concern Section']||''),'Closed At':detailClosureDates[detailIndex]};
+    const detailRecord={'Detail ID':detailId,'Rework ID':caseId,'Created At':old?old[2]:now,'Updated At':now,'Description of Rework':String(d['Description of Rework']||'').trim(),'QC - in - Charge':String(input['QC - in - Charge']||'').trim(),'Lead Time':status==='Closed'?reworkLeadTimeDays_(input['Date Issue'],detailClosureDates[detailIndex]):reworkLeadTimeDays_(input['Date Issue'],now),'Status':status,'Rework or Back Job':String(d['Rework or Back Job']||'Rework'),'Category Issue':String(d['Category Issue']||''),'Corrective Action / Resolution':String(d['Corrective Action / Resolution']||''),'Concern Section':String(d['Concern Section']||''),'Closed At':detailClosureDates[detailIndex],'Item no.':String(d['Item no.']||input['Item no.']||''),'Panel Name':String(d['Panel Name']||input['Panel Name']||''),'Qty':d.Qty==null?(input.Qty||''):d.Qty};
     detailOutput.push(REWORK_DETAILS_HEADERS.map(h=>detailRecord[h]??''));
     (Array.isArray(d.Assignments)?d.Assignments:[]).forEach(a=>{
       const assignmentId=String(a['Assignment ID']||'')||Utilities.getUuid();
