@@ -316,7 +316,6 @@ function renderReworkTable(){
   });
  });
 }
-function deleteReworkCase
 function deleteReworkCase(rec){const id=String(rec&&rec['Rework ID']||'');if(!id){showStatus(false,'Delete failed','Missing Rework ID.');return;}if(!confirm('Delete this entire rework case and all its descriptions and assignments? This cannot be undone.'))return;showStatus(true,'Deleting rework case','Please wait…');callServer('deleteReworkCase',[id],r=>{if(!r||!r.ok){showStatus(false,'Delete failed',r&&r.message||'Unable to delete rework case.');return;}delete recordCache['Rework Monitoring::'];recordsLoadedFully=false;loadRecords(false);showStatus(true,'Deleted',r.message||'Rework case deleted.');},err=>showStatus(false,'Delete failed',err&&err.message||String(err)));}
 function buildReworkDetailSummary(rec){
  const wrap=document.createElement('div'),meta=document.createElement('div');meta.className='rework-case-meta';
@@ -330,7 +329,6 @@ function buildReworkDetailSummary(rec){
  const fields=document.createElement('div');fields.className='rework-detail-meta';[['Category Issue',d['Category Issue']],['Corrective Action / Resolution',d['Corrective Action / Resolution']],['Concern Section',d['Concern Section']],['Rework or Back Job',d['Rework or Back Job']]].forEach(([name,value])=>{const item=document.createElement('div'),strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=name;span.textContent=value||'—';item.append(strong,span);fields.append(item)});detail.append(fields);
  const foot=document.createElement('div');foot.className='rework-detail-meta';[['Date Finished',String(d.Status||'').toLowerCase()==='closed'?(d['Closed At']||'—'):'—'],['Lead Time',d['Lead Time']!==''&&d['Lead Time']!=null?d['Lead Time']+' days':'—']].forEach(([name,value])=>{const item=document.createElement('div'),strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=name;span.textContent=value;item.append(strong,span);foot.append(item)});detail.append(foot);card.append(detail);if(i<list.length-1){const hr=document.createElement('hr');card.append(hr)}});wrap.append(card)});return wrap;
 }
-function makeReworkSelect
 function makeReworkSelect(options,value,placeholder){
  const s=document.createElement('select');if(placeholder!==false){const o=document.createElement('option');o.value='';o.textContent='Select an option';s.append(o)}
  options.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.append(o)});s.value=value||'';return s;
@@ -384,7 +382,6 @@ function collectReworkData(){
  const out={};el('reworkMainFields').querySelectorAll('[data-rework-main]').forEach(input=>out[input.dataset.reworkMain]=input.value.trim());out['Rework ID']=el('reworkRecordId').value;out.Details=[];
  [...el('reworkDetailsList').querySelectorAll(':scope > .rework-form-item')].forEach(item=>{const itemData={};item.querySelectorAll('[data-item-field]').forEach(input=>itemData[input.dataset.itemField]=input.value.trim());item.querySelectorAll('.rework-form-detail').forEach(card=>{const d={'Detail ID':card.dataset.detailId||'',Assignments:[],'Item no.':itemData['Item no.']||'','Panel Name':itemData['Panel Name']||'','Qty':itemData.Qty||''};card.querySelectorAll('[data-detail-field]').forEach(input=>d[input.dataset.detailField]=input.value.trim());d.Assignments=[...card.querySelectorAll('.rework-assignment-row')].map(row=>({'Assignment ID':row.dataset.assignmentId||'','Person In-Charge':row.querySelector('input').value.trim()})).filter(a=>a['Person In-Charge']);out.Details.push(d)})});return out;
 }
-function submitRework(ev)
 function submitRework(ev){
  ev.preventDefault();const data=collectReworkData();
  if(!data.Details.length){showStatus(false,'Add a description','Add at least one Rework Description.');return}
