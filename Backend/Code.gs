@@ -119,7 +119,7 @@ function reworkDateOnlyUtc_(value) {
   if(value instanceof Date && !isNaN(value.getTime())) return Date.UTC(value.getFullYear(),value.getMonth(),value.getDate());
   const s=String(value==null?'':value).trim();
   if(!s)return null;
-  const iso=s.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);
+  const iso=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
   if(iso)return Date.UTC(Number(iso[1]),Number(iso[2])-1,Number(iso[3]));
   const parsed=joParseDate_(s);
   return parsed instanceof Date&&!isNaN(parsed.getTime())?Date.UTC(parsed.getFullYear(),parsed.getMonth(),parsed.getDate()):null;
