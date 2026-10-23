@@ -165,6 +165,7 @@ function getReworkRecords_(searchText) {
   mainRows.forEach(r=>{
     const id=String(r[0]||'');if(!id)return;
     const detailList=detailsByCase[id]||[];
+    detailList.forEach(d=>{const isClosed=String(d.Status||'Open').trim().toLowerCase()==='closed';d['Lead Time']=reworkLeadTimeDays_(r[3],isClosed?(d['Closed At']||''):new Date());});
     const qc=String(r[11]||detailList.map(d=>d['QC - in - Charge']).find(Boolean)||'');
     const allClosed=detailList.length>0&&detailList.every(d=>String(d.Status||'Open').trim().toLowerCase()==='closed');
     const closureDates=allClosed?detailList.map(d=>String(d['Closed At']||'')).filter(Boolean).sort():[];
