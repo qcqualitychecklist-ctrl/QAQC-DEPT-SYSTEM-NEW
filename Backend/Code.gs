@@ -173,7 +173,7 @@ function getReworkRecords_(searchText) {
       'Date Issue':formatCell_(r[3]),'S.O':String(r[4]||''),'J.O':String(r[5]||''),
       'Client Name':String(r[6]||''),'Item no.':String(r[7]||''),'Panel Name':String(r[8]||''),
       'Qty':r[9]==null?'':String(r[9]),'Date Received':'',
-      'QC - in - Charge':qc,'Lead Time':leadTime,'Details':detailList,
+      'QC - in - Charge':qc,'Date Finished':allClosed&&closureDates.length?closureDates[closureDates.length-1]:'','Lead Time':leadTime,'Details':detailList,
       'Description Summary':detailList.map(d=>d['Description of Rework']).filter(Boolean).join(' | '),
       'Concern Section Summary':[...new Set(detailList.map(d=>d['Concern Section']||((d.Assignments||[]).map(a=>a['Concern Section']).filter(Boolean)[0]||'')).filter(Boolean))].join(', '),
       'Status Summary':detailList.length&&detailList.every(d=>String(d.Status||'Open').trim().toLowerCase()==='closed')?'Closed':detailList.length?'Open':'No details',
