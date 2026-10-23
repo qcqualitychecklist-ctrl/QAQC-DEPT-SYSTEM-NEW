@@ -361,6 +361,26 @@ function getFGTSMonitoringRecords_(searchText) {
 }
 function fgtsJobKey_(so,item){return JSON.stringify([String(so||'').trim().toUpperCase(),String(item||'').trim().toUpperCase()]);}
 
+function deleteReworkCase(reworkId) {
+  const id=String(reworkId||'').trim();
+  if(!id)throw new Error('Missing Rework ID.');
+  const ss=SpreadsheetApp.openById(DATABASE_ID);
+  const main=ss.getSheetByName(REWORK_MAIN_SHEET),details=ss.getSheetByName(REWORK_DETAILS_SHEET),assignments=ss.getSheetByName(REWORK_ASSIGNMENTS_SHEET);
+  if(!main||!details||!assignments)throw new Error('Rework database tabs are missing.');
+  const mainRows=main.getDataRange().getValues();let mainRow=-1;
+  for(let i=1;i<mainRows.length;i++)if(String(mainRows[i][0])===id){mainRow=i+1;break;}
+  if(mainRow<0)throw new Error('Rework case not found. Refresh and try again.');
+  const detailRows=details.getLastRow()>1?details.getDataRange().getValues():[];
+  const detailIds=[];for(let i=1;i<detailRows.length;i++)if(String(detailRows[i][1])===id)detailIds.push(String(detailRows[i][0]));
+  const detailSet=Object.create(null);detailIds.forEach(v=>detailSet[v]=true);
+  const assignmentRows=assignments.getLastRow()>1?assignments.getDataRange().getValues():[];
+  for(let i=assignmentRows.length-1;i>=1;i--)if(detailSet[String(assignmentRows[i][1])])assignments.deleteRow(i+1);
+  for(let i=detailRows.length-1;i>=1;i--)if(String(detailRows[i][1])===id)details.deleteRow(i+1);
+  main.deleteRow(mainRow);
+  invalidateModuleCache_('Rework Monitoring');
+  return {ok:true,message:'Rework case and linked descriptions/assignments deleted.'};
+}
+
 function saveReworkCase_(input) {
   if(!input)throw new Error('No rework information received.');
   const ss=SpreadsheetApp.openById(DATABASE_ID);
