@@ -134,6 +134,19 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 #monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) select{height:29px;padding:5px 6px;font-size:10px;min-width:0}
 @media(max-width:900px){#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar){grid-template-columns:repeat(2,minmax(0,1fr))}#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) #resetFilters{grid-column:auto}}
 @media(max-width:520px){#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar){grid-template-columns:1fr}}
+
+/* Hotfix: keep the Transfer Monitoring header controls compact and stable when switching modules. */
+.intro .header-right{flex:0 1 auto;min-width:0;flex-wrap:nowrap}
+.intro .header-tools{flex:0 1 300px;width:clamp(190px,24vw,300px);min-width:0}
+.intro .header-tools .refresh-btn,
+.intro .header-tools button[aria-label="Refresh records"]{width:28px!important;min-width:28px!important;max-width:28px!important;flex:0 0 28px!important;height:27px!important;padding:0!important;background:transparent!important;border:1px solid transparent!important;box-shadow:none!important;color:#fff!important;border-radius:5px!important}
+.intro .header-tools .refresh-btn:hover,
+.intro .header-tools button[aria-label="Refresh records"]:hover{background:#ffffff18!important;border-color:#ffffff20!important;color:#fff!important}
+#monitoringPanel #recordFilters>button{width:auto!important;min-width:0!important;max-width:max-content!important;height:29px!important;padding:5px 8px!important;font-size:10px!important;line-height:1.2!important;align-self:end;white-space:nowrap}
+#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) .field input,
+#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) .field select{height:29px!important;padding:5px 6px!important;font-size:10px!important;min-width:0!important}
+@media(max-width:700px){.intro .header-right{width:100%;flex-wrap:wrap;justify-content:flex-start}.intro .header-tools{width:100%;flex:1 1 100%;max-width:100%}}
+
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
