@@ -216,6 +216,7 @@ else{let value=rec[h]??'';if((isFGTS&&(h==='Classification'||h==='Category'))||(
 function renderPagination(filteredCount){
  const host=el('pagination');if(!host)return;host.innerHTML='';
  const pages=Math.max(1,Math.ceil(filteredCount/PAGE_SIZE));
+ const refresh=button('↻ Refresh','',()=>loadRecords());refresh.title='Refresh records';refresh.setAttribute('aria-label','Refresh records');host.appendChild(refresh);
  const prev=button('‹  Previous','',()=>{if(tablePage>1){tablePage--;renderTable()}});
  prev.setAttribute('aria-label','Previous page');prev.disabled=tablePage<=1;host.appendChild(prev);
  const label=document.createElement('span');label.className='pagination-label';
@@ -383,5 +384,5 @@ function submitRework(ev){
 }
 
 
-document.addEventListener('DOMContentLoaded',()=>{const intro=document.querySelector('.intro'),toolbar=document.querySelector('#monitoringPanel .toolbar'),filters=document.querySelector('#recordFilters'),actions=intro&&intro.querySelector('.actions');if(intro&&toolbar&&actions){const search=toolbar.querySelector('#search'),refresh=toolbar.querySelector('button[onclick="loadRecords()"]'),clear=toolbar.querySelector('#resetFilters'),tools=document.createElement('div'),right=document.createElement('div');tools.className='header-tools';right.className='header-right';if(search)tools.appendChild(search);if(clear){clear.textContent='Clear Filter';clear.title='Clear record filters';clear.removeAttribute('style');clear.classList.add('header-clear-filter');tools.appendChild(clear)}if(refresh){refresh.textContent='Refresh';refresh.removeAttribute('aria-label');refresh.title='Refresh records';refresh.removeAttribute('style');tools.appendChild(refresh)}right.appendChild(tools);right.appendChild(actions);intro.appendChild(right)}checkStatus()});
+document.addEventListener('DOMContentLoaded',()=>{const intro=document.querySelector('.intro'),toolbar=document.querySelector('#monitoringPanel .toolbar'),filters=document.querySelector('#recordFilters'),actions=intro&&intro.querySelector('.actions');if(intro&&toolbar&&actions){const search=toolbar.querySelector('#search'),clear=toolbar.querySelector('#resetFilters'),tools=document.createElement('div'),right=document.createElement('div');tools.className='header-tools';right.className='header-right';if(search)tools.appendChild(search);if(clear&&filters){clear.textContent='Clear Filter';clear.title='Clear record filters';clear.classList.remove('header-clear-filter');filters.appendChild(clear)}right.appendChild(tools);right.appendChild(actions);intro.appendChild(right)}checkStatus()});
 </script></body></html>
