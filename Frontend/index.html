@@ -148,6 +148,27 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 @media(max-width:700px){.intro .header-right{width:100%;flex-wrap:wrap;justify-content:flex-start}.intro .header-tools{width:100%;flex:1 1 100%;max-width:100%}}
 
 
+
+/* Transfer form polish: match the Rework form's blue header and card styling; visual-only changes */
+#transferModal .dialog{width:min(980px,97vw);padding:0;border:1px solid #d9e4f2;border-radius:18px;overflow:auto;background:#f8fafc;box-shadow:0 24px 80px #0f274733}
+#transferModal .dialoghead{position:sticky;top:0;z-index:5;margin:0;padding:20px 24px;background:linear-gradient(120deg,#12325a,#245ca7);color:#fff;border-bottom:1px solid #c6d8f0}
+#transferModal .dialoghead h3{font-size:21px;letter-spacing:-.3px;margin:0 0 5px;color:#fff}
+#transferModal .dialoghead .muted{color:#dbeafe;line-height:1.45;max-width:720px}
+#transferModal .dialoghead>button{color:#fff;border-color:#ffffff55;background:#ffffff18}
+#transferModal #transferForm{padding:20px 24px 24px}
+#transferModal #transferFields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:16px;background:#fff;border:1px solid #e0e8f2;border-radius:14px;box-shadow:0 3px 12px #19365b08}
+#transferModal .field label{font-size:11px;font-weight:750;color:#344765;margin-bottom:6px}
+#transferModal input,#transferModal select,#transferModal textarea{width:100%;min-width:0;border:1px solid #cbd7e6;border-radius:9px;background:#fff;padding:10px 11px;color:#172b46;font-size:12px;transition:border-color .15s,box-shadow .15s}
+#transferModal input:focus,#transferModal select:focus,#transferModal textarea:focus{outline:none;border-color:#4f83cf;box-shadow:0 0 0 3px #dbeafe}
+#transferModal #additionalItemsSection{border:1px solid #dce6f2;border-radius:15px!important;padding:16px!important;background:#fff!important;box-shadow:0 4px 16px #19365b08}
+#transferModal #additionalItemsSection h3{font-size:15px;color:#183b68;margin:0 0 8px}
+#transferModal #addItemBtn{border-radius:9px;background:#edf5ff;color:#2459a9;border-color:#c8dcf7;font-weight:700}
+#transferModal .item-entry{padding:14px;border:1px solid #cbdcf0;border-radius:12px;background:linear-gradient(180deg,#f8fbff,#fff);box-shadow:0 4px 12px #19365b08}
+#transferModal .item-entry .field label{font-size:11px;font-weight:750;color:#344765}
+#transferModal .actions{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;gap:10px;margin:18px -24px -24px;padding:14px 24px;background:#ffffffef;border-top:1px solid #dfe8f2;backdrop-filter:blur(8px)}
+#transferModal #transferSave{min-width:145px;border-radius:10px;background:#1d5eb7;font-weight:800}
+@media(max-width:760px){#transferModal .dialoghead{padding:16px}#transferModal #transferForm{padding:14px}#transferModal #transferFields{grid-template-columns:1fr 1fr;padding:12px}#transferModal .item-entry{grid-template-columns:1fr}#transferModal .actions{margin:16px -14px -14px;padding:12px 14px}#transferModal #transferFields .field:last-child{grid-column:1/-1}}
+
 /* Rework form polish: scoped to Rework Monitoring only */
 #reworkModal .dialog{width:min(1080px,97vw);padding:0;border:1px solid #d9e4f2;border-radius:18px;overflow:auto;background:#f8fafc;box-shadow:0 24px 80px #0f274733}
 #reworkModal .dialoghead{position:sticky;top:0;z-index:5;margin:0;padding:20px 24px;background:linear-gradient(120deg,#12325a,#245ca7);color:#fff;border-bottom:1px solid #c6d8f0}
