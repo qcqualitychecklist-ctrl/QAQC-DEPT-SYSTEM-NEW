@@ -147,6 +147,43 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 #monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) .field select{height:29px!important;padding:5px 6px!important;font-size:10px!important;min-width:0!important}
 @media(max-width:700px){.intro .header-right{width:100%;flex-wrap:wrap;justify-content:flex-start}.intro .header-tools{width:100%;flex:1 1 100%;max-width:100%}}
 
+
+/* Rework form polish: scoped to Rework Monitoring only */
+#reworkModal .dialog{width:min(1080px,97vw);padding:0;border:1px solid #d9e4f2;border-radius:18px;overflow:auto;background:#f8fafc;box-shadow:0 24px 80px #0f274733}
+#reworkModal .dialoghead{position:sticky;top:0;z-index:5;margin:0;padding:20px 24px;background:linear-gradient(120deg,#12325a,#245ca7);color:#fff;border-bottom:1px solid #c6d8f0}
+#reworkModal .dialoghead h3{font-size:21px;letter-spacing:-.3px;margin:0 0 5px;color:#fff}
+#reworkModal .dialoghead .muted{color:#dbeafe;line-height:1.45;max-width:720px}
+#reworkModal .dialoghead>button{color:#fff;border-color:#ffffff55;background:#ffffff18}
+#reworkModal #reworkForm{padding:20px 24px 24px}
+#reworkModal #reworkMainFields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:16px;background:#fff;border:1px solid #e0e8f2;border-radius:14px;box-shadow:0 3px 12px #19365b08}
+#reworkModal #reworkMainFields .field label,#reworkModal .rework-form-item .field label{font-size:11px;font-weight:750;color:#344765;margin-bottom:6px}
+#reworkModal input,#reworkModal select,#reworkModal textarea{width:100%;min-width:0;border:1px solid #cbd7e6;border-radius:9px;background:#fff;padding:10px 11px;color:#172b46;font-size:12px;transition:border-color .15s,box-shadow .15s}
+#reworkModal input:focus,#reworkModal select:focus,#reworkModal textarea:focus{outline:none;border-color:#4f83cf;box-shadow:0 0 0 3px #dbeafe}
+#reworkModal .panel{border:1px solid #dce6f2;border-radius:15px!important;padding:16px!important;background:#fff!important;box-shadow:0 4px 16px #19365b08}
+#reworkModal .allocation-form-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+#reworkModal .allocation-form-head h3{font-size:15px;color:#183b68;margin:0}
+#reworkModal .allocation-form-head button{border-radius:9px;background:#edf5ff;color:#2459a9;border-color:#c8dcf7;font-weight:700}
+#reworkModal .rework-form-item{padding:16px;margin:14px 0;border:1px solid #cbdcf0;border-radius:14px;background:linear-gradient(180deg,#f8fbff,#fff);box-shadow:0 4px 12px #19365b08}
+#reworkModal .rework-form-item>.rework-form-detail-head{padding-bottom:10px;border-bottom:1px solid #e0e9f4}
+#reworkModal .rework-form-item>.rework-form-detail-head h4{font-size:14px;color:#17437a}
+#reworkModal .rework-form-item>.fields{display:grid;grid-template-columns:1fr 1.5fr .7fr;gap:12px;padding:13px;background:#fff;border:1px solid #e5edf6;border-radius:11px}
+#reworkModal .rework-item-details{margin:14px 0 10px;padding-left:14px;border-left:3px solid #80a9df}
+#reworkModal .rework-form-detail{padding:14px;margin:12px 0;border:1px solid #dbe5f1;border-radius:12px;background:#fff;box-shadow:0 2px 8px #19365b07}
+#reworkModal .rework-form-detail-head h4{font-size:12px;color:#244a79}
+#reworkModal .rework-form-detail .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#reworkModal .rework-form-detail .field.full{grid-column:1/-1}
+#reworkModal .rework-assignment-list{padding:12px;margin-top:14px;border:1px dashed #c8d8eb;border-radius:10px;background:#f8fbff}
+#reworkModal .rework-subtitle{font-size:11px;font-weight:800;color:#365578;letter-spacing:.25px;text-transform:uppercase}
+#reworkModal .rework-assignment-row{background:#fff;border-color:#dce6f2;border-radius:9px}
+#reworkModal .actions{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;gap:10px;margin:18px -24px -24px;padding:14px 24px;background:#ffffffef;border-top:1px solid #dfe8f2;backdrop-filter:blur(8px)}
+#reworkModal #reworkSave{min-width:145px;border-radius:10px;background:#1d5eb7;font-weight:800}
+.rework-merged-table td.rework-item-shared{background:#f3f7fc;font-weight:750;color:#264667;text-align:center}
+.rework-merged-table td.rework-concern-cell{font-weight:700;color:#365578}
+.rework-merged-table td.rework-category-cell{font-size:10px;color:#344765}
+.rework-merged-table td.rework-pic-cell{min-width:145px}
+.rework-merged-table td[rowspan]{border-bottom:2px solid #dbe6f2}
+@media(max-width:760px){#reworkModal .dialoghead{padding:16px}#reworkModal #reworkForm{padding:14px}#reworkModal #reworkMainFields{grid-template-columns:1fr 1fr;padding:12px}#reworkModal .rework-form-item>.fields{grid-template-columns:1fr}#reworkModal .rework-form-detail .fields{grid-template-columns:1fr}#reworkModal .actions{margin:16px -14px -14px;padding:12px 14px}#reworkModal #reworkMainFields .field:last-child{grid-column:1/-1}}
+
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
@@ -284,35 +321,34 @@ function renderReworkTable(){
  const from=el('monthFrom')?.value||'',to=el('monthTo')?.value||'',status=el('statusFilter')?.value||'',q=String(el('search').value||'').trim().toLowerCase();
  let shown=records.filter(r=>{const date=String(r['Date Issue']||'').slice(0,7);if(from&&(!date||date<from))return false;if(to&&(!date||date>to))return false;if(status&&r['Status Summary']!==status)return false;if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;return true});
  const closed=shown.filter(r=>r['Status Summary']==='Closed').length,open=shown.filter(r=>r['Status Summary']==='Open').length,details=shown.reduce((n,r)=>n+(r.Details||[]).length,0);
- el('dashboardCards').innerHTML='';el('dashboardCards').classList.add('rework-dashboard');[['Rework Cases',shown.length,'rework-total'],['Open Cases',open,'rework-open'],['Closed Cases',closed,'rework-closed'],['Item Details',details,'rework-descriptions']].forEach(v=>{const card=document.createElement('div');card.className='dash-card '+v[2];const l=document.createElement('div');l.className='dash-label';l.textContent=v[0];const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];card.append(l,n);el('dashboardCards').append(card)});
- const totalPages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));if(tablePage>totalPages)tablePage=totalPages;const start=(tablePage-1)*PAGE_SIZE,rows=shown.slice(start,start+PAGE_SIZE);
- const heads=['Date Issue','J.O. / S.O.','Client Name','Item No.','Panel Name','Qty','Description of Rework','Person In-Charge','Category Issue','Corrective Action / Resolution','Status','Date Finished','Lead Time','Rework or Back Job','Action'];
+ el('dashboardCards').innerHTML='';el('dashboardCards').classList.add('rework-dashboard');[['Rework Cases',shown.length,'rework-total'],['Open Cases',open,'rework-open'],['Closed Cases',closed,'rework-closed'],['Rework Concerns',details,'rework-descriptions']].forEach(v=>{const card=document.createElement('div');card.className='dash-card '+v[2];const l=document.createElement('div');l.className='dash-label';l.textContent=v[0];const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];card.append(l,n);el('dashboardCards').append(card)});
+ const totalPages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));if(tablePage>totalPages)tablePage=totalPages;const startRow=(tablePage-1)*PAGE_SIZE,rows=shown.slice(startRow,startRow+PAGE_SIZE);
+ const heads=['Date Issue','J.O. / S.O.','Client Name','Item No.','Panel Name','Qty','Concern Section','Description of Rework','Category Issue','Corrective Action / Resolution','Person In-Charge','Status','Date Finished','Lead Time','Rework or Back Job','Action'];
  el('thead').innerHTML='';el('tbody').innerHTML='';el('thead').closest('table').classList.remove('jo-table','fgts-table');el('thead').closest('table').classList.add('rework-table','rework-merged-table');
  const hr=document.createElement('tr');heads.forEach(x=>{const th=document.createElement('th');th.textContent=x;hr.append(th)});el('thead').append(hr);
- el('count').textContent=shown.length?(start+1)+'–'+Math.min(start+PAGE_SIZE,shown.length)+' of '+shown.length+' rework cases':'0 rework cases';renderPagination(shown.length);
+ el('count').textContent=shown.length?(startRow+1)+'–'+Math.min(startRow+PAGE_SIZE,shown.length)+' of '+shown.length+' rework cases':'0 rework cases';renderPagination(shown.length);
  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent=recordsLoadedFully?'No rework records found.':'Loading rework records…';tr.append(td);el('tbody').append(tr);return}
  const cell=(value,cls)=>{const td=document.createElement('td');if(cls)td.className=cls;td.textContent=value==null||value===''?'—':String(value);td.title=td.textContent;return td};
  rows.forEach(rec=>{
-  const ds=(rec.Details&&rec.Details.length)?rec.Details:[{}],span=ds.length;
-  ds.forEach((d,idx)=>{
-   const tr=document.createElement('tr'),closed=String(d.Status||'').toLowerCase()==='closed';
-   if(idx===0){
-    const joSo=[rec['J.O'],rec['S.O']].filter(Boolean).join(' / ');
-    [['Date Issue',rec['Date Issue']],['J.O. / S.O.',joSo],['Client Name',rec['Client Name']]].forEach(([k,v])=>{const td=cell(v);td.rowSpan=span;tr.append(td)});
-   }
-   tr.append(cell(d['Item no.']||rec['Item no.']));
-   tr.append(cell(d['Panel Name']||rec['Panel Name'],'rework-item-cell'));
-   tr.append(cell(d.Qty||rec.Qty));
+  const raw=(rec.Details&&rec.Details.length)?rec.Details:[{}],itemGroups=new Map();
+  raw.forEach((d,i)=>{const key=d['Item ID']||[d['Item no.']||rec['Item no.']||'',d['Panel Name']||rec['Panel Name']||'',d.Qty||rec.Qty||''].join('¦');if(!itemGroups.has(key))itemGroups.set(key,[]);itemGroups.get(key).push({detail:d,index:i})});
+  const flat=[];itemGroups.forEach((list,key)=>list.forEach((entry,itemIndex)=>flat.push({...entry,itemKey:key,itemIndex,itemSpan:list.length})));
+  const caseSpan=flat.length||1;
+  flat.forEach((entry,idx)=>{
+   const d=entry.detail,tr=document.createElement('tr'),closed=String(d.Status||'').toLowerCase()==='closed';
+   if(idx===0){const joSo=[rec['J.O'],rec['S.O']].filter(Boolean).join(' / ');[['Date Issue',rec['Date Issue']],['J.O. / S.O.',joSo],['Client Name',rec['Client Name']]].forEach(([k,v])=>{const td=cell(v);td.rowSpan=caseSpan;tr.append(td)})}
+   if(entry.itemIndex===0){[['Item no.',d['Item no.']||rec['Item no.']],['Panel Name',d['Panel Name']||rec['Panel Name']],['Qty',d.Qty||rec.Qty]].forEach(([k,v])=>{const td=cell(v,k==='Panel Name'?'rework-item-cell':'rework-item-shared');td.rowSpan=entry.itemSpan;tr.append(td)})}
+   tr.append(cell(d['Concern Section'],'rework-concern-cell'));
    tr.append(cell(d['Description of Rework'],'rework-description-cell'));
-   const pic=(d.Assignments||[]).map(a=>String(a['Person In-Charge']||'').trim()).filter(Boolean).join(', ');
-   tr.append(cell(pic||'—'));
-   tr.append(cell(d['Category Issue']));
+   tr.append(cell(d['Category Issue'],'rework-category-cell'));
    tr.append(cell(d['Corrective Action / Resolution'],'rework-action-cell'));
+   const pic=(d.Assignments||[]).map(a=>String(a['Person In-Charge']||'').trim()).filter(Boolean).join(', ');
+   tr.append(cell(pic||'—','rework-pic-cell'));
    const st=cell('');const pill=document.createElement('span');pill.className='rework-summary-pill '+(closed?'closed':'');pill.textContent=d.Status||'Open';st.textContent='';st.append(pill);tr.append(st);
    tr.append(cell(closed?(d['Closed At']||''):'—'));
    tr.append(cell(d['Lead Time']!==''&&d['Lead Time']!=null?d['Lead Time']+' days':'—'));
    tr.append(cell(d['Rework or Back Job']||'Rework'));
-   if(idx===0){const act=document.createElement('td');act.className='actioncell';act.rowSpan=span;act.append(button('View Details','small',()=>openReworkDetails(rec)),document.createTextNode(' '),button('Edit','small primary',()=>openEditRework(rec)),document.createTextNode(' '),button('Delete','small danger',()=>deleteReworkCase(rec)));tr.append(act)}
+   if(idx===0){const act=document.createElement('td');act.className='actioncell';act.rowSpan=caseSpan;act.append(button('View Details','small',()=>openReworkDetails(rec)),document.createTextNode(' '),button('Edit','small primary',()=>openEditRework(rec)),document.createTextNode(' '),button('Delete','small danger',()=>deleteReworkCase(rec)));tr.append(act)}
    el('tbody').append(tr);
   });
  });
@@ -372,7 +408,7 @@ function addReworkDetail(data,host){
  const header=document.createElement('div');header.className='rework-form-detail-head';const title=document.createElement('h4');title.textContent='Rework Description '+(host.querySelectorAll('.rework-form-detail').length+1);const remove=button('Remove','small danger',()=>{if(host.querySelectorAll('.rework-form-detail').length===1){showStatus(false,'Required description','Each item must have at least one rework description.');return}card.remove();renumberReworkItems()});header.append(title,remove);card.append(header);
  const grid=document.createElement('div');grid.className='fields';const desc=reworkField('Description of Rework','textarea',data['Description of Rework']||'',true);desc.box.classList.add('full');desc.input.dataset.detailField='Description of Rework';grid.append(desc.box);
  const section=reworkField('Concern Section','select',data['Concern Section']||(data.Assignments||[]).map(a=>a['Concern Section']).find(Boolean)||'',true,REWORK_SECTIONS);section.input.dataset.detailField='Concern Section';grid.append(section.box);
- [['Status',REWORK_STATUSES,'Open'],['Rework or Back Job',REWORK_TYPES,'Rework']].forEach(([name,options,def])=>{const f=reworkField(name,'select',data[name]||def,false,options);f.input.dataset.detailField=name;grid.append(f.box)});const category=reworkField('Category Issue','text',data['Category Issue']||'',false);category.input.placeholder='e.g. Faulty breaker';category.input.dataset.detailField='Category Issue';grid.append(category.box);const corrective=reworkField('Corrective Action / Resolution','textarea',data['Corrective Action / Resolution']||'',false);corrective.box.classList.add('full');corrective.input.placeholder='Describe the action taken or resolution';corrective.input.dataset.detailField='Corrective Action / Resolution';grid.append(corrective.box);card.append(grid);
+ [['Status',REWORK_STATUSES,'Open'],['Rework or Back Job',REWORK_TYPES,'Rework']].forEach(([name,options,def])=>{const f=reworkField(name,'select',data[name]||def,false,options);f.input.dataset.detailField=name;grid.append(f.box)});const category=reworkField('Category Issue','select',data['Category Issue']||'',true,REWORK_CATEGORIES);category.input.dataset.detailField='Category Issue';grid.append(category.box);const corrective=reworkField('Corrective Action / Resolution','select',data['Corrective Action / Resolution']||'',true,REWORK_CORRECTIVE);corrective.box.classList.add('full');corrective.input.dataset.detailField='Corrective Action / Resolution';grid.append(corrective.box);card.append(grid);
  const assignments=document.createElement('div');assignments.className='rework-assignment-list';const subtitle=document.createElement('div');subtitle.className='rework-subtitle';subtitle.textContent='Person In-Charge';assignments.append(subtitle);const list=document.createElement('div');list.className='rework-assignment-rows';(data.Assignments&&data.Assignments.length?data.Assignments:[{}]).forEach(a=>addReworkAssignment(list,a));assignments.append(list,button('＋ Add Another Person','small',()=>addReworkAssignment(list,{})));card.append(assignments);host.append(card);
 }
 function addReworkAssignment(host,data){
