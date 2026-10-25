@@ -414,10 +414,10 @@ function editReworkFinishedDate(rec, section, input){
  if(value===null){showStatus(false,'Invalid date','Please choose a valid date from the calendar.');input.focus();return}
  callServer('updateReworkFinishedDate',[rec['Rework ID'],section,value],r=>{
   if(!r||!r.ok){showStatus(false,'Date update failed',r&&r.message||'Unable to save Date Finished.');return}
-  // Reload saved records from the server so updating one section cannot overwrite
-  // another section's date with stale browser-side data.
-  delete recordCache['Rework Monitoring::'];
-  if(currentPage==='Rework Monitoring')loadRecords(false);
+  // Update only this section in the already-rendered record; no full-screen reload.
+  (rec.Details||[]).forEach(d=>{if(String(d['Concern Section']||'Unassigned')===String(section||'Unassigned')){d['Date Finished']=value;d['Lead Time']=r.leadTime==null?'':r.leadTime;}});
+  recordCache['Rework Monitoring::']=records;
+  renderTable();
  },err=>showStatus(false,'Date update failed',err&&err.message||String(err)));
 }
 function deleteReworkCase(rec){const id=String(rec&&rec['Rework ID']||'');if(!id){showStatus(false,'Delete failed','Missing Rework ID.');return;}if(!confirm('Delete this entire rework case and all its descriptions and assignments? This cannot be undone.'))return;showStatus(true,'Deleting rework case','Please wait…');callServer('deleteReworkCase',[id],r=>{if(!r||!r.ok){showStatus(false,'Delete failed',r&&r.message||'Unable to delete rework case.');return;}delete recordCache['Rework Monitoring::'];recordsLoadedFully=false;loadRecords(false);showStatus(true,'Deleted',r.message||'Rework case deleted.');},err=>showStatus(false,'Delete failed',err&&err.message||String(err)));}
@@ -430,7 +430,7 @@ function buildReworkDetailSummary(rec){
  list.forEach((d,i)=>{const detail=document.createElement('div');detail.className='rework-detail-entry';const head=document.createElement('div');head.className='rework-form-detail-head';const label=document.createElement('strong');label.textContent='Description of Rework';const status=document.createElement('span');status.className='rework-summary-pill '+(String(d.Status||'Open').toLowerCase()==='closed'?'closed':'');status.textContent=d.Status||'Open';head.append(label,status);detail.append(head);
  const pic=document.createElement('div');pic.className='rework-assignment-tags';(d.Assignments||[]).forEach(a=>{const tag=document.createElement('span');tag.className='rework-assignment-tag';tag.textContent=a['Person In-Charge']||'';pic.append(tag)});const picLabel=document.createElement('div');picLabel.className='rework-subtitle';picLabel.textContent='Person In-Charge';detail.append(picLabel,pic);
  const desc=document.createElement('p');desc.textContent=d['Description of Rework']||'—';detail.append(desc);
- const fields=document.createElement('div');fields.className='rework-detail-meta';[['Category Issue',d['Category Issue']],['Corrective Action / Resolution',d['Corrective Action / Resolution']],['Concern Section',d['Concern Section']],['Rework or Back Job',d['Rework or Back Job']]].forEach(([name,value])=>{const item=document.createElement('div'),strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=name;span.textContent=value||'—';item.append(strong,span);fields.append(item)});detail.append(fields);
+ const fields=document.createElement('div');fields.className='rework-detail-meta';[['Category Issue',d['Category Issue']],['Corrective Action / Resolution',d['Corrective Action / Resolution']],['Concern Section',d['Concern Section']],['Date Finished',d['Date Finished']],['Rework or Back Job',d['Rework or Back Job']]].forEach(([name,value])=>{const item=document.createElement('div'),strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=name;span.textContent=value||'—';item.append(strong,span);fields.append(item)});detail.append(fields);
  const foot=document.createElement('div');foot.className='rework-detail-meta';[['Lead Time',d['Lead Time']!==''&&d['Lead Time']!=null?d['Lead Time']+' days':'—']].forEach(([name,value])=>{const item=document.createElement('div'),strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=name;span.textContent=value;item.append(strong,span);foot.append(item)});detail.append(foot);card.append(detail);if(i<list.length-1){const hr=document.createElement('hr');card.append(hr)}});wrap.append(card)});return wrap;
 }
 function makeReworkSelect(options,value,placeholder){
