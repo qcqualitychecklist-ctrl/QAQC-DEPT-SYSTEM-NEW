@@ -390,8 +390,20 @@ function toggleReworkStatus(rec,detail){
   },()=>{});
  },err=>{detail.Status=oldStatus;delete recordCache['Rework Monitoring::'];recordsLoadedFully=false;loadRecords(false);});
 }
+function normalizeReworkDate(value){
+ const raw=String(value||'').trim();if(!raw)return '';
+ let y,m,d,match;
+ if((match=raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))){y=+match[1];m=+match[2];d=+match[3];}
+ else if((match=raw.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/))){d=+match[1];m=+match[2];y=+match[3];}
+ else if((match=raw.match(/^(\d{1,2})[-\s]([A-Za-z]{3,})[-\s,]*(\d{4})$/))){d=+match[1];m=({jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12})[match[2].slice(0,3).toLowerCase()];y=+match[3];}
+ else return null;
+ const dt=new Date(Date.UTC(y,m-1,d));if(!y||!m||!d||dt.getUTCFullYear()!==y||dt.getUTCMonth()!==m-1||dt.getUTCDate()!==d)return null;
+ return String(y).padStart(4,'0')+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
 function editReworkFinishedDate(rec, input){
- const value=input.value;
+ const value=normalizeReworkDate(input.value);
+ if(value===null){showStatus(false,'Invalid date','Use YYYY-MM-DD, DD/MM/YYYY, or DD-MMM-YYYY (example: 25-Oct-2026).');input.focus();return}
+ input.value=value;
  callServer('updateReworkFinishedDate',[rec['Rework ID'],value],r=>{
   if(!r||!r.ok){showStatus(false,'Date update failed',r&&r.message||'Unable to save Date Finished.');return}
   rec['Date Finished']=value;delete recordCache['Rework Monitoring::'];recordCache['Rework Monitoring::']=records;renderTable();
