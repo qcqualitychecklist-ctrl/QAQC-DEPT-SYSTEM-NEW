@@ -366,7 +366,7 @@ function renderReworkTable(){
    const pic=(d.Assignments||[]).map(a=>String(a['Person In-Charge']||'').trim()).filter(Boolean).join(', ');
    tr.append(cell(pic||'—','rework-pic-cell'));
    const st=cell('');const pill=button(d.Status||'Open','small '+(closed?'':'primary'),()=>toggleReworkStatus(rec,d));pill.classList.add('rework-summary-pill');if(closed)pill.classList.add('closed');pill.title='Click to change status';st.textContent='';st.append(pill);tr.append(st);
-   if(idx===0){const finished=cell(rec['Date Finished']||'—','rework-case-shared'),lead=cell(rec['Lead Time']!==''&&rec['Lead Time']!=null?rec['Lead Time']+' days':'—','rework-case-shared');finished.rowSpan=caseSpan;lead.rowSpan=caseSpan;tr.append(finished,lead)}
+   if(idx===0){const finished=document.createElement('td');finished.className='rework-case-shared';const dateInput=document.createElement('input');dateInput.type='date';dateInput.value=String(rec['Date Finished']||'').slice(0,10);dateInput.title='Set or edit Date Finished for this whole case';dateInput.style.width='140px';dateInput.style.maxWidth='100%';dateInput.addEventListener('change',()=>editReworkFinishedDate(rec,dateInput));finished.append(dateInput);finished.rowSpan=caseSpan;const lead=cell(rec['Lead Time']!==''&&rec['Lead Time']!=null?rec['Lead Time']+' days':'—','rework-case-shared');lead.rowSpan=caseSpan;tr.append(finished,lead)}
    tr.append(cell(d['Rework or Back Job']||'Rework'));
    if(idx===0){const act=document.createElement('td');act.className='actioncell';act.rowSpan=caseSpan;act.append(button('View Details','small',()=>openReworkDetails(rec)),document.createTextNode(' '),button('Edit','small primary',()=>openEditRework(rec)),document.createTextNode(' '),button('Delete','small danger',()=>deleteReworkCase(rec)));tr.append(act)}
    el('tbody').append(tr);
@@ -376,11 +376,26 @@ function renderReworkTable(){
 
 function toggleReworkStatus(rec,detail){
  if(!rec||!detail||!detail['Detail ID']){showStatus(false,'Status update failed','Missing description ID.');return}
- if(!confirm('Change this description status from '+(detail.Status||'Open')+'?'))return;
+ const oldStatus=String(detail.Status||'Open'),nextStatus=oldStatus.toLowerCase()==='closed'?'Open':'Closed';
+ detail.Status=nextStatus;
+ if(nextStatus==='Open'){rec['Status Summary']='Open';rec['Date Finished']=rec['Date Finished']||'';rec['Lead Time']='';(rec.Details||[]).forEach(d=>d['Lead Time']='');}
+ else if((rec.Details||[]).every(d=>String(d.Status||'Open').toLowerCase()==='closed'))rec['Status Summary']='Closed';
+ recordCache['Rework Monitoring::']=records;
+ renderTable();
  callServer('toggleReworkDetailStatus',[rec['Rework ID'],detail['Detail ID']],r=>{
-  if(!r||!r.ok){showStatus(false,'Status update failed',r&&r.message||'Unable to update status.');return}
-  delete recordCache['Rework Monitoring::'];recordsLoadedFully=false;loadRecords(false);showStatus(true,'Status updated',r.message||'Description status updated.');
- },err=>showStatus(false,'Status update failed',err&&err.message||String(err)));
+  if(!r||!r.ok){detail.Status=oldStatus;delete recordCache['Rework Monitoring::'];recordsLoadedFully=false;loadRecords(false);showStatus(false,'Status update failed',r&&r.message||'Unable to update status.');return}
+  detail.Status=r.status||nextStatus;
+  delete recordCache['Rework Monitoring::'];callServer('getModuleData',[currentPage,'',1,PAGE_SIZE,true],all=>{
+   if(all&&all.ok){records=all.records||[];recordCache['Rework Monitoring::']=records;recordsLoadedFully=true;renderTable()}
+  },()=>{});
+ },err=>{detail.Status=oldStatus;delete recordCache['Rework Monitoring::'];recordsLoadedFully=false;loadRecords(false);});
+}
+function editReworkFinishedDate(rec, input){
+ const value=input.value;
+ callServer('updateReworkFinishedDate',[rec['Rework ID'],value],r=>{
+  if(!r||!r.ok){showStatus(false,'Date update failed',r&&r.message||'Unable to save Date Finished.');return}
+  rec['Date Finished']=value;delete recordCache['Rework Monitoring::'];recordCache['Rework Monitoring::']=records;renderTable();
+ },()=>{});
 }
 function deleteReworkCase(rec){const id=String(rec&&rec['Rework ID']||'');if(!id){showStatus(false,'Delete failed','Missing Rework ID.');return;}if(!confirm('Delete this entire rework case and all its descriptions and assignments? This cannot be undone.'))return;showStatus(true,'Deleting rework case','Please wait…');callServer('deleteReworkCase',[id],r=>{if(!r||!r.ok){showStatus(false,'Delete failed',r&&r.message||'Unable to delete rework case.');return;}delete recordCache['Rework Monitoring::'];recordsLoadedFully=false;loadRecords(false);showStatus(true,'Deleted',r.message||'Rework case deleted.');},err=>showStatus(false,'Delete failed',err&&err.message||String(err)));}
 function buildReworkDetailSummary(rec){
