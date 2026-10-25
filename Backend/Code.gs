@@ -512,7 +512,7 @@ function updateReworkFinishedDate(reworkId, concernSection, dateValue) {
   for(let i=1;i<mainRows.length;i++)if(String(mainRows[i][0])===caseId){mainRow=i+1;mainData=mainRows[i];break;}
   if(mainRow<0)throw new Error('Rework case not found.');
   const value=String(dateValue||'').trim();
-  if(value&&!/^\\d{4}-\\d{2}-\\d{2}$/.test(value))throw new Error('Enter a valid Date Finished.');
+  if(value&&!/^\d{4}-\d{2}-\d{2}$/.test(value))throw new Error('Enter a valid Date Finished.');
   const header=details.getRange(1,1,1,details.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
   const sectionCol=header.indexOf('Concern Section')+1,finishedCol=header.indexOf('Date Finished')+1,statusCol=header.indexOf('Status')+1,leadCol=header.indexOf('Lead Time')+1;
   if(!finishedCol||!sectionCol||!statusCol)throw new Error('Rework section date columns are missing.');
