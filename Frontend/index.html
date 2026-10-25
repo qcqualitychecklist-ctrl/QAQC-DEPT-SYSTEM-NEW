@@ -365,13 +365,22 @@ function renderReworkTable(){
    tr.append(cell(d['Corrective Action / Resolution'],'rework-action-cell'));
    const pic=(d.Assignments||[]).map(a=>String(a['Person In-Charge']||'').trim()).filter(Boolean).join(', ');
    tr.append(cell(pic||'—','rework-pic-cell'));
-   const st=cell('');const pill=document.createElement('span');pill.className='rework-summary-pill '+(closed?'closed':'');pill.textContent=d.Status||'Open';st.textContent='';st.append(pill);tr.append(st);
+   const st=cell('');const pill=button(d.Status||'Open','small '+(closed?'':'primary'),()=>toggleReworkStatus(rec,d));pill.classList.add('rework-summary-pill');if(closed)pill.classList.add('closed');pill.title='Click to change status';st.textContent='';st.append(pill);tr.append(st);
    if(idx===0){const finished=cell(rec['Date Finished']||'—','rework-case-shared'),lead=cell(rec['Lead Time']!==''&&rec['Lead Time']!=null?rec['Lead Time']+' days':'—','rework-case-shared');finished.rowSpan=caseSpan;lead.rowSpan=caseSpan;tr.append(finished,lead)}
    tr.append(cell(d['Rework or Back Job']||'Rework'));
    if(idx===0){const act=document.createElement('td');act.className='actioncell';act.rowSpan=caseSpan;act.append(button('View Details','small',()=>openReworkDetails(rec)),document.createTextNode(' '),button('Edit','small primary',()=>openEditRework(rec)),document.createTextNode(' '),button('Delete','small danger',()=>deleteReworkCase(rec)));tr.append(act)}
    el('tbody').append(tr);
   });
  });
+}
+
+function toggleReworkStatus(rec,detail){
+ if(!rec||!detail||!detail['Detail ID']){showStatus(false,'Status update failed','Missing description ID.');return}
+ if(!confirm('Change this description status from '+(detail.Status||'Open')+'?'))return;
+ callServer('toggleReworkDetailStatus',[rec['Rework ID'],detail['Detail ID']],r=>{
+  if(!r||!r.ok){showStatus(false,'Status update failed',r&&r.message||'Unable to update status.');return}
+  delete recordCache['Rework Monitoring::'];recordsLoadedFully=false;loadRecords(false);showStatus(true,'Status updated',r.message||'Description status updated.');
+ },err=>showStatus(false,'Status update failed',err&&err.message||String(err)));
 }
 function deleteReworkCase(rec){const id=String(rec&&rec['Rework ID']||'');if(!id){showStatus(false,'Delete failed','Missing Rework ID.');return;}if(!confirm('Delete this entire rework case and all its descriptions and assignments? This cannot be undone.'))return;showStatus(true,'Deleting rework case','Please wait…');callServer('deleteReworkCase',[id],r=>{if(!r||!r.ok){showStatus(false,'Delete failed',r&&r.message||'Unable to delete rework case.');return;}delete recordCache['Rework Monitoring::'];recordsLoadedFully=false;loadRecords(false);showStatus(true,'Deleted',r.message||'Rework case deleted.');},err=>showStatus(false,'Delete failed',err&&err.message||String(err)));}
 function buildReworkDetailSummary(rec){
@@ -384,7 +393,7 @@ function buildReworkDetailSummary(rec){
  const pic=document.createElement('div');pic.className='rework-assignment-tags';(d.Assignments||[]).forEach(a=>{const tag=document.createElement('span');tag.className='rework-assignment-tag';tag.textContent=a['Person In-Charge']||'';pic.append(tag)});const picLabel=document.createElement('div');picLabel.className='rework-subtitle';picLabel.textContent='Person In-Charge';detail.append(picLabel,pic);
  const desc=document.createElement('p');desc.textContent=d['Description of Rework']||'—';detail.append(desc);
  const fields=document.createElement('div');fields.className='rework-detail-meta';[['Category Issue',d['Category Issue']],['Corrective Action / Resolution',d['Corrective Action / Resolution']],['Concern Section',d['Concern Section']],['Rework or Back Job',d['Rework or Back Job']]].forEach(([name,value])=>{const item=document.createElement('div'),strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=name;span.textContent=value||'—';item.append(strong,span);fields.append(item)});detail.append(fields);
- const foot=document.createElement('div');foot.className='rework-detail-meta';[['Date Finished',String(d.Status||'').toLowerCase()==='closed'?(d['Closed At']||'—'):'—'],['Lead Time',d['Lead Time']!==''&&d['Lead Time']!=null?d['Lead Time']+' days':'—']].forEach(([name,value])=>{const item=document.createElement('div'),strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=name;span.textContent=value;item.append(strong,span);foot.append(item)});detail.append(foot);card.append(detail);if(i<list.length-1){const hr=document.createElement('hr');card.append(hr)}});wrap.append(card)});return wrap;
+ const foot=document.createElement('div');foot.className='rework-detail-meta';[['Lead Time',d['Lead Time']!==''&&d['Lead Time']!=null?d['Lead Time']+' days':'—']].forEach(([name,value])=>{const item=document.createElement('div'),strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=name;span.textContent=value;item.append(strong,span);foot.append(item)});detail.append(foot);card.append(detail);if(i<list.length-1){const hr=document.createElement('hr');card.append(hr)}});wrap.append(card)});return wrap;
 }
 function makeReworkSelect(options,value,placeholder){
  const s=document.createElement('select');if(placeholder!==false){const o=document.createElement('option');o.value='';o.textContent='Select an option';s.append(o)}
@@ -395,7 +404,7 @@ function reworkField(label,type,value,required,options){
  if(options)input=makeReworkSelect(options,value,!required);else{input=document.createElement(type==='textarea'?'textarea':'input');if(type!=='textarea')input.type=type;if(type==='number'){input.min='0';input.step='any'}}
  input.value=value==null?'':value;input.required=!!required;box.append(l,input);return {box,input};
 }
-const REWORK_MAIN_FIELDS=[['Date Issue','date',true],['S.O','text',false],['J.O','text',false],['Client Name','text',false],['QC - in - Charge','text',false],['Date Finished','date',false]];
+const REWORK_MAIN_FIELDS=[['Date Issue','date',true],['S.O','text',false],['J.O','text',false],['Client Name','text',false],['QC - in - Charge','text',false]];
 const REWORK_SECTIONS=['Engineering','Machineries','Fabrication','PC','Busbarring','Final Assy','Warehouse','Wiring'];
 const REWORK_STATUSES=['Closed','Open'];
 const REWORK_TYPES=['Rework','Backjob'];
