@@ -159,7 +159,7 @@ function getReworkRecords_(searchText) {
       'Corrective Action / Resolution':String(d[10]||''),
       'Concern Section':String(d[11]||'')||(people.map(a=>a['Concern Section']).filter(Boolean)[0]||''),
       'Closed At':formatCell_(d[detailIndex('Closed At')]||(String(d[7]||'').trim().toLowerCase()==='closed'?d[3]:'')),
-      'Date Finished':formatCell_(d[detailIndex('Date Finished')]||r[12]),
+      'Date Finished':formatCell_(d[detailIndex('Date Finished')]),
       'Item no.':String(d[detailIndex('Item no.')]||''),'Panel Name':String(d[detailIndex('Panel Name')]||''),'Qty':detailIndex('Qty')<0?'':(d[detailIndex('Qty')]==null?'':String(d[detailIndex('Qty')])),
       Assignments:people
     };
