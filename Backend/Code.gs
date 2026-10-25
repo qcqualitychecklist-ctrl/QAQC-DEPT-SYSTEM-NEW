@@ -21,7 +21,7 @@ const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel
 const REWORK_MAIN_SHEET = 'Rework Main';
 const REWORK_DETAILS_SHEET = 'Rework Details';
 const REWORK_ASSIGNMENTS_SHEET = 'Rework Assignments';
-const REWORK_MAIN_HEADERS = ['Rework ID','Created At','Updated At','Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Date Received','QC - in - Charge']; // Date Received is retained only for legacy storage.
+const REWORK_MAIN_HEADERS = ['Rework ID','Created At','Updated At','Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Date Received','QC - in - Charge','Date Finished']; // Date Received is retained only for legacy storage.
 const REWORK_DETAILS_HEADERS = ['Detail ID','Rework ID','Created At','Updated At','Description of Rework','QC - in - Charge','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution','Concern Section','Closed At','Item no.','Panel Name','Qty','Item ID'];
 const REWORK_ASSIGNMENT_HEADERS = ['Assignment ID','Detail ID','Person In-Charge','Concern Section','Created At','Updated At'];
 const REWORK_CONCERN_SECTIONS = ['Engineering','Machineries','Fabrication','PC','Busbarring','Final Assy','Warehouse','Wiring'];
@@ -172,13 +172,14 @@ function getReworkRecords_(searchText) {
     const qc=String(r[11]||detailList.map(d=>d['QC - in - Charge']).find(Boolean)||'');
     const allClosed=detailList.length>0&&detailList.every(d=>String(d.Status||'Open').trim().toLowerCase()==='closed');
     const closureDates=allClosed?detailList.map(d=>String(d['Closed At']||'')).filter(Boolean).sort():[];
-    const leadTime=allClosed&&closureDates.length?reworkLeadTimeDays_(r[3],closureDates[closureDates.length-1]):'';
+    const finishedDate=formatCell_(r[12]||(closureDates.length?closureDates[closureDates.length-1]:''));
+    const leadTime=allClosed&&finishedDate?reworkLeadTimeDays_(r[3],finishedDate):'';
     const obj={
       'Rework ID':id,'Created At':formatCell_(r[1]),'Updated At':formatCell_(r[2]),
       'Date Issue':formatCell_(r[3]),'S.O':String(r[4]||''),'J.O':String(r[5]||''),
       'Client Name':String(r[6]||''),'Item no.':String(r[7]||''),'Panel Name':String(r[8]||''),
       'Qty':r[9]==null?'':String(r[9]),'Date Received':'',
-      'QC - in - Charge':qc,'Date Finished':allClosed&&closureDates.length?closureDates[closureDates.length-1]:'','Lead Time':leadTime,'Details':detailList,
+      'QC - in - Charge':qc,'Date Finished':allClosed?finishedDate:'','Lead Time':leadTime,'Details':detailList,
       'Description Summary':detailList.map(d=>d['Description of Rework']).filter(Boolean).join(' | '),
       'Concern Section Summary':[...new Set(detailList.map(d=>d['Concern Section']||((d.Assignments||[]).map(a=>a['Concern Section']).filter(Boolean)[0]||'')).filter(Boolean))].join(', '),
       'Status Summary':detailList.length&&detailList.every(d=>String(d.Status||'Open').trim().toLowerCase()==='closed')?'Closed':detailList.length?'Open':'No details',
@@ -407,7 +408,7 @@ function saveReworkCase_(input) {
     if(!Array.isArray(d.Assignments)||!d.Assignments.length||d.Assignments.some(a=>!String(a['Person In-Charge']||'').trim()))throw new Error('Each description needs at least one Person In-Charge.');
   });
   const caseId=id||Utilities.getUuid();
-  const mainRecord={'Rework ID':caseId,'Created At':oldMain?oldMain[1]:now,'Updated At':now,'Date Issue':input['Date Issue']||'','S.O':input['S.O']||'','J.O':input['J.O']||'','Client Name':input['Client Name']||'','Item no.':(detailsInput[0]&&detailsInput[0]['Item no.'])||input['Item no.']||'','Panel Name':(detailsInput[0]&&detailsInput[0]['Panel Name'])||input['Panel Name']||'','Qty':(detailsInput[0]&&detailsInput[0].Qty)||input.Qty||'','Date Received':oldMain?oldMain[10]:'','QC - in - Charge':String(input['QC - in - Charge']||'').trim()};
+  const mainRecord={'Rework ID':caseId,'Created At':oldMain?oldMain[1]:now,'Updated At':now,'Date Issue':input['Date Issue']||'','S.O':input['S.O']||'','J.O':input['J.O']||'','Client Name':input['Client Name']||'','Item no.':(detailsInput[0]&&detailsInput[0]['Item no.'])||input['Item no.']||'','Panel Name':(detailsInput[0]&&detailsInput[0]['Panel Name'])||input['Panel Name']||'','Qty':(detailsInput[0]&&detailsInput[0].Qty)||input.Qty||'','Date Received':oldMain?oldMain[10]:'','QC - in - Charge':String(input['QC - in - Charge']||'').trim(),'Date Finished':String(input['Date Finished']||'').trim()};
   const mainOut=REWORK_MAIN_HEADERS.map(h=>mainRecord[h]??'');
   const oldDetailRows=details.getLastRow()>1?details.getDataRange().getValues().slice(1):[];
   const oldAssignmentRows=assignments.getLastRow()>1?assignments.getDataRange().getValues().slice(1):[];
@@ -438,23 +439,15 @@ function saveReworkCase_(input) {
     });
   });
   if(mainRow>0)main.getRange(mainRow,1,1,mainOut.length).setValues([mainOut]);else main.appendRow(mainOut);
-  const detailClosureDates=detailsInput.map(d=>{
-    const detailId=String(d['Detail ID']||''),old=existingDetailMap[detailId],status=String(d.Status||'Open').trim();
-    if(status!=='Closed')return '';
-    const suppliedDate=String(d['Date Finished']||'').trim();
-    if(suppliedDate)return suppliedDate;
-    const wasClosed=old&&String(old[7]||'Open').trim().toLowerCase()==='closed';
-    return wasClosed?(old[12]||old[3]||now):now;
-  });
   const allDetailsClosed=detailsInput.length>0&&detailsInput.every(d=>String(d.Status||'Open').trim().toLowerCase()==='closed');
-  const closureCandidates=allDetailsClosed?detailClosureDates.map(value=>({value,time:reworkDateOnlyUtc_(value)})).filter(item=>item.time!=null).sort((a,b)=>a.time-b.time):[];
-  const caseClosedAt=closureCandidates.length?closureCandidates[closureCandidates.length-1].value:'';
-  const caseLeadTime=allDetailsClosed?reworkLeadTimeDays_(input['Date Issue'],caseClosedAt):'';
+  const caseClosedAt=allDetailsClosed?String(input['Date Finished']||'').trim():'';
+  if(String(input['Date Finished']||'').trim()&&!allDetailsClosed)throw new Error('Date Finished can only be entered when all Rework Descriptions are Closed.');
+  const caseLeadTime=allDetailsClosed&&caseClosedAt?reworkLeadTimeDays_(input['Date Issue'],caseClosedAt):'';
   const savedDetailIds=[],detailOutput=[],assignmentOutput=[];
   detailsInput.forEach((d,detailIndex)=>{
     const detailId=String(d['Detail ID']||'')||Utilities.getUuid(),old=existingDetailMap[detailId],status=String(d.Status||'Open').trim();
     savedDetailIds.push(detailId);
-    const detailRecord={'Detail ID':detailId,'Rework ID':caseId,'Created At':old?old[2]:now,'Updated At':now,'Description of Rework':String(d['Description of Rework']||'').trim(),'QC - in - Charge':String(input['QC - in - Charge']||'').trim(),'Lead Time':status==='Closed'?reworkLeadTimeDays_(input['Date Issue'],detailClosureDates[detailIndex]):'','Status':status,'Rework or Back Job':String(d['Rework or Back Job']||'Rework'),'Category Issue':String(d['Category Issue']||''),'Corrective Action / Resolution':String(d['Corrective Action / Resolution']||''),'Concern Section':String(d['Concern Section']||''),'Closed At':detailClosureDates[detailIndex],'Item no.':String(d['Item no.']||input['Item no.']||''),'Panel Name':String(d['Panel Name']||input['Panel Name']||''),'Qty':d.Qty==null?(input.Qty||''):d.Qty,'Item ID':String(d['Item ID']||'')};
+    const detailRecord={'Detail ID':detailId,'Rework ID':caseId,'Created At':old?old[2]:now,'Updated At':now,'Description of Rework':String(d['Description of Rework']||'').trim(),'QC - in - Charge':String(input['QC - in - Charge']||'').trim(),'Lead Time':caseLeadTime,'Status':status,'Rework or Back Job':String(d['Rework or Back Job']||'Rework'),'Category Issue':String(d['Category Issue']||''),'Corrective Action / Resolution':String(d['Corrective Action / Resolution']||''),'Concern Section':String(d['Concern Section']||''),'Closed At':caseClosedAt,'Item no.':String(d['Item no.']||input['Item no.']||''),'Panel Name':String(d['Panel Name']||input['Panel Name']||''),'Qty':d.Qty==null?(input.Qty||''):d.Qty,'Item ID':String(d['Item ID']||'')};
     detailOutput.push(detailHeader.map(h=>detailRecord[h]??''));
     (Array.isArray(d.Assignments)?d.Assignments:[]).forEach(a=>{
       const assignmentId=String(a['Assignment ID']||'')||Utilities.getUuid();
