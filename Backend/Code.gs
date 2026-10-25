@@ -392,6 +392,8 @@ function saveReworkCase_(input) {
   const ss=SpreadsheetApp.openById(DATABASE_ID);
   const main=ss.getSheetByName(REWORK_MAIN_SHEET),details=ss.getSheetByName(REWORK_DETAILS_SHEET),assignments=ss.getSheetByName(REWORK_ASSIGNMENTS_SHEET);
   if(!main||!details||!assignments)throw new Error('Rework database tabs are missing. Use Prepare Database after this feature is deployed.');
+  const mainHeaders=main.getRange(1,1,1,Math.max(main.getLastColumn(),REWORK_MAIN_HEADERS.length)).getDisplayValues()[0].map(v=>String(v||'').trim());
+  REWORK_MAIN_HEADERS.forEach((header,i)=>{if(!mainHeaders[i])main.getRange(1,i+1).setValue(header).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');});
   let detailHeader=details.getRange(1,1,1,Math.max(details.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
   REWORK_DETAILS_HEADERS.forEach(header=>{if(!detailHeader.includes(header)){const col=details.getLastColumn()+1;details.getRange(1,col).setValue(header).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');detailHeader[col-1]=header;}});
   detailHeader=details.getRange(1,1,1,details.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
