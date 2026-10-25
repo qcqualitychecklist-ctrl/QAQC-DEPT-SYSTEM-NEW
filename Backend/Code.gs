@@ -133,6 +133,8 @@ function getReworkRecords_(searchText) {
   const ss=SpreadsheetApp.openById(DATABASE_ID);
   const main=ss.getSheetByName(REWORK_MAIN_SHEET),details=ss.getSheetByName(REWORK_DETAILS_SHEET),assignments=ss.getSheetByName(REWORK_ASSIGNMENTS_SHEET);
   if(!main||main.getLastRow()<2)return {ok:true,records:[],fields:REWORK_MAIN_HEADERS};
+  const detailHeaders=details&&details.getLastColumn()>0?details.getRange(1,1,1,details.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()):[];
+  const detailIndex=name=>detailHeaders.indexOf(name);
   const mainRows=main.getDataRange().getValues().slice(1);
   const detailRows=details&&details.getLastRow()>1?details.getDataRange().getValues().slice(1):[];
   const assignmentRows=assignments&&assignments.getLastRow()>1?assignments.getDataRange().getValues().slice(1):[];
@@ -147,7 +149,7 @@ function getReworkRecords_(searchText) {
     const people=peopleByDetail[String(d[0]||'')]||[];
     const item={
       'Detail ID':String(d[0]||''),
-      'Item ID':String(d[detailCol('Item ID')]||''),
+      'Item ID':String(d[detailIndex('Item ID')]||''),
       'Description of Rework':String(d[4]||''),
       'QC - in - Charge':String(d[5]||''),
       'Lead Time':String(d[6]||''),
@@ -157,7 +159,7 @@ function getReworkRecords_(searchText) {
       'Corrective Action / Resolution':String(d[10]||''),
       'Concern Section':String(d[11]||'')||(people.map(a=>a['Concern Section']).filter(Boolean)[0]||''),
       'Closed At':formatCell_(d[12]||(String(d[7]||'').trim().toLowerCase()==='closed'?d[3]:'')),
-      'Item no.':String(d[detailCol('Item no.')]||''),'Panel Name':String(d[detailCol('Panel Name')]||''),'Qty':detailCol('Qty')<0?'':(d[detailCol('Qty')]==null?'':String(d[detailCol('Qty')])),
+      'Item no.':String(d[detailIndex('Item no.')]||''),'Panel Name':String(d[detailIndex('Panel Name')]||''),'Qty':detailIndex('Qty')<0?'':(d[detailIndex('Qty')]==null?'':String(d[detailIndex('Qty')])),
       Assignments:people
     };
     (detailsByCase[caseId]||(detailsByCase[caseId]=[])).push(item);
