@@ -513,9 +513,10 @@ function updateReworkFinishedDate(reworkId, concernSection, dateValue) {
   if(mainRow<0)throw new Error('Rework case not found.');
   const value=String(dateValue||'').trim();
   if(value&&!/^\d{4}-\d{2}-\d{2}$/.test(value))throw new Error('Enter a valid Date Finished.');
-  const header=details.getRange(1,1,1,details.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
-  const sectionCol=header.indexOf('Concern Section')+1,finishedCol=header.indexOf('Date Finished')+1,statusCol=header.indexOf('Status')+1,leadCol=header.indexOf('Lead Time')+1;
-  if(!finishedCol||!sectionCol||!statusCol)throw new Error('Rework section date columns are missing.');
+  let header=details.getLastColumn()?details.getRange(1,1,1,details.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()):[];
+  const findHeader=name=>header.findIndex(v=>v.toLowerCase().replace(/\\s+/g,' ')===name.toLowerCase());
+  ['Concern Section','Date Finished','Status','Lead Time'].forEach(name=>{if(findHeader(name)<0){const col=details.getLastColumn()+1;details.getRange(1,col).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');header[col-1]=name;}});
+  const sectionCol=findHeader('Concern Section')+1,finishedCol=findHeader('Date Finished')+1,statusCol=findHeader('Status')+1,leadCol=findHeader('Lead Time')+1;
   const rows=details.getDataRange().getValues(),sectionRows=[];
   for(let i=1;i<rows.length;i++)if(String(rows[i][1])===caseId&&String(rows[i][sectionCol-1]||'Unassigned')===section)sectionRows.push({row:i+1,data:rows[i]});
   if(!sectionRows.length)throw new Error('No descriptions found for this Concern Section.');
