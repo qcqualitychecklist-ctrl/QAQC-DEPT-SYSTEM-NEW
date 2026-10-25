@@ -353,13 +353,16 @@ function renderReworkTable(){
  rows.forEach(rec=>{
   const raw=(rec.Details&&rec.Details.length)?rec.Details:[{}],sectionGroups=new Map();
   raw.forEach((d,i)=>{const section=String(d['Concern Section']||'Unassigned').trim()||'Unassigned';if(!sectionGroups.has(section))sectionGroups.set(section,[]);sectionGroups.get(section).push({detail:d,index:i})});
-  const sections=[];sectionGroups.forEach((entries,section)=>{const itemGroups=new Map();entries.forEach(entry=>{const d=entry.detail,key=[d['Item no.']||rec['Item no.']||'',d['Panel Name']||rec['Panel Name']||'',d.Qty||rec.Qty||''].join('¦');if(!itemGroups.has(key))itemGroups.set(key,[]);itemGroups.get(key).push(entry)});const flat=[];itemGroups.forEach((list,key)=>list.forEach((entry,itemIndex)=>flat.push({...entry,itemKey:key,itemIndex,itemSpan:list.length,section})));sections.push({section,flat,span:flat.length})});
+  const itemKeyFor=d=>[d['Item no.']||rec['Item no.']||'',d['Panel Name']||rec['Panel Name']||'',d.Qty||rec.Qty||''].join('¦');
+  const allItemKeys=new Set(raw.map(itemKeyFor)),singleItemAcrossCase=allItemKeys.size===1;
+  const sections=[];sectionGroups.forEach((entries,section)=>{const itemGroups=new Map();entries.forEach(entry=>{const key=itemKeyFor(entry.detail);if(!itemGroups.has(key))itemGroups.set(key,[]);itemGroups.get(key).push(entry)});const flat=[];itemGroups.forEach((list,key)=>list.forEach((entry,itemIndex)=>flat.push({...entry,itemKey:key,itemIndex,itemSpan:list.length,section})));sections.push({section,flat,span:flat.length})});
   const caseSpan=sections.reduce((n,s)=>n+s.span,0)||1;let caseRowIndex=0;
   sections.forEach(sectionGroup=>{
    sectionGroup.flat.forEach((entry,sectionIdx)=>{
     const d=entry.detail,idx=caseRowIndex++,tr=document.createElement('tr'),closed=String(d.Status||'').toLowerCase()==='closed';
     if(idx===0){const joSo=[rec['J.O'],rec['S.O']].filter(Boolean).join(' / ');[['Date Issue',rec['Date Issue']],['J.O. / S.O.',joSo],['Client Name',rec['Client Name']]].forEach(([k,v])=>{const td=cell(v);td.rowSpan=caseSpan;tr.append(td)})}
-    if(entry.itemIndex===0){[['Item no.',d['Item no.']||rec['Item no.']],['Panel Name',d['Panel Name']||rec['Panel Name']],['Qty',d.Qty||rec.Qty]].forEach(([k,v])=>{const td=cell(v,k==='Panel Name'?'rework-item-cell':'rework-item-shared');td.rowSpan=entry.itemSpan;tr.append(td)})}
+    if(singleItemAcrossCase&&idx===0){[['Item no.',d['Item no.']||rec['Item no.']],['Panel Name',d['Panel Name']||rec['Panel Name']],['Qty',d.Qty||rec.Qty]].forEach(([k,v])=>{const td=cell(v,k==='Panel Name'?'rework-item-cell':'rework-item-shared');td.rowSpan=caseSpan;tr.append(td)})}
+    else if(!singleItemAcrossCase&&entry.itemIndex===0){[['Item no.',d['Item no.']||rec['Item no.']],['Panel Name',d['Panel Name']||rec['Panel Name']],['Qty',d.Qty||rec.Qty]].forEach(([k,v])=>{const td=cell(v,k==='Panel Name'?'rework-item-cell':'rework-item-shared');td.rowSpan=entry.itemSpan;tr.append(td)})}
     tr.append(cell(d['Concern Section'],'rework-concern-cell'));
     tr.append(cell(d['Description of Rework'],'rework-description-cell'));
     tr.append(cell(d['Category Issue'],'rework-category-cell'));
