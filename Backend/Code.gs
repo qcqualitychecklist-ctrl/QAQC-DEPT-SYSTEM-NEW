@@ -410,7 +410,9 @@ function saveReworkCase_(input) {
     if(!Array.isArray(d.Assignments)||!d.Assignments.length||d.Assignments.some(a=>!String(a['Person In-Charge']||'').trim()))throw new Error('Each description needs at least one Person In-Charge.');
   });
   const caseId=id||Utilities.getUuid();
-  const mainRecord={'Rework ID':caseId,'Created At':oldMain?oldMain[1]:now,'Updated At':now,'Date Issue':input['Date Issue']||'','S.O':input['S.O']||'','J.O':input['J.O']||'','Client Name':input['Client Name']||'','Item no.':(detailsInput[0]&&detailsInput[0]['Item no.'])||input['Item no.']||'','Panel Name':(detailsInput[0]&&detailsInput[0]['Panel Name'])||input['Panel Name']||'','Qty':(detailsInput[0]&&detailsInput[0].Qty)||input.Qty||'','Date Received':oldMain?oldMain[10]:'','QC - in - Charge':String(input['QC - in - Charge']||'').trim(),'Date Finished':String(input['Date Finished']||'').trim()};
+  const allDetailsClosed=detailsInput.length>0&&detailsInput.every(d=>String(d.Status||'Open').trim().toLowerCase()==='closed');
+  const caseClosedAt=allDetailsClosed?(oldMain&&oldMain[12]?oldMain[12]:now):'';
+  const mainRecord={'Rework ID':caseId,'Created At':oldMain?oldMain[1]:now,'Updated At':now,'Date Issue':input['Date Issue']||'','S.O':input['S.O']||'','J.O':input['J.O']||'','Client Name':input['Client Name']||'','Item no.':(detailsInput[0]&&detailsInput[0]['Item no.'])||input['Item no.']||'','Panel Name':(detailsInput[0]&&detailsInput[0]['Panel Name'])||input['Panel Name']||'','Qty':(detailsInput[0]&&detailsInput[0].Qty)||input.Qty||'','Date Received':oldMain?oldMain[10]:'','QC - in - Charge':String(input['QC - in - Charge']||'').trim(),'Date Finished':caseClosedAt};
   const mainOut=REWORK_MAIN_HEADERS.map(h=>mainRecord[h]??'');
   const oldDetailRows=details.getLastRow()>1?details.getDataRange().getValues().slice(1):[];
   const oldAssignmentRows=assignments.getLastRow()>1?assignments.getDataRange().getValues().slice(1):[];
@@ -441,9 +443,6 @@ function saveReworkCase_(input) {
     });
   });
   if(mainRow>0)main.getRange(mainRow,1,1,mainOut.length).setValues([mainOut]);else main.appendRow(mainOut);
-  const allDetailsClosed=detailsInput.length>0&&detailsInput.every(d=>String(d.Status||'Open').trim().toLowerCase()==='closed');
-  const caseClosedAt=allDetailsClosed?String(input['Date Finished']||'').trim():'';
-  if(String(input['Date Finished']||'').trim()&&!allDetailsClosed)throw new Error('Date Finished can only be entered when all Rework Descriptions are Closed.');
   const caseLeadTime=allDetailsClosed&&caseClosedAt?reworkLeadTimeDays_(input['Date Issue'],caseClosedAt):'';
   const savedDetailIds=[],detailOutput=[],assignmentOutput=[];
   detailsInput.forEach((d,detailIndex)=>{
@@ -467,6 +466,39 @@ function saveReworkCase_(input) {
   if(nextAssignments.length)assignments.getRange(2,1,nextAssignments.length,REWORK_ASSIGNMENT_HEADERS.length).setValues(nextAssignments);
   invalidateModuleCache_('Rework Monitoring');
   return {ok:true,recordId:caseId,message:mainRow>0?'Rework record updated.':'Rework record saved.'};
+}
+
+
+function toggleReworkDetailStatus(reworkId, detailId) {
+  const caseId=String(reworkId||'').trim(), targetId=String(detailId||'').trim();
+  if(!caseId||!targetId)throw new Error('Missing Rework case or description ID.');
+  const ss=SpreadsheetApp.openById(DATABASE_ID);
+  const main=ss.getSheetByName(REWORK_MAIN_SHEET),details=ss.getSheetByName(REWORK_DETAILS_SHEET);
+  if(!main||!details)throw new Error('Rework database tabs are missing.');
+  const mainRows=main.getDataRange().getValues();let mainRow=-1,mainData=null;
+  for(let i=1;i<mainRows.length;i++)if(String(mainRows[i][0])===caseId){mainRow=i+1;mainData=mainRows[i];break;}
+  if(mainRow<0)throw new Error('Rework case not found. Refresh and try again.');
+  const headers=details.getRange(1,1,1,details.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
+  const statusCol=headers.indexOf('Status')+1,closedCol=headers.indexOf('Closed At')+1,updatedCol=headers.indexOf('Updated At')+1;
+  if(!statusCol||!closedCol)throw new Error('Status or Closed At column is missing.');
+  const rows=details.getDataRange().getValues();let targetRow=-1,targetStatus='';
+  for(let i=1;i<rows.length;i++)if(String(rows[i][0])===targetId&&String(rows[i][1])===caseId){targetRow=i+1;targetStatus=String(rows[i][statusCol-1]||'Open').trim();break;}
+  if(targetRow<0)throw new Error('Rework description not found. Refresh and try again.');
+  const nextStatus=targetStatus.toLowerCase()==='closed'?'Open':'Closed',now=new Date();
+  details.getRange(targetRow,statusCol).setValue(nextStatus);
+  details.getRange(targetRow,closedCol).setValue(nextStatus==='Closed'?now:'');
+  if(updatedCol)details.getRange(targetRow,updatedCol).setValue(now);
+  const updatedRows=details.getDataRange().getValues(),caseRows=updatedRows.filter((r,i)=>i>0&&String(r[1])===caseId);
+  const allClosed=caseRows.length>0&&caseRows.every(r=>String(r[statusCol-1]||'Open').trim().toLowerCase()==='closed');
+  const finishedCol=REWORK_MAIN_HEADERS.indexOf('Date Finished')+1;
+  const leadCol=headers.indexOf('Lead Time')+1;
+  const dateIssue=mainData[3];
+  const finishedDate=allClosed?(mainData[finishedCol-1]||now):'';
+  if(finishedCol)main.getRange(mainRow,finishedCol).setValue(finishedDate);
+  const leadTime=allClosed?reworkLeadTimeDays_(dateIssue,finishedDate):'';
+  if(leadCol)caseRows.forEach(r=>{const rowIndex=updatedRows.findIndex(x=>String(x[0])===String(r[0]));if(rowIndex>0)details.getRange(rowIndex+1,leadCol).setValue(leadTime);});
+  invalidateModuleCache_('Rework Monitoring');
+  return {ok:true,status:nextStatus,message:'Description status changed to '+nextStatus+'.'};
 }
 
 function saveJOOverride_(input) {
