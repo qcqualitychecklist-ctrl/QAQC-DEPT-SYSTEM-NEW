@@ -126,7 +126,7 @@ function reworkDateOnlyUtc_(value) {
 }
 function reworkLeadTimeDays_(dateIssue,dateClosed) {
   const start=reworkDateOnlyUtc_(dateIssue),end=reworkDateOnlyUtc_(dateClosed);
-  return start==null||end==null?'':Math.round((end-start)/86400000);
+  return start==null||end==null?'':Math.round((end-start)/86400000)+1;
 }
 
 function getReworkRecords_(searchText) {
