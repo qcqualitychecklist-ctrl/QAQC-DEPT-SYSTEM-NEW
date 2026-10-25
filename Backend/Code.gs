@@ -441,6 +441,8 @@ function saveReworkCase_(input) {
   const detailClosureDates=detailsInput.map(d=>{
     const detailId=String(d['Detail ID']||''),old=existingDetailMap[detailId],status=String(d.Status||'Open').trim();
     if(status!=='Closed')return '';
+    const suppliedDate=String(d['Date Finished']||'').trim();
+    if(suppliedDate)return suppliedDate;
     const wasClosed=old&&String(old[7]||'Open').trim().toLowerCase()==='closed';
     return wasClosed?(old[12]||old[3]||now):now;
   });
