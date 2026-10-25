@@ -351,25 +351,31 @@ function renderReworkTable(){
  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent=recordsLoadedFully?'No rework records found.':'Loading rework records…';tr.append(td);el('tbody').append(tr);return}
  const cell=(value,cls)=>{const td=document.createElement('td');if(cls)td.className=cls;td.textContent=value==null||value===''?'—':String(value);td.title=td.textContent;return td};
  rows.forEach(rec=>{
-  const raw=(rec.Details&&rec.Details.length)?rec.Details:[{}],itemGroups=new Map();
-  raw.forEach((d,i)=>{const key=d['Item ID']||[d['Item no.']||rec['Item no.']||'',d['Panel Name']||rec['Panel Name']||'',d.Qty||rec.Qty||''].join('¦');if(!itemGroups.has(key))itemGroups.set(key,[]);itemGroups.get(key).push({detail:d,index:i})});
-  const flat=[];itemGroups.forEach((list,key)=>list.forEach((entry,itemIndex)=>flat.push({...entry,itemKey:key,itemIndex,itemSpan:list.length})));
-  const caseSpan=flat.length||1;
-  flat.forEach((entry,idx)=>{
-   const d=entry.detail,tr=document.createElement('tr'),closed=String(d.Status||'').toLowerCase()==='closed';
-   if(idx===0){const joSo=[rec['J.O'],rec['S.O']].filter(Boolean).join(' / ');[['Date Issue',rec['Date Issue']],['J.O. / S.O.',joSo],['Client Name',rec['Client Name']]].forEach(([k,v])=>{const td=cell(v);td.rowSpan=caseSpan;tr.append(td)})}
-   if(entry.itemIndex===0){[['Item no.',d['Item no.']||rec['Item no.']],['Panel Name',d['Panel Name']||rec['Panel Name']],['Qty',d.Qty||rec.Qty]].forEach(([k,v])=>{const td=cell(v,k==='Panel Name'?'rework-item-cell':'rework-item-shared');td.rowSpan=entry.itemSpan;tr.append(td)})}
-   tr.append(cell(d['Concern Section'],'rework-concern-cell'));
-   tr.append(cell(d['Description of Rework'],'rework-description-cell'));
-   tr.append(cell(d['Category Issue'],'rework-category-cell'));
-   tr.append(cell(d['Corrective Action / Resolution'],'rework-action-cell'));
-   const pic=(d.Assignments||[]).map(a=>String(a['Person In-Charge']||'').trim()).filter(Boolean).join(', ');
-   tr.append(cell(pic||'—','rework-pic-cell'));
-   const st=cell('');const pill=button(d.Status||'Open','small '+(closed?'':'primary'),()=>toggleReworkStatus(rec,d));pill.classList.add('rework-summary-pill');if(closed)pill.classList.add('closed');pill.title='Click to change status';st.textContent='';st.append(pill);tr.append(st);
-   if(idx===0){const finished=document.createElement('td');finished.className='rework-case-shared';const dateInput=document.createElement('input');dateInput.type='text';dateInput.value=String(rec['Date Finished']||'').slice(0,10);dateInput.placeholder='YYYY-MM-DD';dateInput.maxLength=10;dateInput.inputMode='numeric';dateInput.title='Enter Date Finished as YYYY-MM-DD';dateInput.style.width='110px';dateInput.style.maxWidth='100%';dateInput.addEventListener('change',()=>editReworkFinishedDate(rec,dateInput));finished.append(dateInput);finished.rowSpan=caseSpan;const lead=cell(rec['Lead Time']!==''&&rec['Lead Time']!=null?rec['Lead Time']+' days':'—','rework-case-shared');lead.rowSpan=caseSpan;tr.append(finished,lead)}
-   tr.append(cell(d['Rework or Back Job']||'Rework'));
-   if(idx===0){const act=document.createElement('td');act.className='actioncell';act.rowSpan=caseSpan;act.append(button('View Details','small',()=>openReworkDetails(rec)),document.createTextNode(' '),button('Edit','small primary',()=>openEditRework(rec)),document.createTextNode(' '),button('Delete','small danger',()=>deleteReworkCase(rec)));tr.append(act)}
-   el('tbody').append(tr);
+  const raw=(rec.Details&&rec.Details.length)?rec.Details:[{}],sectionGroups=new Map();
+  raw.forEach((d,i)=>{const section=String(d['Concern Section']||'Unassigned').trim()||'Unassigned';if(!sectionGroups.has(section))sectionGroups.set(section,[]);sectionGroups.get(section).push({detail:d,index:i})});
+  const sections=[];sectionGroups.forEach((entries,section)=>{const itemGroups=new Map();entries.forEach(entry=>{const d=entry.detail,key=d['Item ID']||[d['Item no.']||rec['Item no.']||'',d['Panel Name']||rec['Panel Name']||'',d.Qty||rec.Qty||''].join('¦');if(!itemGroups.has(key))itemGroups.set(key,[]);itemGroups.get(key).push(entry)});const flat=[];itemGroups.forEach((list,key)=>list.forEach((entry,itemIndex)=>flat.push({...entry,itemKey:key,itemIndex,itemSpan:list.length,section})));sections.push({section,flat,span:flat.length})});
+  const caseSpan=sections.reduce((n,s)=>n+s.span,0)||1;let caseRowIndex=0;
+  sections.forEach(sectionGroup=>{
+   sectionGroup.flat.forEach((entry,sectionIdx)=>{
+    const d=entry.detail,idx=caseRowIndex++,tr=document.createElement('tr'),closed=String(d.Status||'').toLowerCase()==='closed';
+    if(idx===0){const joSo=[rec['J.O'],rec['S.O']].filter(Boolean).join(' / ');[['Date Issue',rec['Date Issue']],['J.O. / S.O.',joSo],['Client Name',rec['Client Name']]].forEach(([k,v])=>{const td=cell(v);td.rowSpan=caseSpan;tr.append(td)})}
+    if(entry.itemIndex===0){[['Item no.',d['Item no.']||rec['Item no.']],['Panel Name',d['Panel Name']||rec['Panel Name']],['Qty',d.Qty||rec.Qty]].forEach(([k,v])=>{const td=cell(v,k==='Panel Name'?'rework-item-cell':'rework-item-shared');td.rowSpan=entry.itemSpan;tr.append(td)})}
+    tr.append(cell(d['Concern Section'],'rework-concern-cell'));
+    tr.append(cell(d['Description of Rework'],'rework-description-cell'));
+    tr.append(cell(d['Category Issue'],'rework-category-cell'));
+    tr.append(cell(d['Corrective Action / Resolution'],'rework-action-cell'));
+    const pic=(d.Assignments||[]).map(a=>String(a['Person In-Charge']||'').trim()).filter(Boolean).join(', ');
+    tr.append(cell(pic||'—','rework-pic-cell'));
+    const st=cell('');const pill=button(d.Status||'Open','small '+(closed?'':'primary'),()=>toggleReworkStatus(rec,d));pill.classList.add('rework-summary-pill');if(closed)pill.classList.add('closed');pill.title='Click to change status';st.append(pill);tr.append(st);
+    if(sectionIdx===0){
+     const finished=document.createElement('td');finished.className='rework-case-shared';const dateInput=document.createElement('input');dateInput.type='text';dateInput.value=String(d['Date Finished']||'').slice(0,10);dateInput.placeholder='YYYY-MM-DD';dateInput.maxLength=10;dateInput.inputMode='numeric';dateInput.title='Date Finished for '+sectionGroup.section;dateInput.style.width='110px';dateInput.style.maxWidth='100%';dateInput.addEventListener('change',()=>editReworkFinishedDate(rec,sectionGroup.section,dateInput));finished.append(dateInput);finished.rowSpan=sectionGroup.span;tr.append(finished);
+     const sectionClosed=sectionGroup.flat.length>0&&sectionGroup.flat.every(e=>String(e.detail.Status||'Open').toLowerCase()==='closed');
+     const sectionLead=sectionClosed&&d['Lead Time']!==''&&d['Lead Time']!=null?d['Lead Time']+' days':'—';const lead=cell(sectionLead,'rework-case-shared');lead.rowSpan=sectionGroup.span;tr.append(lead);
+    }
+    tr.append(cell(d['Rework or Back Job']||'Rework'));
+    if(idx===0){const act=document.createElement('td');act.className='actioncell';act.rowSpan=caseSpan;act.append(button('View Details','small',()=>openReworkDetails(rec)),document.createTextNode(' '),button('Edit','small primary',()=>openEditRework(rec)),document.createTextNode(' '),button('Delete','small danger',()=>deleteReworkCase(rec)));tr.append(act)}
+    el('tbody').append(tr);
+   });
   });
  });
 }
@@ -400,11 +406,11 @@ function normalizeReworkDate(value){
  const dt=new Date(Date.UTC(y,m-1,d));if(!y||!m||!d||dt.getUTCFullYear()!==y||dt.getUTCMonth()!==m-1||dt.getUTCDate()!==d)return null;
  return String(y).padStart(4,'0')+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
 }
-function editReworkFinishedDate(rec, input){
+function editReworkFinishedDate(rec, section, input){
  const value=normalizeReworkDate(input.value);
  if(value===null){showStatus(false,'Invalid date','Use YYYY-MM-DD, DD/MM/YYYY, or DD-MMM-YYYY (example: 25-Oct-2026).');input.focus();return}
  input.value=value;
- callServer('updateReworkFinishedDate',[rec['Rework ID'],value],r=>{
+ callServer('updateReworkFinishedDate',[rec['Rework ID'],section,value],r=>{
   if(!r||!r.ok){showStatus(false,'Date update failed',r&&r.message||'Unable to save Date Finished.');return}
   rec['Date Finished']=value;delete recordCache['Rework Monitoring::'];recordCache['Rework Monitoring::']=records;renderTable();
  },()=>{});
