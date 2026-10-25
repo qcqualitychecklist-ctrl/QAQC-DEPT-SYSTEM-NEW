@@ -353,7 +353,7 @@ function renderReworkTable(){
  rows.forEach(rec=>{
   const raw=(rec.Details&&rec.Details.length)?rec.Details:[{}],sectionGroups=new Map();
   raw.forEach((d,i)=>{const section=String(d['Concern Section']||'Unassigned').trim()||'Unassigned';if(!sectionGroups.has(section))sectionGroups.set(section,[]);sectionGroups.get(section).push({detail:d,index:i})});
-  const sections=[];sectionGroups.forEach((entries,section)=>{const itemGroups=new Map();entries.forEach(entry=>{const d=entry.detail,key=d['Item ID']||[d['Item no.']||rec['Item no.']||'',d['Panel Name']||rec['Panel Name']||'',d.Qty||rec.Qty||''].join('¦');if(!itemGroups.has(key))itemGroups.set(key,[]);itemGroups.get(key).push(entry)});const flat=[];itemGroups.forEach((list,key)=>list.forEach((entry,itemIndex)=>flat.push({...entry,itemKey:key,itemIndex,itemSpan:list.length,section})));sections.push({section,flat,span:flat.length})});
+  const sections=[];sectionGroups.forEach((entries,section)=>{const itemGroups=new Map();entries.forEach(entry=>{const d=entry.detail,key=[d['Item no.']||rec['Item no.']||'',d['Panel Name']||rec['Panel Name']||'',d.Qty||rec.Qty||''].join('¦');if(!itemGroups.has(key))itemGroups.set(key,[]);itemGroups.get(key).push(entry)});const flat=[];itemGroups.forEach((list,key)=>list.forEach((entry,itemIndex)=>flat.push({...entry,itemKey:key,itemIndex,itemSpan:list.length,section})));sections.push({section,flat,span:flat.length})});
   const caseSpan=sections.reduce((n,s)=>n+s.span,0)||1;let caseRowIndex=0;
   sections.forEach(sectionGroup=>{
    sectionGroup.flat.forEach((entry,sectionIdx)=>{
