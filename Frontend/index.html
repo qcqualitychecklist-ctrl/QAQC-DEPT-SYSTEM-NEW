@@ -353,7 +353,7 @@ function renderReworkTable(){
  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent=recordsLoadedFully?'No rework records found.':'Loading rework records…';tr.append(td);el('tbody').append(tr);return}
  const cell=(value,cls)=>{const td=document.createElement('td');if(cls)td.className=cls;td.textContent=value==null||value===''?'—':String(value);td.title=td.textContent;return td};
  rows.forEach(rec=>{
-  const raw=(rec.Details&&rec.Details.length)?rec.Details:[{}],sectionGroups=new Map();
+  const activeSection=el('reworkSectionFilter')?.value||'',activeCategory=el('reworkCategoryFilter')?.value||'',activeType=el('reworkTypeFilter')?.value||'';const matchingRaw=(rec.Details||[]).filter(d=>(!activeSection||String(d['Concern Section']||'').trim()===activeSection)&&(!activeCategory||String(d['Category Issue']||'').trim()===activeCategory)&&(!activeType||String(d['Rework or Back Job']||'Rework').trim()===activeType));const raw=matchingRaw.length?matchingRaw:(rec.Details&&rec.Details.length)?(activeSection||activeCategory||activeType?[]:rec.Details):[{}],sectionGroups=new Map();if(!raw.length)return;
   raw.forEach((d,i)=>{const section=String(d['Concern Section']||'Unassigned').trim()||'Unassigned';if(!sectionGroups.has(section))sectionGroups.set(section,[]);sectionGroups.get(section).push({detail:d,index:i})});
   const itemKeyFor=d=>[d['Item no.']||rec['Item no.']||'',d['Panel Name']||rec['Panel Name']||'',d.Qty||rec.Qty||''].join('¦');
   const allItemKeys=new Set(raw.map(itemKeyFor)),singleItemAcrossCase=allItemKeys.size===1;
