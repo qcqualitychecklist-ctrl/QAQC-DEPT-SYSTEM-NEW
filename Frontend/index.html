@@ -229,7 +229,10 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(10),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(10),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(11),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(11){width:190px!important;min-width:190px!important;max-width:190px!important;box-sizing:border-box!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;overflow-wrap:normal!important}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td.actioncell,#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:last-child{width:170px!important;min-width:170px!important;max-width:170px!important;box-sizing:border-box!important}
 
-/* Rework Monitoring: keep the requested first eight columns fixed and descriptions single-line */
+/* Rework Monitoring: keep every table cell single-line so wrapped text cannot inflate row heights; preserve vertical merged cells */
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th,
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td{white-space:nowrap!important;line-height:1.2!important;vertical-align:middle!important}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td[rowspan]{vertical-align:middle!important;border-bottom:2px solid #dbe6f2!important}
 .rework-merged-table th:nth-child(1),.rework-merged-table td:nth-child(1){width:100px!important;min-width:100px!important;max-width:100px!important}
 .rework-merged-table th:nth-child(2),.rework-merged-table td:nth-child(2),.rework-merged-table th:nth-child(3),.rework-merged-table td:nth-child(3){width:80px!important;min-width:80px!important;max-width:80px!important}
 .rework-merged-table th:nth-child(4),.rework-merged-table td:nth-child(4){width:120px!important;min-width:120px!important;max-width:120px!important}
