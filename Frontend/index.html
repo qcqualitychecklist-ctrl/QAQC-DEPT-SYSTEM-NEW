@@ -125,7 +125,7 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 /* Rework Monitoring only: restore compact merged table sizing and keep overflow inside its wrapper */
 #monitoringPanel:has(#recordFilters.rework-filterbar){display:block;width:100%;max-width:100%;min-width:0;margin:0;box-sizing:border-box}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .tablewrap{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;margin:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain}
-#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table{table-layout:fixed!important;width:100%!important;min-width:1200px!important;max-width:none;margin:0;white-space:nowrap;font-size:10px}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table{table-layout:fixed!important;width:1720px!important;min-width:1720px!important;max-width:none;margin:0;white-space:nowrap;font-size:10px}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th,#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td{box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td{min-width:0!important}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:nth-child(1){width:85px}
@@ -143,7 +143,7 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:nth-child(14){width:90px}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:nth-child(15){width:75px}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:nth-child(16){width:100px}
-#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:nth-child(17){width:100px}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:nth-child(17){width:150px;min-width:150px!important}
 /* Rework Monitoring only: compact single-row filters and full-width content */
 #monitoringPanel #recordFilters.rework-filterbar{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr)) auto;gap:6px;padding:7px;margin-bottom:9px;align-items:end}
 #monitoringPanel #recordFilters.rework-filterbar .field{min-width:0}
