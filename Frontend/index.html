@@ -271,7 +271,7 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 #punchlistModal .dialoghead{position:sticky;top:0;z-index:5;margin:0;padding:12px 16px;background:linear-gradient(120deg,#12325a,#245ca7);color:#fff;border-bottom:1px solid #c6d8f0}
 #punchlistModal .dialoghead h3{font-size:18px;margin:0 0 3px;color:#fff}#punchlistModal .dialoghead .muted{color:#dbeafe;font-size:11px}
 #punchlistModal #punchlistForm{padding:12px 16px 16px}
-#punchlistModal #punchlistMainFields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;padding:11px;background:#fff;border:1px solid #e0e8f2;border-radius:9px}
+#punchlistModal #punchlistMainFields{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;padding:11px;background:#fff;border:1px solid #e0e8f2;border-radius:9px}
 #punchlistModal input,#punchlistModal select,#punchlistModal textarea{width:100%;min-width:0;border:1px solid #cbd7e6;border-radius:6px;background:#fff;padding:7px 8px;color:#172b46;font-size:11px}
 #punchlistModal textarea{min-height:36px;height:36px;resize:vertical}
 #punchlistModal .punchlist-items-panel{padding:10px;margin-top:10px!important}
@@ -283,17 +283,17 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 #punchlistModal .punchlist-item-head h4{font-size:13px;color:#17437a;margin:0}
 #punchlistModal .punchlist-item-grid{display:grid;grid-template-columns:1.2fr 1.2fr .55fr 1.5fr;gap:8px;margin-top:9px}
 #punchlistModal .punchlist-description-list{display:grid;gap:6px;margin-top:9px}
-#punchlistModal .punchlist-description-row{display:grid;grid-template-columns:minmax(220px,2fr) minmax(130px,1fr) minmax(125px,.8fr) auto;gap:7px;align-items:end;padding:8px;background:#f6f9fd;border:1px solid #e2eaf4;border-radius:7px}
+#punchlistModal .punchlist-description-row{display:grid;grid-template-columns:minmax(180px,2fr) minmax(120px,1fr) minmax(115px,.8fr) minmax(120px,1fr) auto;gap:7px;align-items:end;padding:6px;background:#f6f9fd;border:1px solid #e2eaf4;border-radius:7px}
 #punchlistModal .punchlist-description-row .field label,#punchlistModal .punchlist-item-grid .field label{font-size:10px;font-weight:700;color:#344765;margin-bottom:4px;display:block}
-#punchlistModal .punchlist-description-row .field textarea{height:36px;min-height:36px}
+#punchlistModal .punchlist-description-row input{height:32px;padding:6px 7px}#punchlistModal .punchlist-description-row .field textarea{height:32px;min-height:32px}
 #punchlistModal .punchlist-tracking{display:grid;grid-template-columns:1fr .8fr 1fr .8fr .8fr;gap:7px;margin-top:7px;padding:7px;background:#fff;border:1px dashed #d5dfeb;border-radius:7px}
 #punchlistModal .punchlist-tracking .field label{font-size:9px;font-weight:700;color:#586980;margin-bottom:3px;display:block}
 #punchlistModal .punchlist-row-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:7px}
 #punchlistModal .punchlist-row-actions button{font-size:10px;padding:5px 7px}
 #punchlistModal .punchlist-description-row>button{padding:6px 8px;font-size:10px;white-space:nowrap}
 #punchlistModal .actions{margin-top:10px}
-@media(max-width:820px){#punchlistModal #punchlistMainFields{grid-template-columns:repeat(2,minmax(0,1fr))}#punchlistModal .punchlist-item-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#punchlistModal .punchlist-description-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#punchlistModal .punchlist-tracking{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:520px){#punchlistModal #punchlistMainFields,#punchlistModal .punchlist-item-grid,#punchlistModal .punchlist-description-row,#punchlistModal .punchlist-tracking{grid-template-columns:1fr}#punchlistModal #punchlistForm{padding:9px}#punchlistModal .dialoghead{padding:10px 12px}}
+@media(max-width:820px){#punchlistModal #punchlistMainFields{grid-template-columns:repeat(2,minmax(0,1fr))}#punchlistModal .punchlist-item-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#punchlistModal .punchlist-description-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){#punchlistModal #punchlistMainFields,#punchlistModal .punchlist-item-grid,#punchlistModal .punchlist-description-row{grid-template-columns:1fr}#punchlistModal #punchlistForm{padding:9px}#punchlistModal .dialoghead{padding:10px 12px}}
 /* Punchlist Monitoring table-only first step */
 .tablewrap table.punchlist-table{min-width:1800px;border-collapse:separate;border-spacing:0}
 .tablewrap table.punchlist-table th{position:sticky;top:0;z-index:2;white-space:nowrap}
@@ -598,7 +598,7 @@ function punchlistField(label,type,value,required,options){
 }
 function openAddPunchlist(){
  el('punchlistForm').reset();el('punchlistMainFields').innerHTML='';el('punchlistItemsList').innerHTML='';
- [['Date','date',true],['J.O #','text',false],['S.O #','text',false],['Client','text',true]].forEach(([label,type,required])=>{const f=punchlistField(label,type,'',required);f.input.dataset.punchMain=label;el('punchlistMainFields').append(f.box)});
+ [['Date','date',true],['J.O #','text',false],['S.O #','text',false],['Target Date','date',false],['Client','text',true]].forEach(([label,type,required])=>{const f=punchlistField(label,type,'',required);f.input.dataset.punchMain=label;el('punchlistMainFields').append(f.box)});
  addPunchlistItem();el('punchlistSave').disabled=false;el('punchlistSave').textContent='Save Punchlist';openModal('punchlistModal');
 }
 function renumberPunchlistItems(){
@@ -625,16 +625,12 @@ function addPunchlistItem(data){
 function addPunchlistDescription(host,data){
  data=data||{};const row=document.createElement('section');row.className='punchlist-description-row';
  const header=document.createElement('div');header.className='field';const heading=document.createElement('label');heading.className='punchlist-description-title';heading.textContent='Punchlist Description';header.append(heading);
- const desc=document.createElement('textarea');desc.placeholder='Enter punchlist description';desc.value=data['Description of Punchlist']||'';desc.dataset.punchDescription='Description of Punchlist';desc.required=true;header.append(desc);
+ const desc=document.createElement('input');desc.type='text';desc.placeholder='Enter punchlist description';desc.value=data['Description of Punchlist']||'';desc.dataset.punchDescription='Description of Punchlist';desc.required=true;header.append(desc);
  const section=punchlistField('Concern Section','text',data['Concern Section']||'',false);section.input.placeholder='Enter concern section';section.input.dataset.punchDescription='Concern Section';
- const target=punchlistField('Target Date','date',data['Target Date']||'',false);target.input.dataset.punchDescription='Target Date';
+ const receivedDate=punchlistField('Received Date','date',data['Received Date']||'',false);receivedDate.input.dataset.punchDescription='Received Date';
+ const receivedBy=punchlistField('Received By','text',data['Received By']||'',false);receivedBy.input.placeholder='Enter received by';receivedBy.input.dataset.punchDescription='Received By';
  const remove=button('Remove','small danger',()=>{if(host.children.length===1){showStatus(false,'Required description','Each item needs at least one punchlist description.');return}row.remove();renumberPunchlistItems()});
- row.append(header,section.box,target.box,remove);
- const tracking=document.createElement('div');tracking.className='punchlist-tracking';
- [['Received By','text'],['Received Date','date'],['Closed By','text'],['Closed Date','date'],['Status','select']].forEach(([label,type])=>{
-  const opts=label==='Status'?['Open','Closed']:null;const f=punchlistField(label,type,data[label]||(label==='Status'?'Open':''),label==='Status',opts);f.input.dataset.punchDescription=label;tracking.append(f.box);
- });
- row.append(tracking);host.append(row);renumberPunchlistItems();
+ row.append(header,section.box,receivedDate.box,receivedBy.box,remove);host.append(row);renumberPunchlistItems();
 }
 function submitPunchlist(ev){
  ev.preventDefault();const main={};el('punchlistMainFields').querySelectorAll('[data-punch-main]').forEach(n=>main[n.dataset.punchMain]=n.value.trim());
@@ -655,7 +651,7 @@ function submitPunchlist(ev){
  const saveNext=()=>{
   if(index>=rows.length){btn.disabled=false;btn.textContent='Save Punchlist';delete recordCache['Punchlist Monitoring::'];showStatus(true,'Punchlist saved',rows.length+' punchlist description(s) saved across '+items.length+' item(s).');closeModal('punchlistModal');loadRecords();return}
   const pair=rows[index],item=pair.item,p=pair.p;
-  const payload={'Date Issue':main.Date,'J.O':main['J.O #'],'S.O':main['S.O #'],'Client':main.Client,'Item':item.Item,'Panel Name':item['Panel Name'],'Qty':item.Qty,'Category':item.Category,'Description of Punchlist':p['Description of Punchlist'],'Concern Section':p['Concern Section'],'Target Date':p['Target Date'],'Received By':p['Received By'],'Received Date':p['Received Date'],'Closed By':p['Closed By'],'Closed Date':p['Closed Date'],'Status':p.Status||'Open'};
+  const payload={'Date Issue':main.Date,'J.O':main['J.O #'],'S.O':main['S.O #'],'Client':main.Client,'Item':item.Item,'Panel Name':item['Panel Name'],'Qty':item.Qty,'Category':item.Category,'Description of Punchlist':p['Description of Punchlist'],'Concern Section':p['Concern Section'],'Target Date':main['Target Date'],'Received By':p['Received By'],'Received Date':p['Received Date'],'Closed By':'','Closed Date':'','Status':'Open'};
   callServer('saveRecord',['Punchlist Monitoring',payload],r=>{
    if(!r||r.ok===false){btn.disabled=false;btn.textContent='Save Punchlist';showStatus(false,'Save failed',r&&r.message||'Punchlist description '+(index+1)+' was not confirmed. No later descriptions were attempted.');return}
    index++;saveNext();
