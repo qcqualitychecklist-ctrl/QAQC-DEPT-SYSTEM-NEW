@@ -125,7 +125,7 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 /* Rework Monitoring only: table must fill the wrapper; grow beyond it only when its columns require horizontal scrolling */
 #monitoringPanel:has(#recordFilters.rework-filterbar){display:block;width:100%;max-width:none;min-width:0;margin:0}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .tablewrap{display:block;width:100%;max-width:100%;min-width:0;margin:0;overflow-x:auto;overflow-y:hidden}
-#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table{width:100%!important;min-width:max(100%,1450px)!important;max-width:none;table-layout:auto;margin:0}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table{width:max-content!important;min-width:0!important;max-width:none;table-layout:auto;margin:0}
 /* Rework Monitoring only: compact single-row filters and full-width content */
 #monitoringPanel #recordFilters.rework-filterbar{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr)) auto;gap:6px;padding:7px;margin-bottom:9px;align-items:end}
 #monitoringPanel #recordFilters.rework-filterbar .field{min-width:0}
