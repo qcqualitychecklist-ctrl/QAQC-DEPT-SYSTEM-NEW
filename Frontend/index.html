@@ -126,7 +126,10 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 .app:has(#recordFilters.rework-filterbar)>main{min-width:0;width:100%;max-width:100%;overflow-x:hidden;box-sizing:border-box}
 #monitoringPanel:has(#recordFilters.rework-filterbar){display:block;width:100%;max-width:100%;min-width:0;margin:0;box-sizing:border-box;overflow:hidden}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .tablewrap{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;margin:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain}
-#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table{width:max-content!important;min-width:1450px!important;max-width:none;table-layout:auto;margin:0}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table{display:table;width:1450px!important;min-width:1450px!important;max-width:none;table-layout:fixed!important;margin:0;white-space:normal}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th,#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td{box-sizing:border-box;min-width:0!important;max-width:none;overflow:hidden;text-overflow:ellipsis}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:nth-child(1),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:nth-child(2),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:nth-child(3),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:nth-child(4),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:last-child{min-width:0!important;width:auto}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td{overflow-wrap:anywhere;white-space:normal}
 /* Rework Monitoring only: compact single-row filters and full-width content */
 #monitoringPanel #recordFilters.rework-filterbar{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr)) auto;gap:6px;padding:7px;margin-bottom:9px;align-items:end}
 #monitoringPanel #recordFilters.rework-filterbar .field{min-width:0}
