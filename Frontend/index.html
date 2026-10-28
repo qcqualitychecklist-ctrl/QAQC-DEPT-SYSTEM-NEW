@@ -383,7 +383,12 @@ submitTransfer=function(ev){ev.preventDefault();if(currentPage==='J.O Register')
 function renderPunchlistTable(){
  const heads=['Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
  const table=el('thead').closest('table');table.classList.remove('jo-table','fgts-table','rework-table','rework-merged-table');table.classList.add('punchlist-table');
- el('thead').innerHTML='';el('tbody').innerHTML='';const hr=document.createElement('tr');heads.forEach(h=>{const th=document.createElement('th');th.textContent=h;hr.append(th)});el('thead').append(hr);
+ el('thead').innerHTML='';el('tbody').innerHTML='';
+ // Two-level header: Received By and Closed By each group Name and Date.
+ const top=document.createElement('tr');
+ [['Date',1],['J.O #',1],['S.O #',1],['Client',1],['Item',1],['Panel Name',1],['Qty',1],['Category',1],['Description of Punchlist',1],['Concern Section',1],['Target Date',1],['Received By',2],['Closed By',2],['Status',1]].forEach(([label,span])=>{const th=document.createElement('th');th.textContent=label;if(span>1)th.colSpan=span;else th.rowSpan=2;top.append(th)});
+ const sub=document.createElement('tr');['Name','Date','Name','Date'].forEach(label=>{const th=document.createElement('th');th.textContent=label;sub.append(th)});
+ el('thead').append(top,sub);
  const q=String(el('search')?.value||'').trim().toLowerCase();
  const shown=records.filter(r=>!q||JSON.stringify(r).toLowerCase().includes(q));
  const pages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));if(tablePage>pages)tablePage=pages;const start=(tablePage-1)*PAGE_SIZE,rows=shown.slice(start,start+PAGE_SIZE);
