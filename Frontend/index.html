@@ -217,6 +217,17 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 .rework-merged-table td[rowspan]{border-bottom:2px solid #dbe6f2}
 @media(max-width:760px){#reworkModal .dialoghead{padding:16px}#reworkModal #reworkForm{padding:14px}#reworkModal #reworkMainFields{grid-template-columns:1fr 1fr;padding:12px}#reworkModal .rework-form-item>.fields{grid-template-columns:1fr}#reworkModal .rework-form-detail .fields{grid-template-columns:1fr}#reworkModal .actions{margin:16px -14px -14px;padding:12px 14px}#reworkModal #reworkMainFields .field:last-child{grid-column:1/-1}}
 
+
+/* Rework Monitoring: keep the requested first eight columns fixed and descriptions single-line */
+.rework-merged-table th:nth-child(1),.rework-merged-table td:nth-child(1){width:100px!important;min-width:100px!important;max-width:100px!important}
+.rework-merged-table th:nth-child(2),.rework-merged-table td:nth-child(2),.rework-merged-table th:nth-child(3),.rework-merged-table td:nth-child(3){width:80px!important;min-width:80px!important;max-width:80px!important}
+.rework-merged-table th:nth-child(4),.rework-merged-table td:nth-child(4){width:120px!important;min-width:120px!important;max-width:120px!important}
+.rework-merged-table th:nth-child(5),.rework-merged-table td:nth-child(5){width:55px!important;min-width:55px!important;max-width:55px!important}
+.rework-merged-table th:nth-child(6),.rework-merged-table td:nth-child(6){width:140px!important;min-width:140px!important;max-width:140px!important}
+.rework-merged-table th:nth-child(7),.rework-merged-table td:nth-child(7){width:55px!important;min-width:55px!important;max-width:55px!important}
+.rework-merged-table th:nth-child(8),.rework-merged-table td:nth-child(8){width:100px!important;min-width:100px!important;max-width:100px!important}
+.rework-merged-table th:nth-child(9),.rework-merged-table td:nth-child(9){width:180px!important;min-width:180px!important;max-width:180px!important;box-sizing:border-box!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
+
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
