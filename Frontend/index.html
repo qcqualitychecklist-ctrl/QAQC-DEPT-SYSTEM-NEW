@@ -219,6 +219,12 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 
 
 
+/* Rework Monitoring only: stop loaded table content from widening the document; table scroll remains inside its wrapper */
+body:has(#recordFilters.rework-filterbar){overflow-x:clip}
+.app:has(#recordFilters.rework-filterbar){width:100%;max-width:100%;overflow-x:clip}
+.app:has(#recordFilters.rework-filterbar)>main{min-width:0;max-width:100%;overflow-x:clip}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .tablewrap{contain:inline-size;max-width:100%;overflow-x:auto}
+
 /* Rework Monitoring: trim only the wide right-side columns; keep every column visible */
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(10),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(10),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(11),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(11){width:190px!important;min-width:190px!important;max-width:190px!important;box-sizing:border-box!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;overflow-wrap:normal!important}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td.actioncell,#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:last-child{width:170px!important;min-width:170px!important;max-width:170px!important;box-sizing:border-box!important}
