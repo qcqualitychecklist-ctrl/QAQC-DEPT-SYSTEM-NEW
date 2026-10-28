@@ -239,7 +239,19 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 .rework-merged-table th:nth-child(8),.rework-merged-table td:nth-child(8){width:100px!important;min-width:100px!important;max-width:100px!important}
 .rework-merged-table th:nth-child(9),.rework-merged-table td:nth-child(9){width:180px!important;min-width:180px!important;max-width:180px!important;box-sizing:border-box!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
 
-\n/* Rework Monitoring: prevent wrapping in the description, action, and person columns.
+\n/* Shared single-line display fix for J.O Register, FGTS Monitoring, and Transfer Monitoring.
+   Full text remains available on hover through the existing title attributes. */
+#monitoringPanel .tablewrap table.jo-table tbody td:not(.actioncell),
+#monitoringPanel .tablewrap table.fgts-table tbody td,
+#monitoringPanel .tablewrap table:not(.jo-table):not(.fgts-table):not(.rework-merged-table):not(.punchlist-table) tbody td:not(.actioncell){
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  overflow-wrap:normal!important;word-break:normal!important;
+}
+#monitoringPanel .tablewrap table.jo-table td.actioncell,
+#monitoringPanel .tablewrap table:not(.rework-merged-table):not(.punchlist-table) td.actioncell{
+  white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;
+}
+/* Rework Monitoring: prevent wrapping in the description, action, and person columns.
    Description and Person In-Charge show the full value on hover via the existing title attribute. */
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(9),
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(9),
