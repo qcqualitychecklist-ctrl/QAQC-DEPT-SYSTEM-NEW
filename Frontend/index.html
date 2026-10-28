@@ -239,7 +239,16 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 .rework-merged-table th:nth-child(8),.rework-merged-table td:nth-child(8){width:100px!important;min-width:100px!important;max-width:100px!important}
 .rework-merged-table th:nth-child(9),.rework-merged-table td:nth-child(9){width:180px!important;min-width:180px!important;max-width:180px!important;box-sizing:border-box!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
 
-\n.punchlist-table{min-width:1500px;border-collapse:separate;border-spacing:0}.punchlist-table th{white-space:normal;vertical-align:middle}.punchlist-table td{vertical-align:middle}.punchlist-table .punchlist-shared-cell{font-weight:600;background:var(--surface-secondary,#f3f4f6);vertical-align:middle}\n</style></head><body>
+\n.punchlist-table{min-width:1500px;border-collapse:separate;border-spacing:0}.punchlist-table th{white-space:normal;vertical-align:middle}.punchlist-table td{vertical-align:middle}.punchlist-table .punchlist-shared-cell{font-weight:600;background:var(--surface-secondary,#f3f4f6);vertical-align:middle}\n
+/* Punchlist Monitoring table-only first step */
+.tablewrap table.punchlist-table{min-width:1800px;border-collapse:separate;border-spacing:0}
+.tablewrap table.punchlist-table th{position:sticky;top:0;z-index:2;white-space:nowrap}
+.tablewrap table.punchlist-table td{vertical-align:top;white-space:normal;min-width:90px;max-width:260px}
+.tablewrap table.punchlist-table td:nth-child(9){min-width:260px;max-width:360px;white-space:pre-wrap}
+.tablewrap table.punchlist-table td.punchlist-shared-cell{vertical-align:middle;background:var(--surface, #f8fafc);font-weight:600;border-bottom:2px solid var(--border, #dbe2ea)}
+.tablewrap table.punchlist-table tbody tr:hover td{background:var(--hover, #f1f5f9)}
+.tablewrap table.punchlist-table tbody tr:hover td.punchlist-shared-cell{background:var(--hover, #f1f5f9)}
+</style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
 <aside class="sidebar"><div class="brand"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></div><div class="navlabel">Main Menu</div>
