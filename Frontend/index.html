@@ -245,7 +245,7 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 \n.punchlist-table{min-width:1500px;border-collapse:separate;border-spacing:0}.punchlist-table th{white-space:normal;vertical-align:middle}.punchlist-table td{vertical-align:middle}.punchlist-table .punchlist-shared-cell{font-weight:600;background:var(--surface-secondary,#f3f4f6);vertical-align:middle}\n
 
 /* Punchlist form only: shrink the actual dialog, panels, and input boxes; do not affect other modules */
-#punchlistModal .dialog{width:min(1200px,92vw)!important;max-width:1200px!important;max-height:90vh!important;padding:0!important;border:1px solid #d9e4f2;border-radius:14px;overflow:auto;background:#f8fafc;box-shadow:0 24px 80px #0f274733}
+#punchlistModal .dialog{width:min(980px,94vw)!important;max-width:980px!important;max-height:90vh!important;padding:0!important;border:1px solid #d9e4f2;border-radius:14px;overflow:auto;background:#f8fafc;box-shadow:0 24px 80px #0f274733}
 #punchlistModal .dialoghead{position:sticky;top:0;z-index:5;margin:0;padding:12px 16px!important;background:linear-gradient(120deg,#12325a,#245ca7);color:#fff;border-bottom:1px solid #c6d8f0}
 #punchlistModal .dialoghead h3{font-size:17px!important;letter-spacing:-.3px;margin:0 0 3px;color:#fff}
 #punchlistModal .dialoghead .muted{color:#dbeafe;font-size:11px;line-height:1.3;max-width:720px}
@@ -265,13 +265,13 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 #punchlistModal .punchlist-item-head h4{font-size:11px!important;color:#17437a;margin:0}
 #punchlistModal .punchlist-item-grid{display:grid;grid-template-columns:1.2fr 1.2fr .55fr 1.5fr;gap:6px!important;margin-top:6px!important;padding:6px!important;background:#fff;border:1px solid #e5edf6;border-radius:7px}
 #punchlistModal .punchlist-description-list{display:grid;gap:5px!important;margin-top:6px!important}
-#punchlistModal .punchlist-description-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px!important;align-items:end;padding:6px!important;background:#fff;border:1px solid #dbe5f1;border-radius:7px;box-shadow:0 2px 8px #19365b07}
+#punchlistModal .punchlist-description-row{display:grid;grid-template-columns:minmax(220px,2fr) minmax(115px,1fr) minmax(135px,1fr) minmax(135px,1fr) auto;gap:6px!important;align-items:end;padding:5px!important;background:#fff;border:1px solid #dbe5f1;border-radius:7px;box-shadow:0 2px 8px #19365b07} #punchlistModal .punchlist-description-row>.field:first-child{min-width:0} #punchlistModal .punchlist-description-row>.field:first-child input{width:100%}
 #punchlistModal .punchlist-description-row input{height:30px!important;padding:4px 7px!important}
 #punchlistModal .punchlist-description-row>button{padding:4px 7px!important;font-size:10px!important;white-space:nowrap}
 #punchlistModal .punchlist-row-actions{display:flex;justify-content:flex-end;gap:5px;margin-top:5px}
 #punchlistModal .punchlist-row-actions button{font-size:10px!important;padding:4px 7px!important}
 #punchlistModal .actions{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;gap:7px;margin:8px -12px -12px!important;padding:8px 12px!important;background:#ffffffef;border-top:1px solid #dfe8f2;backdrop-filter:blur(8px)}
-@media(max-width:760px){#punchlistModal .dialoghead{padding:10px 12px!important}#punchlistModal #punchlistForm{padding:8px!important}#punchlistModal #punchlistMainFields{grid-template-columns:1fr 1fr;padding:7px!important}#punchlistModal .punchlist-item-grid{grid-template-columns:1fr 1fr}#punchlistModal .punchlist-description-row{grid-template-columns:1fr}#punchlistModal .actions{margin:8px -8px -8px!important;padding:8px!important}#punchlistModal #punchlistMainFields .field:last-child{grid-column:1/-1}}
+@media(max-width:760px){#punchlistModal .punchlist-description-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#punchlistModal .punchlist-description-row>.field:first-child{grid-column:1/-1}#punchlistModal .dialoghead{padding:10px 12px!important}#punchlistModal #punchlistForm{padding:8px!important}#punchlistModal #punchlistMainFields{grid-template-columns:1fr 1fr;padding:7px!important}#punchlistModal .punchlist-item-grid{grid-template-columns:1fr 1fr}#punchlistModal .punchlist-description-row{grid-template-columns:1fr}#punchlistModal .actions{margin:8px -8px -8px!important;padding:8px!important}#punchlistModal #punchlistMainFields .field:last-child{grid-column:1/-1}}
 @media(max-width:520px){#punchlistModal .dialog{width:96vw!important;max-width:96vw!important}#punchlistModal #punchlistMainFields,#punchlistModal .punchlist-item-grid,#punchlistModal .punchlist-description-row{grid-template-columns:1fr}#punchlistModal #punchlistForm{padding:7px!important}#punchlistModal .dialoghead{padding:9px 10px!important}}
 
 /* Punchlist Monitoring table-only first step */
