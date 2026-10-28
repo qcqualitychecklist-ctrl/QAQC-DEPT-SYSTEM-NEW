@@ -130,8 +130,16 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 #monitoringPanel:has(#recordFilters.rework-filterbar) .tablewrap{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;margin:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table{table-layout:auto!important;width:max-content!important;min-width:1450px!important;max-width:none;margin:0;white-space:nowrap;font-size:10px}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th,#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td{box-sizing:border-box;white-space:nowrap;overflow:visible;text-overflow:clip}
-#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td{min-width:78px!important}
-#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table tbody td:last-child{min-width:260px!important;width:260px!important}
+/* Keep the first eight Rework columns at the requested widths; do not let a generic cell minimum override them. */
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(1),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(1){width:100px!important;min-width:100px!important;max-width:100px!important}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(2),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(2),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(3),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(3){width:80px!important;min-width:80px!important;max-width:80px!important}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(4),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(4){width:120px!important;min-width:120px!important;max-width:120px!important}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(5),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(5){width:55px!important;min-width:55px!important;max-width:55px!important}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(6),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(6){width:140px!important;min-width:140px!important;max-width:140px!important}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(7),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(7){width:55px!important;min-width:55px!important;max-width:55px!important}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(8),#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(8){width:100px!important;min-width:100px!important;max-width:100px!important}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td.rework-description-cell{display:table-cell;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:last-child{min-width:260px!important;width:260px!important}
 /* Rework Monitoring only: compact single-row filters and full-width content */
 #monitoringPanel #recordFilters.rework-filterbar{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr)) auto;gap:6px;padding:7px;margin-bottom:9px;align-items:end}
 #monitoringPanel #recordFilters.rework-filterbar .field{min-width:0}
