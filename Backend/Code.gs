@@ -17,6 +17,8 @@ const JO_OVERRIDE_HEADERS = ['Source Row','Updated At','CLASSIFICATION','J.O','S
 const TRANSFER_SHEET = 'Transfer Monitoring';
 const ALLOCATION_SHEET = 'QC Allocation Details';
 const REWORK_SHEET = 'Rework Monitoring';
+const PUNCHLIST_SHEET = 'Punchlist Monitoring';
+const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
 const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
 const REWORK_MAIN_SHEET = 'Rework Main';
 const REWORK_DETAILS_SHEET = 'Rework Details';
@@ -58,14 +60,14 @@ function getSystemStatus() {
   try {
     const ss = SpreadsheetApp.openById(DATABASE_ID);
     return {ok:true,databaseName:ss.getName(),existingSheets:ss.getSheets().map(s=>s.getName()),
-      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,REWORK_SHEET,REWORK_MAIN_SHEET,REWORK_DETAILS_SHEET,REWORK_ASSIGNMENTS_SHEET]};
+      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,REWORK_SHEET,REWORK_MAIN_SHEET,REWORK_DETAILS_SHEET,REWORK_ASSIGNMENTS_SHEET,PUNCHLIST_SHEET]};
   } catch (e) { return {ok:false,message:String(e.message||e)}; }
 }
 
 function setupDatabase() {
   const ss = SpreadsheetApp.openById(DATABASE_ID);
   const created = [];
-  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_SHEET,REWORK_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS]].forEach(pair=>{
+  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_SHEET,REWORK_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS],[PUNCHLIST_SHEET,PUNCHLIST_HEADERS]].forEach(pair=>{
     let sh=ss.getSheetByName(pair[0]);
     if (!sh) { sh=ss.insertSheet(pair[0]); created.push(pair[0]); }
     if (sh.getLastRow()===0) {
@@ -82,7 +84,7 @@ function setupDatabase() {
 }
 
 function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) {
-  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
+  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring','Punchlist Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const query=String(searchText||'').trim();
   // v3 stores the records already sorted, avoiding a full-array sort on the
   // immediate follow-up request used by the first-50 loading flow.
@@ -96,6 +98,7 @@ function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) 
     if(moduleName==='Transfer Monitoring')result=getTransferRecords(query);
     else if(moduleName==='J.O Register')result=getExternalJORecords_(query);
     else if(moduleName==='Rework Monitoring')result=getReworkRecords_(query);
+    else if(moduleName==='Punchlist Monitoring')result=getPunchlistRecords_(query);
     else result=getFGTSMonitoringRecords_(query);
   }
   if(!result||!result.ok)return result;
@@ -204,8 +207,36 @@ function sortModuleRecordsNewestFirst_(moduleName, records) {
     }).map(item=>item.record);
 }
 
+
+function getPunchlistRecords_(searchText){
+ const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
+ if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:PUNCHLIST_HEADERS};
+ const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String);
+ const records=sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues().map(row=>{const o={};headers.forEach((h,i)=>o[h]=formatCell_(row[i]));return o;});
+ const q=String(searchText||'').trim().toLowerCase();
+ return {ok:true,records:q?records.filter(o=>Object.values(o).some(v=>String(v||'').toLowerCase().includes(q))):records,fields:PUNCHLIST_HEADERS};
+}
+function savePunchlist_(input){
+ if(!input)throw new Error('No punchlist data received.');
+ const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
+ if(!sh)throw new Error('Click Prepare Database first to create the Punchlist Monitoring tab.');
+ const id=String(input['Punchlist ID']||'').trim(),now=new Date(),data=sh.getDataRange().getValues(),headers=data[0].map(String);
+ let rowIndex=-1;
+ if(id)for(let i=1;i<data.length;i++)if(String(data[i][headers.indexOf('Punchlist ID')])===id){rowIndex=i+1;break;}
+ const rec=Object.assign({},input,{'Punchlist ID':id||('PL-'+Utilities.getUuid().slice(0,8).toUpperCase()),'Created At':rowIndex>0?data[rowIndex-1][headers.indexOf('Created At')]:now,'Updated At':now,'Status':String(input.Status||'Open')});
+ if(!String(rec['J.O']||'').trim()&&!String(rec['S.O']||'').trim())throw new Error('Enter a J.O or S.O number.');
+ if(!String(rec['Description of Punchlist']||'').trim())throw new Error('Description of Punchlist is required.');
+ if(!['A','B','C'].includes(String(rec.Category||'')))throw new Error('Choose Category A, B, or C.');
+ if(!['Open','Closed'].includes(String(rec.Status)))throw new Error('Status must be Open or Closed.');
+ const out=headers.map(h=>rec[h]===undefined?'':rec[h]);
+ if(rowIndex>0)sh.getRange(rowIndex,1,1,out.length).setValues([out]);else sh.appendRow(out);
+ invalidateModuleCache_('Punchlist Monitoring');
+ return {ok:true,recordId:rec['Punchlist ID'],message:rowIndex>0?'Punchlist updated.':'Punchlist saved.'};
+}
+
 function saveRecord(moduleName,input) {
   if(moduleName==='Rework Monitoring') return saveReworkCase_(input);
+  if(moduleName==='Punchlist Monitoring') return savePunchlist_(input);
   if(moduleName==='Transfer Monitoring') return saveTransfer(input);
   if(moduleName==='J.O Register') return saveJOOverride_(input);
   throw new Error('Unsupported module.');
