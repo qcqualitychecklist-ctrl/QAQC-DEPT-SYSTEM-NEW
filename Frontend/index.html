@@ -274,6 +274,35 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 @media(max-width:760px){#punchlistModal #punchlistMainFields{grid-template-columns:repeat(2,minmax(0,1fr))}#punchlistModal .punchlist-description-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#punchlistModal .punchlist-description-row>.field:first-child{grid-column:1/-1}#punchlistModal .dialoghead{padding:10px 12px!important}#punchlistModal #punchlistForm{padding:8px!important}#punchlistModal #punchlistMainFields{grid-template-columns:1fr 1fr;padding:7px!important}#punchlistModal .punchlist-item-grid{grid-template-columns:1fr 1fr}#punchlistModal .punchlist-description-row{grid-template-columns:1fr}#punchlistModal .actions{margin:8px -8px -8px!important;padding:8px!important}#punchlistModal #punchlistMainFields .field:last-child{grid-column:1/-1}}
 @media(max-width:520px){#punchlistModal .dialog{width:96vw!important;max-width:96vw!important}#punchlistModal #punchlistMainFields,#punchlistModal .punchlist-item-grid,#punchlistModal .punchlist-description-row{grid-template-columns:1fr}#punchlistModal #punchlistForm{padding:7px!important}#punchlistModal .dialoghead{padding:9px 10px!important}}
 
+
+/* Final Punchlist sizing alignment: reuse Add Rework sizing tokens and spacing */
+#punchlistModal .dialog{width:min(1080px,97vw)!important;max-width:1080px!important;max-height:94vh!important;padding:0!important;border-radius:18px!important}
+#punchlistModal .dialoghead{padding:20px 24px!important}
+#punchlistModal #punchlistForm{padding:20px 24px 24px!important}
+#punchlistModal #punchlistMainFields{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px!important;padding:16px!important;border-radius:14px!important}
+#punchlistModal input,#punchlistModal select,#punchlistModal textarea{width:100%;min-width:0;box-sizing:border-box;border:1px solid #cbd7e6;border-radius:9px;background:#fff;padding:10px 11px!important;color:#172b46;font-size:12px!important;line-height:normal}
+#punchlistModal .punchlist-form-item{padding:16px!important;margin:14px 0!important;border-radius:14px!important}
+#punchlistModal .punchlist-item-grid{gap:12px!important;padding:13px!important;border-radius:11px!important}
+#punchlistModal .punchlist-description-row{grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) auto!important;gap:8px!important;padding:10px!important;border-radius:12px!important}
+#punchlistModal .punchlist-description-row>.field{min-width:0}
+#punchlistModal .punchlist-description-row input{height:auto!important;min-height:0!important;padding:10px 11px!important;font-size:12px!important}
+@media(max-width:760px){
+ #punchlistModal .dialoghead{padding:16px!important}
+ #punchlistModal #punchlistForm{padding:14px!important}
+ #punchlistModal #punchlistMainFields{grid-template-columns:1fr 1fr!important;padding:12px!important}
+ #punchlistModal .punchlist-item-grid{grid-template-columns:1fr!important}
+ #punchlistModal .punchlist-description-row{grid-template-columns:1fr 1fr!important}
+ #punchlistModal .punchlist-description-row>.field:first-child{grid-column:1/-1}
+ #punchlistModal .actions{margin:16px -14px -14px!important;padding:12px 14px!important}
+ #punchlistModal #punchlistMainFields .field:last-child{grid-column:1/-1}
+}
+@media(max-width:520px){
+ #punchlistModal .dialog{width:96vw!important;max-width:96vw!important}
+ #punchlistModal #punchlistMainFields,#punchlistModal .punchlist-item-grid,#punchlistModal .punchlist-description-row{grid-template-columns:1fr!important}
+ #punchlistModal #punchlistForm{padding:7px!important}
+ #punchlistModal .dialoghead{padding:9px 10px!important}
+}
+
 /* Punchlist Monitoring table-only first step */
 .tablewrap table.punchlist-table{min-width:1800px;border-collapse:separate;border-spacing:0}
 .tablewrap table.punchlist-table th{position:sticky;top:0;z-index:2;white-space:nowrap}
