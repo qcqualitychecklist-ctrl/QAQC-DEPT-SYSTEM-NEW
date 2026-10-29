@@ -344,9 +344,10 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 <form id="transferForm" onsubmit="submitTransfer(event)"><input type="hidden" id="transferRecordId"><div class="fields" id="transferFields"></div><section id="additionalItemsSection" class="panel" style="margin-top:14px;display:none"><h3>Additional Items under the same Transfer No. / J.O</h3><div class="muted">Add another item to save it as a separate row with the same transfer details.</div><div id="additionalItems" class="item-entry-list"></div><div class="actions"><button type="button" id="addItemBtn" onclick="addTransferItem()">＋ Add Item</button></div></section><div class="actions"><button class="primary" id="transferSave" type="submit">Save Transfer</button><button type="button" onclick="closeModal('transferModal')">Cancel</button></div></form></div></div>
 
 <div class="modal" id="punchlistModal"><div class="dialog"><div class="dialoghead"><div><h3>Add Punchlist</h3><div class="muted">One J.O./S.O. can contain multiple items; each item can have multiple punchlist descriptions.</div></div><button type="button" aria-label="Close Add Punchlist" onclick="closeModal('punchlistModal')">✕</button></div>
-<form id="punchlistForm" onsubmit="submitPunchlist(event)"><div class="fields" id="punchlistMainFields"></div>
+<form id="punchlistForm" onsubmit="submitPunchlist(event)"><input type="hidden" id="punchlistRecordId"><div class="fields" id="punchlistMainFields"></div>
 <section class="panel punchlist-items-panel" style="margin-top:10px"><div class="allocation-form-head"><h3>Items Under This J.O. / S.O.</h3></div><div class="muted punchlist-category-hint">A — Not approved for release to next process · B — Approved for release; remaining items completed on-site · C — Correct after testing and commissioning</div><div id="punchlistItemsList"></div><div class="punchlist-row-actions" style="justify-content:flex-start;margin-top:10px"><button type="button" onclick="addPunchlistItem()">＋ Add Item</button></div></section>
 <div class="actions"><button class="primary" type="submit" id="punchlistSave">Save Punchlist</button><button type="button" onclick="closeModal('punchlistModal')">Cancel</button></div></form></div></div>
+<div class="modal" id="punchlistViewModal" role="dialog" aria-modal="true"><div class="dialog transfer-details-dialog"><div class="dialoghead"><div><h3 id="punchlistViewTitle">Punchlist Details</h3><div class="muted">Complete details for this punchlist record.</div></div><button type="button" onclick="closeModal('punchlistViewModal')">✕ Close</button></div><div id="punchlistViewContent" class="transfer-details-body"></div><div class="transfer-details-actions"><button type="button" class="primary" onclick="closeModal('punchlistViewModal')">Close</button></div></div></div>
 <div class="modal" id="punchlistCloseModal" role="dialog" aria-modal="true"><div class="dialog" style="width:min(380px,94vw);max-height:90vh"><div class="dialoghead"><div><h3>Close Punchlist</h3><div class="muted">Record who closed this punchlist and the close date.</div></div><button type="button" onclick="closeModal('punchlistCloseModal')">✕</button></div><form id="punchlistCloseForm" onsubmit="submitClosePunchlist(event)"><input type="hidden" id="punchlistCloseId"><div class="fields"><div class="field full"><label>Closed By *</label><input id="punchlistClosedBy" required placeholder="Enter name"></div><div class="field full"><label>Closed Date *</label><input id="punchlistClosedDate" type="date" required></div></div><div class="actions"><button class="primary" type="submit" id="punchlistCloseSave">Save Close Details</button><button type="button" onclick="closeModal('punchlistCloseModal')">Cancel</button></div></form></div></div>
 <div class="modal" id="reworkModal"><div class="dialog"><div class="dialoghead"><div><h3 id="reworkTitle">Add Rework</h3><div class="muted">Enter the main J.O. / S.O. information, add multiple items, then add each item’s rework descriptions and PICs.</div></div><button type="button" onclick="closeModal('reworkModal')">✕</button></div>
 <form id="reworkForm" onsubmit="submitRework(event)"><input type="hidden" id="reworkRecordId"><div class="fields" id="reworkMainFields"></div>
@@ -384,7 +385,7 @@ function punchlistField(label,type,value,required,options){
  input.value=value||'';input.required=!!required;box.append(l,input);return {box,input};
 }
 function openAddPunchlist(){
- el('punchlistForm').reset();el('punchlistMainFields').innerHTML='';el('punchlistItemsList').innerHTML='';
+ el('punchlistForm').reset();el('punchlistRecordId').value='';el('punchlistTitle').textContent='Add Punchlist';el('punchlistMainFields').innerHTML='';el('punchlistItemsList').innerHTML='';
  [['Date','date',true],['J.O #','text',false],['S.O #','text',false],['Target Date','date',false],['Client','text',true]].forEach(([label,type,required])=>{const f=punchlistField(label,type,'',required);f.input.dataset.punchMain=label;el('punchlistMainFields').append(f.box)});
  addPunchlistItem();el('punchlistSave').disabled=false;el('punchlistSave').textContent='Save Punchlist';openModal('punchlistModal');
 }
@@ -401,6 +402,7 @@ function submitPunchlist(ev){
  if(!main['J.O #']&&!main['S.O #']){showStatus(false,'J.O / S.O required','Enter at least a J.O or S.O number.');return}
  if(!main.Date||!main.Client){showStatus(false,'Required fields','Enter Date and Client before saving.');return}
  if(!items.length){showStatus(false,'Add an item','Add at least one item.');return}
+ const editId=el('punchlistRecordId').value.trim();
  const payloads=[];
  for(let i=0;i<items.length;i++){
   const item=items[i];
@@ -415,6 +417,7 @@ function submitPunchlist(ev){
     'Category':item.Category,'Description of Punchlist':d['Description of Punchlist'],
     'Concern Section':d['Concern Section']||'','Received Date':d['Received Date']||'','Received By':d['Received By']||'','Status':'Open'
    });
+   if(editId){const old=records.find(x=>String(x['Punchlist ID']||'')===editId)||{};Object.assign(payloads[payloads.length-1],{'Punchlist ID':editId,'Closed By':old['Closed By']||'','Closed Date':old['Closed Date']||'','Status':old.Status||'Open'});}
   }
  }
  const btn=el('punchlistSave');btn.disabled=true;btn.textContent='Saving 0/'+payloads.length+'...';
@@ -422,7 +425,7 @@ function submitPunchlist(ev){
  const saveNext=()=>{
   if(index>=payloads.length){
    delete recordCache['Punchlist Monitoring::'];
-   showStatus(true,'Punchlist saved',payloads.length+' punchlist description(s) saved as separate records.');
+   showStatus(true,editId?'Punchlist updated':'Punchlist saved',editId?'Punchlist record updated.':payloads.length+' punchlist description(s) saved as separate records.');
    closeModal('punchlistModal');loadRecords();return;
   }
   btn.textContent='Saving '+(index+1)+'/'+payloads.length+'...';
@@ -560,10 +563,29 @@ function renderPunchlistTable(){
  // Rows sharing the same J.O/S.O/client/date are displayed as a single merged visual group.
  const groups=[];rows.forEach(r=>{const key=[r['Date Issue'],r['J.O'],r['S.O'],r.Client].map(v=>String(v||'').trim()).join('¦');let g=groups[groups.length-1];if(!g||g.key!==key){g={key,items:[]};groups.push(g)}g.items.push(r)});
  groups.forEach(g=>g.items.forEach((r,i)=>{const tr=document.createElement('tr');if(i===0){[['Date Issue','Date Issue'],['J.O','J.O'],['S.O','S.O'],['Client','Client']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=g.items.length;td.className='punchlist-shared-cell';tr.append(td)})}
- [['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category'],['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date'],['Status','Status']].forEach(([label,key])=>tr.append(cell(r[key])));const action=cell('');action.className='actioncell';action.append(button('Full Detail','small',()=>showPunchlistDetails(r)));if(String(r.Status||'Open').toLowerCase()!=='closed')action.append(button('Close','small',()=>openClosePunchlist(r)));tr.append(action);el('tbody').append(tr)}));
+ [['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category'],['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date'],['Status','Status']].forEach(([label,key])=>tr.append(cell(r[key])));const action=cell('');action.className='actioncell';action.append(button('Full Detail','small',()=>showPunchlistDetails(r)),button('Edit','small',()=>openEditPunchlist(r)),button('Delete','small danger',()=>deletePunchlistRecord(r)));if(String(r.Status||'Open').toLowerCase()!=='closed')action.append(button('Close','small',()=>openClosePunchlist(r)));tr.append(action);el('tbody').append(tr)}));
 }
 function resetPunchlistFilters(){['monthFrom','monthTo','punchStatusFilter','punchCategoryFilter','search'].forEach(id=>{const x=el(id);if(x)x.value=''});tablePage=1;renderPunchlistTable()}
-function showPunchlistDetails(r){const text=['Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'].map(k=>k+': '+(r[k]||'—')).join('\n');showStatus(true,'Punchlist Details',text)}
+function showPunchlistDetails(r){
+ const fields=['Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
+ el('punchlistViewTitle').textContent='Punchlist Details — '+(r['J.O']||r['S.O']||'Record');
+ const host=el('punchlistViewContent');host.innerHTML='';
+ fields.forEach(name=>{const box=document.createElement('div');box.className='transfer-detail-field'+(['Description of Punchlist','Concern Section'].includes(name)?' full':'');const label=document.createElement('span');label.className='transfer-detail-label';label.textContent=name;const value=document.createElement('span');value.className='transfer-detail-value';value.textContent=r[name]==null||r[name]===''?'—':String(r[name]);box.append(label,value);host.append(box)});
+ openModal('punchlistViewModal');
+}
+function openEditPunchlist(r){
+ el('punchlistForm').reset();el('punchlistRecordId').value=r['Punchlist ID']||'';el('punchlistTitle').textContent='Edit Punchlist';el('punchlistMainFields').innerHTML='';el('punchlistItemsList').innerHTML='';
+ [['Date','date',true],['J.O #','text',false],['S.O #','text',false],['Target Date','date',false],['Client','text',true]].forEach(([label,type,required])=>{const key=label==='Date'?'Date Issue':label==='J.O #'?'J.O':label==='S.O #'?'S.O':label;const f=punchlistField(label,type,r[key]||'',required);f.input.dataset.punchMain=label;el('punchlistMainFields').append(f.box)});
+ addPunchlistItem({Item:r.Item||'', 'Panel Name':r['Panel Name']||'',Qty:r.Qty||'',Category:r.Category||''});
+ const list=el('punchlistItemsList').firstElementChild.querySelector('.punchlist-description-list');list.innerHTML='';
+ addPunchlistDescription(list,{'Description of Punchlist':r['Description of Punchlist']||'','Concern Section':r['Concern Section']||'','Received Date':r['Received Date']||'','Received By':r['Received By']||''});
+ el('punchlistSave').disabled=false;el('punchlistSave').textContent='Save Changes';openModal('punchlistModal');
+}
+function deletePunchlistRecord(r){
+ const id=String(r&&r['Punchlist ID']||'');if(!id){showStatus(false,'Delete failed','Missing Punchlist ID. Refresh and try again.');return}
+ if(!confirm('Delete this punchlist description record? This cannot be undone.'))return;
+ callServer('deletePunchlist',[id],result=>{if(!result||!result.ok){showStatus(false,'Delete failed',result&&result.message||'Unable to delete punchlist.');return}delete recordCache['Punchlist Monitoring::'];recordsLoadedFully=false;showStatus(true,'Deleted',result.message||'Punchlist record deleted.');loadRecords(false)},err=>showStatus(false,'Delete failed',err&&err.message||String(err)));
+}
 function openClosePunchlist(r){el('punchlistCloseId').value=r['Punchlist ID']||'';el('punchlistClosedBy').value=r['Closed By']||'';el('punchlistClosedDate').value=r['Closed Date']||new Date().toISOString().slice(0,10);openModal('punchlistCloseModal')}
 function submitClosePunchlist(ev){ev.preventDefault();const id=el('punchlistCloseId').value;const r=records.find(x=>String(x['Punchlist ID']||'')===String(id));if(!r){showStatus(false,'Punchlist not found','Refresh records and try again.');return}const btn=el('punchlistCloseSave');btn.disabled=true;callServer('saveRecord',['Punchlist Monitoring',Object.assign({},r,{'Closed By':el('punchlistClosedBy').value.trim(),'Closed Date':el('punchlistClosedDate').value,'Status':'Closed'})],result=>{btn.disabled=false;if(!result||result.ok===false){showStatus(false,'Close failed',result&&result.message||'Could not close this punchlist.');return}closeModal('punchlistCloseModal');delete recordCache['Punchlist Monitoring::'];showStatus(true,'Punchlist closed','Closed By and Closed Date saved.');loadRecords(false)},err=>{btn.disabled=false;showStatus(false,'Close failed',err&&err.message||'Could not close this punchlist.')})}
 function renderReworkTable(){
