@@ -234,6 +234,30 @@ function savePunchlist_(input){
  return {ok:true,recordId:rec['Punchlist ID'],message:rowIndex>0?'Punchlist updated.':'Punchlist saved.'};
 }
 
+function closePunchlist(id,closedBy,closedDate){
+ const key=String(id||'').trim(),by=String(closedBy||'').trim(),date=String(closedDate||'').trim();
+ if(!key)throw new Error('Missing Punchlist ID.');
+ if(!by||!date)throw new Error('Closed By and Close Date are required.');
+ const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
+ if(!sh||sh.getLastRow()<2)throw new Error('Punchlist record was not found.');
+ const data=sh.getDataRange().getValues(),headers=data[0].map(String),idCol=headers.indexOf('Punchlist ID');
+ if(idCol<0)throw new Error('Punchlist ID column is missing.');
+ let row=-1;for(let i=1;i<data.length;i++)if(String(data[i][idCol])===key){row=i+1;break;}
+ if(row<0)throw new Error('Punchlist record was not found. Refresh and try again.');
+ const set=(name,value)=>{const col=headers.indexOf(name);if(col>=0)sh.getRange(row,col+1).setValue(value)};
+ set('Closed By',by);set('Closed Date',date);set('Status','Closed');set('Updated At',new Date());
+ invalidateModuleCache_('Punchlist Monitoring');return {ok:true,recordId:key,message:'Punchlist closed.'};
+}
+function deletePunchlist(id){
+ const key=String(id||'').trim();if(!key)throw new Error('Missing Punchlist ID.');
+ const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
+ if(!sh||sh.getLastRow()<2)throw new Error('Punchlist record was not found.');
+ const data=sh.getDataRange().getValues(),headers=data[0].map(String),idCol=headers.indexOf('Punchlist ID');
+ if(idCol<0)throw new Error('Punchlist ID column is missing.');
+ let row=-1;for(let i=1;i<data.length;i++)if(String(data[i][idCol])===key){row=i+1;break;}
+ if(row<0)throw new Error('Punchlist record was not found. Refresh and try again.');
+ sh.deleteRow(row);invalidateModuleCache_('Punchlist Monitoring');return {ok:true,recordId:key,message:'Punchlist description deleted.'};
+}
 function saveRecord(moduleName,input) {
   if(moduleName==='Rework Monitoring') return saveReworkCase_(input);
   if(moduleName==='Punchlist Monitoring') return savePunchlist_(input);
