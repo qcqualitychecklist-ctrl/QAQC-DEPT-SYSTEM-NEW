@@ -394,7 +394,7 @@ function submitPunchlist(ev){
  const main={};
  el('punchlistMainFields').querySelectorAll('[data-punch-main]').forEach(input=>main[input.dataset.punchMain]=input.value.trim());
  const items=[...el('punchlistItemsList').children].map(card=>{
-  const item={};card.querySelectorAll('[data-punch-item]').forEach(input=>item[input.dataset.punchItem]=input.value.trim());
+  const item={};card.querySelectorAll('[data-punch-item]').forEach(input=>item[input.getAttribute('data-punch-item')]=String(input.value||'').trim());const categorySelect=card.querySelector('.punchlist-item-grid select');if(categorySelect)item.Category=String(categorySelect.value||'').trim();
   item.descriptions=[...card.querySelectorAll('.punchlist-description-row')].map(row=>{
    const d={};row.querySelectorAll('[data-punch-description]').forEach(input=>d[input.dataset.punchDescription]=input.value.trim());return d;
   });return item;
@@ -450,7 +450,7 @@ function addPunchlistItem(data){
  const head=document.createElement('div');head.className='punchlist-item-head';const title=document.createElement('h4');title.textContent='Item '+(host.children.length+1);
  const remove=button('Remove Item','small danger',()=>{if(host.children.length===1){showStatus(false,'Required item','At least one item is required.');return}card.remove();renumberPunchlistItems()});head.append(title,remove);card.append(head);
  const grid=document.createElement('div');grid.className='punchlist-item-grid';
- [['Item','text',false],['Panel Name','text',false],['Qty','number',false],['Category','select',true]].forEach(([label,type,required])=>{const f=punchlistField(label,type,data[label]||'',required,label==='Category'?PUNCHLIST_FORM_CATEGORIES:null);f.input.dataset.punchItem=label;grid.append(f.box)});
+ [['Item','text',false],['Panel Name','text',false],['Qty','number',false],['Category','select',true]].forEach(([label,type,required])=>{const f=punchlistField(label,type,data[label]||'',required,label==='Category'?PUNCHLIST_FORM_CATEGORIES:null);f.input.setAttribute('data-punch-item',label);grid.append(f.box)});
  card.append(grid);
  const list=document.createElement('div');list.className='punchlist-description-list';list.dataset.punchlistDescriptions='true';
  addPunchlistDescription(list,{});
