@@ -543,29 +543,53 @@ function openEditJO(rec){freeFormTransfer=false;const defs=[['CLASSIFICATION','t
 const originalSubmitTransfer=submitTransfer;
 submitTransfer=function(ev){ev.preventDefault();if(currentPage==='J.O Register'){const data=readFields('transferFields',joModalDefs);data['Record ID']=el('transferRecordId').value;const btn=el('transferSave');btn.disabled=true;callServer('saveRecord',['J.O Register',data],r=>{btn.disabled=false;const idx=records.findIndex(x=>String(x['Record ID'])===String(data['Record ID']));if(idx>=0){const updated=Object.assign({},records[idx],data);const served=updated['Date Served']?new Date(String(updated['Date Served']).slice(0,10)+'T00:00:00'):null;const due=updated['Delivery Date']?new Date(String(updated['Delivery Date']).slice(0,10)+'T00:00:00'):null;updated.Timeliness=served&&due&&!isNaN(served.getTime())&&!isNaN(due.getTime())?(served.getTime()<=due.getTime()?'On Time':'Delayed'):'Pending';records[idx]=updated;recordCache['J.O Register::']=records;renderTable()}showStatus(true,'Changes saved',r.message||'J.O Register updated.');closeModal('transferModal')},()=>{btn.disabled=false});return}originalSubmitTransfer(ev)}
 function renderPunchlistTable(){
- const heads=['Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
- const table=el('thead').closest('table');table.classList.remove('jo-table','fgts-table','rework-table','rework-merged-table');table.classList.add('punchlist-table');
- el('thead').innerHTML='';el('tbody').innerHTML='';const hr=document.createElement('tr');heads.forEach(h=>{const th=document.createElement('th');th.textContent=h;hr.append(th)});el('thead').append(hr);
- const q=String(el('search')?.value||'').trim().toLowerCase();
- const shown=records.filter(r=>!q||JSON.stringify(r).toLowerCase().includes(q));
+ el('recordFilters')?.classList.add('punchlist-filterbar');el('dashboardCards')?.classList.add('punchlist-dashboard');el('dashboardCards').style.display='grid';
+ const statusSel=el('statusFilter');if(statusSel&&![...statusSel.options].some(o=>o.value==='Open'&&o.textContent==='Open'))statusSel.innerHTML='<option value="">All Statuses</option><option value="Open">Open</option><option value="Closed">Closed</option>';
+ const fill=(id,label,values)=>{const sel=el(id);if(!sel)return;const prev=sel.value;const opts=[...new Set(values.map(v=>String(v||'').trim()).filter(Boolean))].sort((x,y)=>x.localeCompare(y));sel.innerHTML='<option value="">'+label+'</option>'+opts.map(v=>'<option value="'+v.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'">'+v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</option>').join('');if(opts.includes(prev))sel.value=prev};
+ fill('punchlistCategoryFilter','All Categories',records.map(r=>r.Category));fill('punchlistSectionFilter','All Concern Sections',records.map(r=>r['Concern Section']));
+ const from=el('monthFrom')?.value||'',to=el('monthTo')?.value||'',status=el('statusFilter')?.value||'',category=el('punchlistCategoryFilter')?.value||'',section=el('punchlistSectionFilter')?.value||'',q=String(el('search')?.value||'').trim().toLowerCase();
+ const shown=records.filter(r=>{const date=String(r['Date Issue']||'').slice(0,7);if(from&&(!date||date<from))return false;if(to&&(!date||date>to))return false;if(status&&String(r.Status||'Open').toLowerCase()!==status.toLowerCase())return false;if(category&&String(r.Category||'')!==category)return false;if(section&&String(r['Concern Section']||'')!==section)return false;if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;return true});
+ const jos=new Set(shown.map(r=>String(r['J.O']||'').trim()).filter(Boolean)),closed=shown.filter(r=>String(r.Status||'Open').toLowerCase()==='closed').length,open=shown.length-closed;
+ el('dashboardCards').innerHTML='';[['J.O Count',jos.size,'punchlist-jos'],['Close Punchlist',closed,'punchlist-closed'],['Open Punchlist',open,'punchlist-open']].forEach(v=>{const c=document.createElement('div');c.className='dash-card '+v[2];const l=document.createElement('div');l.className='dash-label';l.textContent=v[0];const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];c.append(l,n);el('dashboardCards').append(c)});
+ const heads=['Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status','Action'];
+ const table=el('thead').closest('table');table.classList.remove('jo-table','fgts-table','rework-table','rework-merged-table');table.classList.add('punchlist-table');el('thead').innerHTML='';el('tbody').innerHTML='';
+ const hr=document.createElement('tr');heads.forEach(h=>{const th=document.createElement('th');th.textContent=h;hr.append(th)});el('thead').append(hr);
  const pages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));if(tablePage>pages)tablePage=pages;const start=(tablePage-1)*PAGE_SIZE,rows=shown.slice(start,start+PAGE_SIZE);
- el('count').textContent=shown.length?(start+1)+'–'+Math.min(start+PAGE_SIZE,shown.length)+' of '+shown.length+' punchlist items':'0 punchlist items';renderPagination(shown.length);
- const cell=(v)=>{const td=document.createElement('td');td.textContent=v==null||v===''?'—':String(v);td.title=td.textContent;return td};
+ el('count').textContent=shown.length?(start+1)+'–'+Math.min(start+PAGE_SIZE,shown.length)+' of '+shown.length+' punchlist descriptions':'0 punchlist descriptions';renderPagination(shown.length);
+ const cell=v=>{const td=document.createElement('td');td.textContent=v==null||v===''?'—':String(v);td.title=td.textContent;return td};
  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent=recordsLoadedFully?'No punchlist records found.':'Loading records…';tr.append(td);el('tbody').append(tr);return}
- // Merge shared J.O/S.O/client/date fields, then merge item fields for consecutive descriptions
- // belonging to the same item, panel, quantity, and category.
  const groups=[];rows.forEach(r=>{const key=[r['Date Issue'],r['J.O'],r['S.O'],r.Client].map(v=>String(v||'').trim()).join('¦');let g=groups[groups.length-1];if(!g||g.key!==key){g={key,items:[]};groups.push(g)}g.items.push(r)});
- groups.forEach(g=>{
-  const itemGroups=[];
-  g.items.forEach(r=>{const itemKey=['Item','Panel Name','Qty','Category'].map(k=>String(r[k]||'').trim()).join('¦');let ig=itemGroups[itemGroups.length-1];if(!ig||ig.key!==itemKey){ig={key:itemKey,items:[]};itemGroups.push(ig)}ig.items.push(r)});
-  itemGroups.forEach(ig=>ig.items.forEach((r,i)=>{
-   const tr=document.createElement('tr');
-   if(g.items[0]===r){[['Date Issue','Date Issue'],['J.O','J.O'],['S.O','S.O'],['Client','Client']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=g.items.length;td.className='punchlist-shared-cell';tr.append(td)})}
-   if(i===0){[['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=ig.items.length;td.className='punchlist-shared-cell';tr.append(td)})}
-   [['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date'],['Status','Status']].forEach(([label,key])=>tr.append(cell(r[key])));
-   el('tbody').append(tr);
-  }));
- });
+ groups.forEach(g=>{const itemGroups=[];g.items.forEach(r=>{const itemKey=['Item','Panel Name','Qty','Category'].map(k=>String(r[k]||'').trim()).join('¦');let ig=itemGroups[itemGroups.length-1];if(!ig||ig.key!==itemKey){ig={key:itemKey,items:[]};itemGroups.push(ig)}ig.items.push(r)});
+ itemGroups.forEach(ig=>ig.items.forEach((r,i)=>{const tr=document.createElement('tr');
+ if(g.items[0]===r)[['Date Issue','Date Issue'],['J.O','J.O'],['S.O','S.O'],['Client','Client']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=g.items.length;td.className='punchlist-shared-cell';tr.append(td)});
+ if(i===0)[['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=ig.items.length;td.className='punchlist-shared-cell';tr.append(td)});
+ [['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date'],['Status','Status']].forEach(([label,key])=>tr.append(cell(r[key])));
+ const act=document.createElement('td');act.className='actioncell punchlist-action-cell';act.append(button('Edit','small primary',()=>openEditPunchlist(r)),document.createTextNode(' '),button('Full Details','small',()=>openPunchlistDetails(r)),document.createTextNode(' '),button('Close','small',()=>openClosePunchlist(r)),document.createTextNode(' '),button('Delete','small danger',()=>deletePunchlistRecord(r)));tr.append(act);el('tbody').append(tr);
+ }))});
+}
+function openPunchlistDetails(rec){
+ el('punchlistDetailsTitle').textContent='Punchlist Details — '+String(rec['J.O']||rec['S.O']||rec['Punchlist ID']||'Record');el('punchlistDetailsSubtitle').textContent='Status: '+String(rec.Status||'Open')+' | Punchlist ID: '+String(rec['Punchlist ID']||'');
+ const host=el('punchlistDetailsBody');host.innerHTML='';['Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status','Punchlist ID'].forEach(k=>{const card=document.createElement('div');card.className='transfer-detail-field'+(k==='Description of Punchlist'?' full':'');const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=k;const v=document.createElement('span');v.className='transfer-detail-value';v.textContent=rec[k]||'—';card.append(l,v);host.append(card)});openModal('punchlistDetailsModal');
+}
+function openClosePunchlist(rec){
+ if(String(rec.Status||'Open').toLowerCase()==='closed'){showStatus(false,'Already closed','This punchlist is already closed.');return}
+ el('punchlistCloseForm').reset();el('punchlistCloseId').value=rec['Punchlist ID']||'';el('punchlistCloseSubtitle').textContent='J.O '+(rec['J.O']||'—')+' | '+(rec['Description of Punchlist']||'Punchlist description');el('punchlistClosedDate').value=new Date().toISOString().slice(0,10);openModal('punchlistCloseModal');
+}
+function submitClosePunchlist(ev){
+ ev.preventDefault();const id=el('punchlistCloseId').value,by=el('punchlistClosedBy').value.trim(),date=el('punchlistClosedDate').value,btn=el('punchlistCloseSave');if(!id||!by||!date){showStatus(false,'Required fields','Enter Closed By and Close Date.');return}
+ btn.disabled=true;callServer('closePunchlist',[id,by,date],r=>{btn.disabled=false;if(!r||r.ok===false){showStatus(false,'Close failed',r&&r.message||'Unable to close punchlist.');return}closeModal('punchlistCloseModal');delete recordCache['Punchlist Monitoring::'];showStatus(true,'Punchlist closed',r.message||'Closed By and Close Date saved.');loadRecords(false)},err=>{btn.disabled=false;showStatus(false,'Close failed',err&&err.message||String(err))});
+}
+function deletePunchlistRecord(rec){
+ const id=String(rec&&rec['Punchlist ID']||'');if(!id){showStatus(false,'Delete failed','Missing Punchlist ID.');return}if(!confirm('Delete this punchlist description? This cannot be undone.'))return;
+ callServer('deletePunchlist',[id],r=>{if(!r||r.ok===false){showStatus(false,'Delete failed',r&&r.message||'Unable to delete punchlist.');return}delete recordCache['Punchlist Monitoring::'];showStatus(true,'Deleted',r.message||'Punchlist description deleted.');loadRecords(false)},err=>showStatus(false,'Delete failed',err&&err.message||String(err)));
+}
+function openEditPunchlist(rec){
+ el('punchlistEditId').value=rec['Punchlist ID']||'';const host=el('punchlistEditFields');host.innerHTML='';const defs=[['Date Issue','date'],['J.O','text'],['S.O','text'],['Client','text'],['Item','text'],['Panel Name','text'],['Qty','number'],['Category','select'],['Description of Punchlist','text'],['Concern Section','text'],['Target Date','date'],['Received By','text'],['Received Date','date']];
+ defs.forEach(([name,type])=>{const f=punchlistField(name,type,rec[name]||'',name==='Date Issue'||name==='Client'||name==='Description of Punchlist',name==='Category'?PUNCHLIST_FORM_CATEGORIES:null);f.input.dataset.punchEdit=name;if(name==='Description of Punchlist'||name==='Client')f.box.classList.add('full');host.append(f.box)});openModal('punchlistEditModal');
+}
+function submitEditPunchlist(ev){
+ ev.preventDefault();const data={'Punchlist ID':el('punchlistEditId').value,Status:'Open'};el('punchlistEditFields').querySelectorAll('[data-punch-edit]').forEach(input=>data[input.dataset.punchEdit]=input.value.trim());const btn=el('punchlistEditSave');btn.disabled=true;
+ callServer('saveRecord',['Punchlist Monitoring',data],r=>{btn.disabled=false;if(!r||r.ok===false){showStatus(false,'Edit failed',r&&r.message||'Unable to update punchlist.');return}closeModal('punchlistEditModal');delete recordCache['Punchlist Monitoring::'];showStatus(true,'Punchlist updated',r.message||'Punchlist updated.');loadRecords(false)},err=>{btn.disabled=false;showStatus(false,'Edit failed',err&&err.message||String(err))});
 }
 function renderReworkTable(){
  el('recordFilters')?.classList.add('rework-filterbar');el('dashboardCards')?.classList.add('rework-dashboard');
