@@ -338,9 +338,9 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 <form id="transferForm" onsubmit="submitTransfer(event)"><input type="hidden" id="transferRecordId"><div class="fields" id="transferFields"></div><section id="additionalItemsSection" class="panel" style="margin-top:14px;display:none"><h3>Additional Items under the same Transfer No. / J.O</h3><div class="muted">Add another item to save it as a separate row with the same transfer details.</div><div id="additionalItems" class="item-entry-list"></div><div class="actions"><button type="button" id="addItemBtn" onclick="addTransferItem()">＋ Add Item</button></div></section><div class="actions"><button class="primary" id="transferSave" type="submit">Save Transfer</button><button type="button" onclick="closeModal('transferModal')">Cancel</button></div></form></div></div>
 
 <div class="modal" id="punchlistModal"><div class="dialog"><div class="dialoghead"><div><h3>Add Punchlist</h3><div class="muted">One J.O./S.O. can contain multiple items; each item can have multiple punchlist descriptions.</div></div><button type="button" aria-label="Close Add Punchlist" onclick="closeModal('punchlistModal')">✕</button></div>
-<form id="punchlistForm" onsubmit="event.preventDefault()"><div class="fields" id="punchlistMainFields"></div>
+<form id="punchlistForm" onsubmit="submitPunchlist(event)"><div class="fields" id="punchlistMainFields"></div>
 <section class="panel punchlist-items-panel" style="margin-top:10px"><div class="allocation-form-head"><h3>Items Under This J.O. / S.O.</h3><button type="button" onclick="addPunchlistItem()">＋ Add Item</button></div><div class="muted punchlist-category-hint">A — Not approved for release to next process · B — Approved for release; remaining items completed on-site · C — Correct after testing and commissioning</div><div id="punchlistItemsList"></div></section>
-<div class="actions"><button class="primary" type="button" id="punchlistSave" disabled title="Saving will be enabled after the form layout is approved">Save Punchlist (Not Active Yet)</button><button type="button" onclick="closeModal('punchlistModal')">Cancel</button></div></form></div></div>
+<div class="actions"><button class="primary" type="submit" id="punchlistSave">Save Punchlist</button><button type="button" onclick="closeModal('punchlistModal')">Cancel</button></div></form></div></div>
 <div class="modal" id="reworkModal"><div class="dialog"><div class="dialoghead"><div><h3 id="reworkTitle">Add Rework</h3><div class="muted">Enter the main J.O. / S.O. information, add multiple items, then add each item’s rework descriptions and PICs.</div></div><button type="button" onclick="closeModal('reworkModal')">✕</button></div>
 <form id="reworkForm" onsubmit="submitRework(event)"><input type="hidden" id="reworkRecordId"><div class="fields" id="reworkMainFields"></div>
 <section class="panel" style="margin-top:14px"><div class="allocation-form-head"><h3>Items Under This J.O. / S.O.</h3><button type="button" onclick="addReworkItem({})">＋ Add Item</button></div><div class="muted">Add multiple items for this J.O. Each item can have multiple rework descriptions, and each description can have multiple people in charge.</div><div id="reworkDetailsList"></div></section>
@@ -379,7 +379,55 @@ function punchlistField(label,type,value,required,options){
 function openAddPunchlist(){
  el('punchlistForm').reset();el('punchlistMainFields').innerHTML='';el('punchlistItemsList').innerHTML='';
  [['Date','date',true],['J.O #','text',false],['S.O #','text',false],['Target Date','date',false],['Client','text',true]].forEach(([label,type,required])=>{const f=punchlistField(label,type,'',required);f.input.dataset.punchMain=label;el('punchlistMainFields').append(f.box)});
- addPunchlistItem();el('punchlistSave').disabled=true;el('punchlistSave').textContent='Save Punchlist (Not Active Yet)';openModal('punchlistModal');
+ addPunchlistItem();el('punchlistSave').disabled=false;el('punchlistSave').textContent='Save Punchlist';openModal('punchlistModal');
+}
+function submitPunchlist(ev){
+ ev.preventDefault();
+ const main={};
+ el('punchlistMainFields').querySelectorAll('[data-punch-main]').forEach(input=>main[input.dataset.punchMain]=input.value.trim());
+ const items=[...el('punchlistItemsList').children].map(card=>{
+  const item={};card.querySelectorAll('[data-punchItem]').forEach(input=>item[input.dataset.punchItem]=input.value.trim());
+  item.descriptions=[...card.querySelectorAll('.punchlist-description-row')].map(row=>{
+   const d={};row.querySelectorAll('[data-punchDescription]').forEach(input=>d[input.dataset.punchDescription]=input.value.trim());return d;
+  });return item;
+ });
+ if(!main['J.O #']&&!main['S.O #']){showStatus(false,'J.O / S.O required','Enter at least a J.O or S.O number.');return}
+ if(!main.Date||!main.Client){showStatus(false,'Required fields','Enter Date and Client before saving.');return}
+ if(!items.length){showStatus(false,'Add an item','Add at least one item.');return}
+ const payloads=[];
+ for(let i=0;i<items.length;i++){
+  const item=items[i];
+  if(!item.Category){showStatus(false,'Category required','Choose Category for Item '+(i+1)+'.');return}
+  if(!item.descriptions.length){showStatus(false,'Description required','Add at least one punchlist description for Item '+(i+1)+'.');return}
+  for(let j=0;j<item.descriptions.length;j++){
+   const d=item.descriptions[j];
+   if(!d['Description of Punchlist']){showStatus(false,'Description required','Enter Punchlist Description '+(j+1)+' for Item '+(i+1)+'.');return}
+   payloads.push({
+    'Date Issue':main.Date,'J.O':main['J.O #'],'S.O':main['S.O #'],'Client':main.Client,
+    'Target Date':main['Target Date']||'','Item':item.Item||'','Panel Name':item['Panel Name']||'','Qty':item.Qty||'',
+    'Category':item.Category,'Description of Punchlist':d['Description of Punchlist'],
+    'Concern Section':d['Concern Section']||'','Received Date':d['Received Date']||'','Received By':d['Received By']||'','Status':'Open'
+   });
+  }
+ }
+ const btn=el('punchlistSave');btn.disabled=true;btn.textContent='Saving 0/'+payloads.length+'...';
+ let index=0;
+ const saveNext=()=>{
+  if(index>=payloads.length){
+   delete recordCache['Punchlist Monitoring::'];
+   showStatus(true,'Punchlist saved',payloads.length+' punchlist description(s) saved as separate records.');
+   closeModal('punchlistModal');loadRecords();return;
+  }
+  btn.textContent='Saving '+(index+1)+'/'+payloads.length+'...';
+  callServer('saveRecord',['Punchlist Monitoring',payloads[index]],r=>{
+   if(!r||r.ok===false){btn.disabled=false;btn.textContent='Save Punchlist';showStatus(false,'Save incomplete',index+' of '+payloads.length+' descriptions saved. '+(r&&r.message?r.message:'The server did not confirm this record.'));return}
+   index++;saveNext();
+  },err=>{
+   btn.disabled=false;btn.textContent='Save Punchlist';
+   showStatus(false,'Save incomplete',index+' of '+payloads.length+' descriptions saved. '+(err&&err.message?err.message:'Check the saved records before retrying to avoid duplicates.'));
+  });
+ };
+ saveNext();
 }
 function renumberPunchlistItems(){
  [...el('punchlistItemsList').children].forEach((card,i)=>{
