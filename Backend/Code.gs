@@ -743,6 +743,25 @@ function deleteAllocation(transferId,allocationId) {
   throw new Error('Allocation not found.');
 }
 
+function deletePunchlist(punchlistId) {
+  const id=String(punchlistId||'').trim();
+  if(!id)throw new Error('Punchlist ID is required.');
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PUNCHLIST_SHEET);
+  if(!sh)throw new Error('Punchlist Monitoring sheet not found.');
+  const rows=sh.getDataRange().getDisplayValues();
+  const headers=rows.length?rows[0].map(v=>String(v||'').trim()):[];
+  const idCol=headers.indexOf('Punchlist ID');
+  if(idCol<0)throw new Error('Punchlist ID column is missing. Run Prepare Database first.');
+  for(let i=1;i<rows.length;i++){
+    if(String(rows[i][idCol]||'').trim()===id){
+      sh.deleteRow(i+1);
+      invalidateModuleCache_('Punchlist Monitoring');
+      return {ok:true,message:'Punchlist description record deleted.'};
+    }
+  }
+  throw new Error('Punchlist record not found. Refresh and try again.');
+}
+
 function deleteTransfer(recordId) {
   const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(TRANSFER_SHEET), alloc=ss.getSheetByName(ALLOCATION_SHEET);
   if(!sh)throw new Error('Transfer sheet not found.');
