@@ -549,10 +549,20 @@ function renderPunchlistTable(){
  el('count').textContent=shown.length?(start+1)+'–'+Math.min(start+PAGE_SIZE,shown.length)+' of '+shown.length+' punchlist items':'0 punchlist items';renderPagination(shown.length);
  const cell=(v)=>{const td=document.createElement('td');td.textContent=v==null||v===''?'—':String(v);td.title=td.textContent;return td};
  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent=recordsLoadedFully?'No punchlist records found.':'Loading records…';tr.append(td);el('tbody').append(tr);return}
- // Rows sharing the same J.O/S.O/client/date are displayed as a single merged visual group.
+ // Merge shared J.O/S.O/client/date fields, then merge item fields for consecutive descriptions
+ // belonging to the same item, panel, quantity, and category.
  const groups=[];rows.forEach(r=>{const key=[r['Date Issue'],r['J.O'],r['S.O'],r.Client].map(v=>String(v||'').trim()).join('¦');let g=groups[groups.length-1];if(!g||g.key!==key){g={key,items:[]};groups.push(g)}g.items.push(r)});
- groups.forEach(g=>g.items.forEach((r,i)=>{const tr=document.createElement('tr');if(i===0){[['Date Issue','Date Issue'],['J.O','J.O'],['S.O','S.O'],['Client','Client']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=g.items.length;td.className='punchlist-shared-cell';tr.append(td)})}
- [['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category'],['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date'],['Status','Status']].forEach(([label,key])=>tr.append(cell(r[key])));el('tbody').append(tr)}));
+ groups.forEach(g=>{
+  const itemGroups=[];
+  g.items.forEach(r=>{const itemKey=['Item','Panel Name','Qty','Category'].map(k=>String(r[k]||'').trim()).join('¦');let ig=itemGroups[itemGroups.length-1];if(!ig||ig.key!==itemKey){ig={key:itemKey,items:[]};itemGroups.push(ig)}ig.items.push(r)});
+  itemGroups.forEach(ig=>ig.items.forEach((r,i)=>{
+   const tr=document.createElement('tr');
+   if(g.items[0]===r){[['Date Issue','Date Issue'],['J.O','J.O'],['S.O','S.O'],['Client','Client']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=g.items.length;td.className='punchlist-shared-cell';tr.append(td)})}
+   if(i===0){[['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=ig.items.length;td.className='punchlist-shared-cell';tr.append(td)})}
+   [['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date'],['Status','Status']].forEach(([label,key])=>tr.append(cell(r[key])));
+   el('tbody').append(tr);
+  }));
+ });
 }
 function renderReworkTable(){
  el('recordFilters')?.classList.add('rework-filterbar');el('dashboardCards')?.classList.add('rework-dashboard');
