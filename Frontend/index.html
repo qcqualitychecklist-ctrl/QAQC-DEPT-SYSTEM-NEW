@@ -386,9 +386,9 @@ function submitPunchlist(ev){
  const main={};
  el('punchlistMainFields').querySelectorAll('[data-punch-main]').forEach(input=>main[input.dataset.punchMain]=input.value.trim());
  const items=[...el('punchlistItemsList').children].map(card=>{
-  const item={};card.querySelectorAll('[data-punchItem]').forEach(input=>item[input.dataset.punchItem]=input.value.trim());
+  const item={};card.querySelectorAll('[data-punch-item]').forEach(input=>item[input.dataset.punchItem]=input.value.trim());
   item.descriptions=[...card.querySelectorAll('.punchlist-description-row')].map(row=>{
-   const d={};row.querySelectorAll('[data-punchDescription]').forEach(input=>d[input.dataset.punchDescription]=input.value.trim());return d;
+   const d={};row.querySelectorAll('[data-punch-description]').forEach(input=>d[input.dataset.punchDescription]=input.value.trim());return d;
   });return item;
  });
  if(!main['J.O #']&&!main['S.O #']){showStatus(false,'J.O / S.O required','Enter at least a J.O or S.O number.');return}
