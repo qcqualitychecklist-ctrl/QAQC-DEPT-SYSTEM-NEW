@@ -345,7 +345,7 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 
 
 /* Punchlist-only refinements requested after Full View review */
-#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,.7fr)!important}
+#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 #punchlistDetailsBody .punchlist-fullview-description-table{width:100%;table-layout:fixed}
 #punchlistDetailsBody .punchlist-fullview-description-table th,
 #punchlistDetailsBody .punchlist-fullview-description-table td{box-sizing:border-box}
@@ -358,6 +358,12 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 #punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)!important}
 #punchlistDetailsBody .punchlist-entry-item-grid>.transfer-detail-field:last-child{grid-column:1/-1}
 }
+
+
+/* Keep Panel Name at its original equal-width size; give Concern Section more room. */
+#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#punchlistDetailsBody .punchlist-fullview-description-table th:nth-child(2),
+#punchlistDetailsBody .punchlist-fullview-description-table td:nth-child(2){white-space:normal!important;overflow-wrap:anywhere!important;text-align:center!important;padding-left:10px!important;padding-right:10px!important}
 
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
@@ -656,11 +662,11 @@ function openPunchlistDetails(rec){
   entryNo++;
   const entry=document.createElement('section');entry.className='transfer-detail-field full';entry.style.marginTop='10px';
   const heading=document.createElement('div');heading.textContent='ENTRY '+entryNo;heading.style.fontWeight='800';heading.style.marginBottom='8px';entry.append(heading);
-  const itemGrid=makeGrid();itemGrid.classList.add('punchlist-entry-item-grid');itemGrid.style.gridTemplateColumns='minmax(0,1fr) minmax(0,2fr) minmax(0,.7fr)';
+  const itemGrid=makeGrid();itemGrid.classList.add('punchlist-entry-item-grid');itemGrid.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
   itemGrid.append(makeField('ITEM NO.',item.Item),makeField('PANEL NAME',item['Panel Name']),makeField('QTY',item.Qty));
   entry.append(itemGrid);
   const table=document.createElement('table');table.className='punchlist-fullview-description-table';table.style.width='100%';table.style.tableLayout='fixed';table.style.borderCollapse='collapse';table.style.marginTop='8px';table.style.fontSize='12px';
-  const colgroup=document.createElement('colgroup');['42%','17%','14%','14%','13%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
+  const colgroup=document.createElement('colgroup');['35%','25%','13%','13%','14%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
   const thead=document.createElement('thead'),headRow=document.createElement('tr');
   ['PUNCHLIST DESCRIPTION','CONCERN SECTION','DATE RECEIVED','DATE CLOSED','STATUS'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.textAlign='left';th.style.padding='9px 7px';th.style.borderBottom='1px solid var(--line)';th.style.fontSize='10px';th.style.color='var(--muted)';headRow.append(th)});
   thead.append(headRow);table.append(thead);
