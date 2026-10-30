@@ -361,6 +361,10 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 
 
 /* Keep Panel Name at its original equal-width size; give Concern Section more room. */
+/* Full View only: prevent Panel Name text from inheriting truncation and allow Concern Section to use its cell width. */
+#punchlistDetailsBody .punchlist-entry-item-grid .transfer-detail-value{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;word-break:normal!important;min-width:0!important;max-width:none!important}
+#punchlistDetailsBody .punchlist-fullview-description-table td:nth-child(2){max-width:none!important;overflow:visible!important;clip-path:none!important}
+
 #punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 #punchlistDetailsBody .punchlist-fullview-description-table th:nth-child(2){white-space:normal!important;text-align:left!important;padding-left:10px!important;padding-right:10px!important}
 #punchlistDetailsBody .punchlist-fullview-description-table td:nth-child(2){white-space:normal!important;overflow:visible!important;overflow-wrap:anywhere!important;word-break:normal!important;text-align:left!important;padding:9px 10px!important;min-width:0!important;max-width:none!important;height:auto!important;line-height:1.35!important}
@@ -674,7 +678,7 @@ function openPunchlistDetails(rec){
   rows.forEach(row=>{
    const tr=document.createElement('tr');
    [row['Description of Punchlist'],row['Concern Section'],row['Received Date'],row['Closed Date'],isClosed(row)?'CLOSED':'IN PROGRESS'].forEach((value,index)=>{
-    const td=document.createElement('td');td.textContent=value==null||String(value).trim()===''?'—':String(value);td.style.padding='9px 7px';td.style.borderBottom='1px solid var(--line)';td.style.verticalAlign='middle';td.style.textAlign=index===0?'left':'center';td.style.whiteSpace=index===0||index===1?'normal':'nowrap';td.style.overflowWrap=index===0||index===1?'anywhere':'normal';if(index===1){td.style.textAlign='left';td.style.wordBreak='break-word';td.style.minWidth='0';td.style.maxWidth='0';td.style.lineHeight='1.35';td.style.setProperty('white-space','normal','important');td.style.setProperty('overflow-wrap','anywhere','important');td.style.setProperty('word-break','break-word','important')}if(index===0){td.style.fontWeight='700';td.style.minWidth='0';td.style.paddingLeft='12px'}tr.append(td);
+    const td=document.createElement('td');td.textContent=value==null||String(value).trim()===''?'—':String(value);td.style.padding='9px 7px';td.style.borderBottom='1px solid var(--line)';td.style.verticalAlign='middle';td.style.textAlign=index===0?'left':'center';td.style.whiteSpace=index===0||index===1?'normal':'nowrap';td.style.overflowWrap=index===0||index===1?'anywhere':'normal';if(index===1){td.style.textAlign='left';td.style.wordBreak='normal';td.style.minWidth='0';td.style.maxWidth='none';td.style.lineHeight='1.35';td.style.setProperty('white-space','normal','important');td.style.setProperty('max-width','none','important');td.style.setProperty('overflow','visible','important');td.style.setProperty('overflow-wrap','anywhere','important');td.style.setProperty('word-break','normal','important')}if(index===0){td.style.fontWeight='700';td.style.minWidth='0';td.style.paddingLeft='12px'}tr.append(td);
    });
    tbody.append(tr);
   });
