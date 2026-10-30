@@ -470,7 +470,7 @@ function loadRecords(useCache=false){
  if(!useCache&&requestedModule!=='Punchlist Monitoring')delete recordCache[cacheKey];
  const hasCachedFull=(useCache||requestedModule==='Punchlist Monitoring')&&Object.prototype.hasOwnProperty.call(recordCache,cacheKey);
  tablePage=1;
- if(hasCachedFull){records=recordCache[cacheKey];recordsLoadedFully=true;renderTable();if(loading)loading.classList.remove('show')}
+ if(hasCachedFull){records=recordCache[cacheKey];recordsLoadedFully=true;renderTable();if(loading)loading.classList.remove('show');return}
  else{records=[];recordsLoadedFully=false;renderTable()}
  callServer('getModuleData',[requestedModule,'',1,PAGE_SIZE,false],first=>{
    if(token!==loadRequestToken||currentPage!==requestedModule)return;if(!first||!first.ok){if(loading)loading.classList.remove('show');return}
