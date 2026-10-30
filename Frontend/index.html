@@ -303,13 +303,12 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
  #punchlistModal .dialoghead{padding:9px 10px!important}
 }
 
-#monitoringPanel .tablewrap table.punchlist-table th:nth-child(3),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(3){width:190px!important;min-width:190px!important;max-width:190px!important}
-#monitoringPanel .tablewrap table.punchlist-table th:nth-child(4),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(4){width:180px!important;min-width:180px!important;max-width:180px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(4),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(4){width:165px;min-width:165px;max-width:165px}
 /* Punchlist-only table layout: single-line cells, hover reveals full text */
 #monitoringPanel .tablewrap table.punchlist-table{table-layout:fixed;width:100%;min-width:1800px;border-collapse:separate;border-spacing:0}
-#monitoringPanel .tablewrap table.punchlist-table th{position:sticky;top:0;z-index:2;white-space:nowrap}\n#monitoringPanel .tablewrap table.punchlist-table th:nth-child(7){white-space:normal!important;line-height:1.2;padding-left:6px;padding-right:6px}
+#monitoringPanel .tablewrap table.punchlist-table th{position:sticky;top:0;z-index:2;white-space:nowrap}
 #monitoringPanel .tablewrap table.punchlist-table td{vertical-align:middle;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;overflow-wrap:normal!important;word-break:normal!important;min-width:0;max-width:190px}
-#monitoringPanel .tablewrap table.punchlist-table th:nth-child(7),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(7){width:175px!important;min-width:175px!important;max-width:175px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(9),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(9){width:220px;max-width:220px}
 #monitoringPanel .tablewrap table.punchlist-table th:nth-child(17),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(17){width:190px}
 #monitoringPanel .tablewrap table.punchlist-table td.punchlist-shared-cell{vertical-align:middle!important;background:transparent!important;font-weight:400!important}
 #monitoringPanel .tablewrap table.punchlist-table .punchlist-action-cell{min-width:0!important;max-width:none!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
@@ -317,66 +316,6 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 #monitoringPanel .tablewrap table.punchlist-table .punchlist-status-button{padding:4px 9px;font-size:10px;border-radius:14px;font-weight:700;min-width:66px}
 #monitoringPanel .tablewrap table.punchlist-table .punchlist-status-button.is-open{background:#fff0d2;color:#8a4b00;border-color:#f5d08a}
 #monitoringPanel .tablewrap table.punchlist-table .punchlist-status-button.is-closed{background:#d9f5e5;color:#146c3a;border-color:#a8dfbf}
-
-/* Punchlist Full View only: prevent summary cards from being squeezed into one host grid column. */
-#punchlistDetailsBody>.punchlist-summary-grid,
-#punchlistDetailsBody>.punchlist-overall-grid{grid-column:1/-1!important;width:100%;min-width:0;box-sizing:border-box}
-#punchlistDetailsBody>.punchlist-summary-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:10px!important}
-#punchlistDetailsBody>.punchlist-overall-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
-#punchlistDetailsBody>.punchlist-summary-grid>.transfer-detail-field,
-#punchlistDetailsBody>.punchlist-overall-grid>.transfer-detail-field{min-width:0;padding:10px 11px}
-#punchlistDetailsBody>.punchlist-summary-grid .transfer-detail-value{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis;overflow-wrap:normal!important;word-break:normal!important}
-#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(90px,.65fr)!important;gap:10px!important}
-.punchlist-action-cell .punchlist-full-view-button,
-.punchlist-action-cell .punchlist-full-view-button:hover,
-.punchlist-action-cell .punchlist-full-view-button:focus,
-.punchlist-action-cell .punchlist-full-view-button:active{position:static!important;top:auto!important;transform:none!important;animation:none!important;transition:none!important;vertical-align:middle!important;margin:2px!important}
-@media(max-width:760px){
-#punchlistDetailsBody>.punchlist-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-#punchlistDetailsBody>.punchlist-overall-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)!important}
-#punchlistDetailsBody .punchlist-entry-item-grid>.transfer-detail-field:last-child{grid-column:1/-1}
-}
-@media(max-width:480px){
-#punchlistDetailsBody>.punchlist-summary-grid,
-#punchlistDetailsBody>.punchlist-overall-grid,
-#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,1fr)!important}
-#punchlistDetailsBody .punchlist-entry-item-grid>.transfer-detail-field:last-child{grid-column:auto}
-}
-
-
-/* Punchlist-only refinements requested after Full View review */
-#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-#punchlistDetailsBody .punchlist-fullview-description-table{width:100%;table-layout:fixed}
-#punchlistDetailsBody .punchlist-fullview-description-table th,
-#punchlistDetailsBody .punchlist-fullview-description-table td{box-sizing:border-box}
-#punchlistDetailsBody .punchlist-fullview-description-table th:first-child,
-#punchlistDetailsBody .punchlist-fullview-description-table td:first-child{text-align:left!important}
-#punchlistDetailsBody .punchlist-fullview-description-table td:first-child{padding-left:12px!important;white-space:normal;overflow-wrap:anywhere}
-#monitoringPanel .tablewrap table.punchlist-table .punchlist-status-action{display:inline-flex!important;align-items:center;justify-content:center;width:auto!important;min-width:78px!important;max-width:none!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;word-break:normal!important;padding:4px 10px!important;line-height:1.25}
-#monitoringPanel .tablewrap table.punchlist-table td:nth-child(16){overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important}
-@media(max-width:760px){
-#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)!important}
-#punchlistDetailsBody .punchlist-entry-item-grid>.transfer-detail-field:last-child{grid-column:1/-1}
-}
-
-
-/* Keep Panel Name at its original equal-width size; give Concern Section more room. */
-/* Full View only: prevent Panel Name text from inheriting truncation and allow Concern Section to use its cell width. */
-#punchlistDetailsBody .punchlist-entry-item-grid .transfer-detail-value{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;word-break:normal!important;min-width:0!important;max-width:none!important}
-#punchlistDetailsBody .punchlist-fullview-description-table td:nth-child(2){max-width:none!important;overflow:visible!important;clip-path:none!important}
-
-#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-#punchlistDetailsBody .punchlist-fullview-description-table th:nth-child(2){white-space:normal!important;text-align:left!important;padding-left:10px!important;padding-right:10px!important}
-#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,.8fr) minmax(0,2.2fr) minmax(0,.7fr)!important}
-#punchlistDetailsBody .punchlist-fullview-description-table{table-layout:fixed!important}
-#punchlistDetailsBody .punchlist-fullview-description-table col:nth-child(1){width:34%!important}
-#punchlistDetailsBody .punchlist-fullview-description-table col:nth-child(2){width:26%!important}
-#punchlistDetailsBody .punchlist-fullview-description-table col:nth-child(3){width:13%!important}\n#punchlistDetailsBody .punchlist-fullview-description-table col:nth-child(4){width:13%!important}\n#punchlistDetailsBody .punchlist-fullview-description-table col:nth-child(5){width:14%!important}
-#punchlistDetailsBody .punchlist-fullview-description-table th,#punchlistDetailsBody .punchlist-fullview-description-table td{vertical-align:top!important;line-height:1.4!important}
-#punchlistDetailsBody .punchlist-fullview-description-table th:nth-child(2),#punchlistDetailsBody .punchlist-fullview-description-table td:nth-child(2){white-space:normal!important;overflow:visible!important;overflow-wrap:break-word!important;word-break:normal!important;text-align:left!important;padding:10px 9px!important;min-width:0!important;max-width:none!important;height:auto!important}
-#punchlistDetailsBody .punchlist-fullview-description-table td:first-child{white-space:normal!important;overflow-wrap:break-word!important;padding:10px 9px 10px 12px!important}
-
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
@@ -637,8 +576,8 @@ function renderPunchlistTable(){
  if(g.items[0]===r)[['Date Issue','Date Issue'],['J.O','J.O'],['S.O','S.O'],['Client','Client']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=g.items.length;td.className='punchlist-shared-cell';tr.append(td)});
  if(i===0)[['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=ig.items.length;td.className='punchlist-shared-cell';tr.append(td)});
  [['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date']].forEach(([label,key])=>tr.append(cell(r[key])));
- const statusCell=document.createElement('td'),statusBtn=button(String(r.Status||'Open'),'punchlist-status-button '+(String(r.Status||'Open').toLowerCase()==='closed'?'is-closed':'is-open'),()=>openClosePunchlist(r));statusBtn.classList.add('punchlist-status-action');statusBtn.title=String(r.Status||'Open')==='Closed'?'Already closed':'Click to close this punchlist';statusCell.append(statusBtn);tr.append(statusCell);
- if(g.items[0]===r){const act=document.createElement('td');act.rowSpan=g.items.length;act.className='actioncell punchlist-action-cell';const editBtn=button('Edit Punchlist','small primary',()=>openEditPunchlistGroup(r));const fullViewBtn=button('Full Details','small',()=>openPunchlistDetails(r));fullViewBtn.classList.add('punchlist-full-view-button');act.append(editBtn,document.createTextNode(' '),fullViewBtn);tr.append(act)}
+ const statusCell=document.createElement('td'),statusBtn=button(String(r.Status||'Open'),'punchlist-status-button '+(String(r.Status||'Open').toLowerCase()==='closed'?'is-closed':'is-open'),()=>openClosePunchlist(r));statusBtn.title=String(r.Status||'Open')==='Closed'?'Already closed':'Click to close this punchlist';statusCell.append(statusBtn);tr.append(statusCell);
+ if(g.items[0]===r){const act=document.createElement('td');act.rowSpan=g.items.length;act.className='actioncell punchlist-action-cell';act.append(button('Edit Punchlist','small primary',()=>openEditPunchlistGroup(r)),document.createTextNode(' '),button('Full Details','small',()=>openPunchlistDetails(r)));tr.append(act)}
  el('tbody').append(tr);
  }))});
 }
@@ -652,12 +591,12 @@ function openPunchlistDetails(rec){
  el('punchlistDetailsTitle').textContent='Full View — J.O '+(jo||String(rec['S.O']||'—'));
  el('punchlistDetailsSubtitle').textContent=all.length+' punchlist description(s)';
  const host=el('punchlistDetailsBody');host.innerHTML='';
- const makeField=(label,value)=>{const card=document.createElement('div');card.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=label;const v=document.createElement('span');v.className='transfer-detail-value';v.textContent=value==null||String(value).trim()===''?'—':String(value);if(label==='PANEL NAME'){v.style.whiteSpace='normal';v.style.overflow='visible';v.style.textOverflow='clip';v.style.overflowWrap='anywhere';v.style.wordBreak='normal'}card.append(l,v);return card};
+ const makeField=(label,value)=>{const card=document.createElement('div');card.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=label;const v=document.createElement('span');v.className='transfer-detail-value';v.textContent=value==null||String(value).trim()===''?'—':String(value);card.append(l,v);return card};
  const makeGrid=()=>{const grid=document.createElement('div');grid.className='transfer-details-body';grid.style.padding='8px 0';grid.style.gridTemplateColumns='repeat(6,minmax(0,1fr))';return grid};
- const summary=makeGrid();summary.classList.add('punchlist-summary-grid');
+ const summary=makeGrid();
  [['DATE ISSUE',first['Date Issue']],['J.O',first['J.O']],['S.O',first['S.O']],['CLIENT NAME',first.Client],['TARGET DATE',first['Target Date']],['CATEGORY',displayValues(uniqueValues('Category'))]].forEach(([k,v])=>summary.append(makeField(k,v)));
  host.append(summary);
- const overall=makeGrid();overall.classList.add('punchlist-overall-grid');
+ const overall=makeGrid();
  overall.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
  overall.append(makeField('CLOSED DATE',overallClosed?displayValues(uniqueValues('Closed Date')):'—'));
  overall.append(makeField('CLOSE BY',overallClosed?displayValues(uniqueValues('Closed By')):'—'));
@@ -674,11 +613,10 @@ function openPunchlistDetails(rec){
   entryNo++;
   const entry=document.createElement('section');entry.className='transfer-detail-field full';entry.style.marginTop='10px';
   const heading=document.createElement('div');heading.textContent='ENTRY '+entryNo;heading.style.fontWeight='800';heading.style.marginBottom='8px';entry.append(heading);
-  const itemGrid=makeGrid();itemGrid.classList.add('punchlist-entry-item-grid');itemGrid.style.gridTemplateColumns='minmax(0,1fr) minmax(0,2fr) minmax(0,.7fr)';
+  const itemGrid=makeGrid();itemGrid.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
   itemGrid.append(makeField('ITEM NO.',item.Item),makeField('PANEL NAME',item['Panel Name']),makeField('QTY',item.Qty));
   entry.append(itemGrid);
-  const table=document.createElement('table');table.className='punchlist-fullview-description-table';table.style.width='100%';table.style.tableLayout='fixed';table.style.borderCollapse='collapse';table.style.marginTop='8px';table.style.fontSize='12px';
-  const colgroup=document.createElement('colgroup');['20%','50%','10%','10%','10%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
+  const table=document.createElement('table');table.style.width='100%';table.style.borderCollapse='collapse';table.style.marginTop='8px';table.style.fontSize='12px';
   const thead=document.createElement('thead'),headRow=document.createElement('tr');
   ['PUNCHLIST DESCRIPTION','CONCERN SECTION','DATE RECEIVED','DATE CLOSED','STATUS'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.textAlign='left';th.style.padding='9px 7px';th.style.borderBottom='1px solid var(--line)';th.style.fontSize='10px';th.style.color='var(--muted)';headRow.append(th)});
   thead.append(headRow);table.append(thead);
@@ -686,7 +624,7 @@ function openPunchlistDetails(rec){
   rows.forEach(row=>{
    const tr=document.createElement('tr');
    [row['Description of Punchlist'],row['Concern Section'],row['Received Date'],row['Closed Date'],isClosed(row)?'CLOSED':'IN PROGRESS'].forEach((value,index)=>{
-    const td=document.createElement('td');td.textContent=value==null||String(value).trim()===''?'—':String(value);td.style.padding='10px 9px';td.style.borderBottom='1px solid var(--line)';td.style.verticalAlign='middle';td.style.lineHeight='1.4';td.style.textAlign=index===0||index===1?'left':'center';td.style.whiteSpace=index===0||index===1?'normal':'nowrap';td.style.overflowWrap=index===0||index===1?'anywhere':'normal';td.style.height='1px';if(index===1){td.style.textAlign='left';td.style.wordBreak='normal';td.style.minWidth='0';td.style.maxWidth='none';td.style.lineHeight='1.35';td.style.setProperty('white-space','normal','important');td.style.setProperty('max-width','none','important');td.style.setProperty('overflow','visible','important');td.style.setProperty('overflow-wrap','anywhere','important');td.style.setProperty('word-break','normal','important')}if(index===0){td.style.fontWeight='700';td.style.minWidth='0';td.style.paddingLeft='12px'}if(index===1){td.style.textAlign='left';td.style.whiteSpace='normal';td.style.overflowWrap='anywhere';td.style.wordBreak='normal';td.style.minWidth='0';td.style.maxWidth='none';td.style.setProperty('white-space','normal','important');td.style.setProperty('overflow','visible','important');td.style.setProperty('overflow-wrap','anywhere','important')}tr.append(td);
+    const td=document.createElement('td');td.textContent=value==null||String(value).trim()===''?'—':String(value);td.style.padding='9px 7px';td.style.borderBottom='1px solid var(--line)';td.style.verticalAlign='top';if(index===0){td.style.fontWeight='700';td.style.minWidth='220px'}tr.append(td);
    });
    tbody.append(tr);
   });
