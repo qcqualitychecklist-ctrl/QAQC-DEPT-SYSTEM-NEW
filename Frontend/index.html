@@ -557,7 +557,7 @@ function renderPunchlistTable(){
  const pages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));if(tablePage>pages)tablePage=pages;const start=(tablePage-1)*PAGE_SIZE,rows=shown.slice(start,start+PAGE_SIZE);
  el('count').textContent=shown.length?(start+1)+'–'+Math.min(start+PAGE_SIZE,shown.length)+' of '+shown.length+' punchlist descriptions':'0 punchlist descriptions';renderPagination(shown.length);
  const cell=v=>{const td=document.createElement('td');td.textContent=v==null||v===''?'—':String(v);td.title=td.textContent;return td};
- if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent='';tr.append(td);el('tbody').append(tr);return}
+ if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;if(recordsLoadedFully){td.className='empty';td.textContent='No punchlist records found.'}else{td.innerHTML='<div class="loading-state"><span class="loading-spinner" aria-hidden="true"></span><span>Loading records, please wait…</span></div>'}tr.append(td);el('tbody').append(tr);return}
  const groups=[];rows.forEach(r=>{const key=[r['Date Issue'],r['J.O'],r['S.O'],r.Client].map(v=>String(v||'').trim()).join('¦');let g=groups[groups.length-1];if(!g||g.key!==key){g={key,items:[]};groups.push(g)}g.items.push(r)});
  groups.forEach(g=>{const itemGroups=[];g.items.forEach(r=>{const itemKey=['Item','Panel Name','Qty','Category'].map(k=>String(r[k]||'').trim()).join('¦');let ig=itemGroups[itemGroups.length-1];if(!ig||ig.key!==itemKey){ig={key:itemKey,items:[]};itemGroups.push(ig)}ig.items.push(r)});
  itemGroups.forEach(ig=>ig.items.forEach((r,i)=>{const tr=document.createElement('tr');
