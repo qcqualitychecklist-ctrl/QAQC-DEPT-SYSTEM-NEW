@@ -391,7 +391,7 @@ function submitPunchlist(ev){
  const items=[...el('punchlistItemsList').children].map(card=>{
   const item={};card.querySelectorAll('[data-punch-item]').forEach(input=>item[input.getAttribute('data-punch-item')]=String(input.value||'').trim());
   item.descriptions=[...card.querySelectorAll('.punchlist-description-row')].map(row=>{
-   const d={};row.querySelectorAll('[data-punch-description]').forEach(input=>d[input.getAttribute('data-punch-description')]=String(input.value||'').trim());return d;
+   const d={'Punchlist ID':row.dataset.punchlistId||''};row.querySelectorAll('[data-punch-description]').forEach(input=>d[input.getAttribute('data-punch-description')]=String(input.value||'').trim());return d;
   });return item;
  });
  if(!main['J.O #']&&!main['S.O #']){showStatus(false,'J.O / S.O required','Enter at least a J.O or S.O number.');return}
@@ -408,8 +408,8 @@ function submitPunchlist(ev){
    payloads.push({
     'Date Issue':main.Date,'J.O':main['J.O #'],'S.O':main['S.O #'],'Client':main.Client,
     'Target Date':main['Target Date']||'','Item':item.Item||'','Panel Name':item['Panel Name']||'','Qty':item.Qty||'',
-    'Category':item.Category,'Description of Punchlist':d['Description of Punchlist'],
-    'Concern Section':d['Concern Section']||'','Received Date':d['Received Date']||'','Received By':d['Received By']||'','Status':'Open'
+    'Category':item.Category,'Description of Punchlist':d['Description of Punchlist'],'Punchlist ID':d['Punchlist ID']||'',
+    'Concern Section':d['Concern Section']||'','Received Date':d['Received Date']||'','Received By':d['Received By']||'','Status':d['Status']||'Open','Closed By':d['Closed By']||'','Closed Date':d['Closed Date']||''
    });
   }
  }
@@ -452,7 +452,7 @@ function addPunchlistItem(data){
  host.append(card);renumberPunchlistItems();
 }
 function addPunchlistDescription(host,data){
- data=data||{};const row=document.createElement('section');row.className='punchlist-description-row';
+ data=data||{};const row=document.createElement('section');row.className='punchlist-description-row';row.dataset.punchlistId=data['Punchlist ID']||'';
  const header=document.createElement('div');header.className='field';const heading=document.createElement('label');heading.className='punchlist-description-title';heading.textContent='Punchlist Description';header.append(heading);
  const desc=document.createElement('input');desc.type='text';desc.placeholder='Enter punchlist description';desc.value=data['Description of Punchlist']||'';desc.dataset.punchDescription='Description of Punchlist';desc.required=true;header.append(desc);
  const section=punchlistField('Concern Section','text',data['Concern Section']||'',false);section.input.placeholder='Enter concern section';section.input.dataset.punchDescription='Concern Section';
@@ -564,7 +564,7 @@ function renderPunchlistTable(){
  if(g.items[0]===r)[['Date Issue','Date Issue'],['J.O','J.O'],['S.O','S.O'],['Client','Client']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=g.items.length;td.className='punchlist-shared-cell';tr.append(td)});
  if(i===0)[['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=ig.items.length;td.className='punchlist-shared-cell';tr.append(td)});
  [['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date'],['Status','Status']].forEach(([label,key])=>tr.append(cell(r[key])));
- const act=document.createElement('td');act.className='actioncell punchlist-action-cell';act.append(button('Edit','small primary',()=>openEditPunchlist(r)),document.createTextNode(' '),button('Full Details','small',()=>openPunchlistDetails(r)),document.createTextNode(' '),button('Close','small',()=>openClosePunchlist(r)),document.createTextNode(' '),button('Delete','small danger',()=>deletePunchlistRecord(r)));tr.append(act);el('tbody').append(tr);
+ const act=document.createElement('td');act.className='actioncell punchlist-action-cell';act.append(button('Edit J.O','small primary',()=>openEditPunchlistGroup(r)),document.createTextNode(' '),button('Full Details','small',()=>openPunchlistDetails(r)),document.createTextNode(' '),button('Close','small',()=>openClosePunchlist(r)),document.createTextNode(' '),button('Delete','small danger',()=>deletePunchlistRecord(r)));tr.append(act);el('tbody').append(tr);
  }))});
 }
 function openPunchlistDetails(rec){
@@ -582,6 +582,18 @@ function submitClosePunchlist(ev){
 function deletePunchlistRecord(rec){
  const id=String(rec&&rec['Punchlist ID']||'');if(!id){showStatus(false,'Delete failed','Missing Punchlist ID.');return}if(!confirm('Delete this punchlist description? This cannot be undone.'))return;
  callServer('deletePunchlist',[id],r=>{if(!r||r.ok===false){showStatus(false,'Delete failed',r&&r.message||'Unable to delete punchlist.');return}delete recordCache['Punchlist Monitoring::'];showStatus(true,'Deleted',r.message||'Punchlist description deleted.');loadRecords(false)},err=>showStatus(false,'Delete failed',err&&err.message||String(err)));
+}
+function openEditPunchlistGroup(rec){
+ const jo=String(rec['J.O']||'').trim(),so=String(rec['S.O']||'').trim(),client=String(rec.Client||'').trim();
+ const group=records.filter(x=>String(x['J.O']||'').trim()===jo&&String(x['S.O']||'').trim()===so&&String(x.Client||'').trim()===client);
+ if(!group.length){showStatus(false,'No records','No punchlist records found for this J.O.');return}
+ openAddPunchlist();el('punchlistTitle').textContent='Edit Punchlist — J.O '+(jo||'—');
+ const mainValues={'Date':group[0]['Date Issue']||'','J.O #':jo,'S.O #':so,'Target Date':group[0]['Target Date']||'','Client':client};
+ el('punchlistMainFields').querySelectorAll('[data-punch-main]').forEach(input=>input.value=mainValues[input.dataset.punchMain]||'');
+ el('punchlistItemsList').innerHTML='';
+ const itemGroups=[];group.forEach(row=>{const key=['Item','Panel Name','Qty','Category'].map(k=>String(row[k]||'').trim()).join('¦');let g=itemGroups.find(x=>x.key===key);if(!g){g={key,record:row,rows:[]};itemGroups.push(g)}g.rows.push(row)});
+ itemGroups.forEach(g=>{const data={};['Item','Panel Name','Qty','Category'].forEach(k=>data[k]=g.record[k]||'');addPunchlistItem(data);const card=el('punchlistItemsList').lastElementChild,list=card.querySelector('.punchlist-description-list');list.innerHTML='';g.rows.forEach(row=>addPunchlistDescription(list,row))});
+ renumberPunchlistItems();el('punchlistSave').textContent='Save J.O Punchlist';openModal('punchlistModal');
 }
 function openEditPunchlist(rec){
  el('punchlistEditId').value=rec['Punchlist ID']||'';el('punchlistEditStatus').value=rec.Status||'Open';const host=el('punchlistEditFields');host.innerHTML='';const defs=[['Date Issue','date'],['J.O','text'],['S.O','text'],['Client','text'],['Item','text'],['Panel Name','text'],['Qty','number'],['Category','select'],['Description of Punchlist','text'],['Concern Section','text'],['Target Date','date'],['Received By','text'],['Received Date','date'],['Closed By','text'],['Closed Date','date']];
