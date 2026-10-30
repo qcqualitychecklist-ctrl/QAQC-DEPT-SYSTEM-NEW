@@ -325,7 +325,7 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 #punchlistDetailsBody>.punchlist-summary-grid>.transfer-detail-field,
 #punchlistDetailsBody>.punchlist-overall-grid>.transfer-detail-field{min-width:0;padding:10px 11px}
 #punchlistDetailsBody>.punchlist-summary-grid .transfer-detail-value{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis;overflow-wrap:normal!important;word-break:normal!important}
-#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr) minmax(0,.7fr)!important;gap:10px!important}
+#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,.8fr) minmax(0,2.2fr) minmax(0,.7fr)!important;gap:10px!important}
 .punchlist-action-cell .punchlist-full-view-button,
 .punchlist-action-cell .punchlist-full-view-button:hover,
 .punchlist-action-cell .punchlist-full-view-button:focus,
@@ -674,7 +674,7 @@ function openPunchlistDetails(rec){
   itemGrid.append(makeField('ITEM NO.',item.Item),makeField('PANEL NAME',item['Panel Name']),makeField('QTY',item.Qty));
   entry.append(itemGrid);
   const table=document.createElement('table');table.className='punchlist-fullview-description-table';table.style.width='100%';table.style.tableLayout='fixed';table.style.borderCollapse='collapse';table.style.marginTop='8px';table.style.fontSize='12px';
-  const colgroup=document.createElement('colgroup');['29%','39%','11%','11%','10%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
+  const colgroup=document.createElement('colgroup');['25%','45%','10%','10%','10%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
   const thead=document.createElement('thead'),headRow=document.createElement('tr');
   ['PUNCHLIST DESCRIPTION','CONCERN SECTION','DATE RECEIVED','DATE CLOSED','STATUS'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.textAlign='left';th.style.padding='9px 7px';th.style.borderBottom='1px solid var(--line)';th.style.fontSize='10px';th.style.color='var(--muted)';headRow.append(th)});
   thead.append(headRow);table.append(thead);
