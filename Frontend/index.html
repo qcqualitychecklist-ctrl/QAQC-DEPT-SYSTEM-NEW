@@ -367,8 +367,11 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 
 #punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 #punchlistDetailsBody .punchlist-fullview-description-table th:nth-child(2){white-space:normal!important;text-align:left!important;padding-left:10px!important;padding-right:10px!important}
-#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(0,.7fr)!important}
+#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,.8fr) minmax(0,2.2fr) minmax(0,.7fr)!important}
 #punchlistDetailsBody .punchlist-fullview-description-table{table-layout:fixed!important}
+#punchlistDetailsBody .punchlist-fullview-description-table col:nth-child(1){width:20%!important}
+#punchlistDetailsBody .punchlist-fullview-description-table col:nth-child(2){width:50%!important}
+#punchlistDetailsBody .punchlist-fullview-description-table col:nth-child(n+3){width:10%!important}
 #punchlistDetailsBody .punchlist-fullview-description-table th,#punchlistDetailsBody .punchlist-fullview-description-table td{vertical-align:top!important;line-height:1.4!important}
 #punchlistDetailsBody .punchlist-fullview-description-table th:nth-child(2),#punchlistDetailsBody .punchlist-fullview-description-table td:nth-child(2){white-space:normal!important;overflow:visible!important;overflow-wrap:break-word!important;word-break:normal!important;text-align:left!important;padding:10px 9px!important;min-width:0!important;max-width:none!important;height:auto!important}
 #punchlistDetailsBody .punchlist-fullview-description-table td:first-child{white-space:normal!important;overflow-wrap:break-word!important;padding:10px 9px 10px 12px!important}
@@ -674,7 +677,7 @@ function openPunchlistDetails(rec){
   itemGrid.append(makeField('ITEM NO.',item.Item),makeField('PANEL NAME',item['Panel Name']),makeField('QTY',item.Qty));
   entry.append(itemGrid);
   const table=document.createElement('table');table.className='punchlist-fullview-description-table';table.style.width='100%';table.style.tableLayout='fixed';table.style.borderCollapse='collapse';table.style.marginTop='8px';table.style.fontSize='12px';
-  const colgroup=document.createElement('colgroup');['25%','45%','10%','10%','10%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
+  const colgroup=document.createElement('colgroup');['20%','50%','10%','10%','10%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
   const thead=document.createElement('thead'),headRow=document.createElement('tr');
   ['PUNCHLIST DESCRIPTION','CONCERN SECTION','DATE RECEIVED','DATE CLOSED','STATUS'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.textAlign='left';th.style.padding='9px 7px';th.style.borderBottom='1px solid var(--line)';th.style.fontSize='10px';th.style.color='var(--muted)';headRow.append(th)});
   thead.append(headRow);table.append(thead);
