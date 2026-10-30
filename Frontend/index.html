@@ -636,7 +636,7 @@ function openPunchlistDetails(rec){
  const host=el('punchlistDetailsBody');host.innerHTML='';
  const makeField=(label,value)=>{const card=document.createElement('div');card.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=label;const v=document.createElement('span');v.className='transfer-detail-value';v.textContent=value==null||String(value).trim()===''?'—':String(value);card.append(l,v);return card};
  const makeGrid=()=>{const grid=document.createElement('div');grid.className='transfer-details-body';grid.style.padding='8px 0';grid.style.gridTemplateColumns='repeat(6,minmax(0,1fr))';return grid};
- const summary=makeGrid();
+ const summary=makeGrid();summary.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
  [['DATE ISSUE',first['Date Issue']],['J.O',first['J.O']],['S.O',first['S.O']],['CLIENT NAME',first.Client],['TARGET DATE',first['Target Date']],['CATEGORY',displayValues(uniqueValues('Category'))]].forEach(([k,v])=>summary.append(makeField(k,v)));
  host.append(summary);
  const overall=makeGrid();
