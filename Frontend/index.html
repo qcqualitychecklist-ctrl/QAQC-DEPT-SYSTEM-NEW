@@ -325,6 +325,20 @@ main > .intro h2{font-size:16px!important;line-height:1.15!important;margin:0!im
 main > .intro .actions{gap:4px!important;align-items:center!important}
 main > .intro .actions button{font-size:8px!important;padding:4px 6px!important;height:24px!important;line-height:1.1!important;border-radius:5px!important}
 @media(max-width:700px){main > .intro{padding:7px 8px!important;gap:7px!important}}
+
+/* Keep monitoring title, search, and actions on one line at normal desktop zoom. */
+@media(min-width:951px){
+ main > .intro{flex-wrap:nowrap!important;align-items:center!important}
+ main > .intro>div:first-of-type{flex:0 0 auto!important}
+ main > .intro .header-right{width:auto!important;max-width:none!important;min-width:0!important;flex:1 1 auto!important;margin-left:auto!important;flex-wrap:nowrap!important;justify-content:flex-end!important}
+ main > .intro .header-tools{width:clamp(170px,20vw,260px)!important;flex:0 1 260px!important;min-width:150px!important}
+ main > .intro .actions{flex:0 0 auto!important;flex-wrap:nowrap!important}
+}
+@media(max-width:950px){
+ main > .intro{flex-wrap:wrap!important}
+ main > .intro .header-right{width:100%!important;flex:1 1 100%!important;flex-wrap:wrap!important;margin-left:0!important}
+}
+
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
