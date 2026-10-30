@@ -380,6 +380,7 @@ function punchlistField(label,type,value,required,options){
  input.value=value||'';input.required=!!required;box.append(l,input);return {box,input};
 }
 function openAddPunchlist(){
+ editingPunchlistIds=[];
  el('punchlistForm').reset();el('punchlistRecordId').value='';el('punchlistTitle').textContent='Add Punchlist';el('punchlistMainFields').innerHTML='';el('punchlistItemsList').innerHTML='';
  [['Date','date',true],['J.O #','text',false],['S.O #','text',false],['Target Date','date',false],['Client','text',true]].forEach(([label,type,required])=>{const f=punchlistField(label,type,'',required);f.input.dataset.punchMain=label;el('punchlistMainFields').append(f.box)});
  addPunchlistItem();el('punchlistSave').disabled=false;el('punchlistSave').textContent='Save Punchlist';openModal('punchlistModal');
@@ -614,8 +615,9 @@ function openEditPunchlistGroup(rec){
  const jo=String(rec['J.O']||'').trim();
  const group=records.filter(x=>jo?String(x['J.O']||'').trim()===jo:String(x['Punchlist ID']||'')===String(rec['Punchlist ID']||''));
  if(!group.length){showStatus(false,'No records','No punchlist records found for this J.O.');return}
+ openAddPunchlist();
  editingPunchlistIds=group.map(x=>String(x['Punchlist ID']||'')).filter(Boolean);
- openAddPunchlist();el('punchlistTitle').textContent='Edit Punchlist — J.O '+(jo||'—');
+ el('punchlistTitle').textContent='Edit Punchlist — J.O '+(jo||'—');
  const first=group[0],mainValues={'Date':first['Date Issue']||'','J.O #':jo,'S.O #':first['S.O']||'','Target Date':first['Target Date']||'','Client':first.Client||''};
  el('punchlistMainFields').querySelectorAll('[data-punch-main]').forEach(input=>input.value=mainValues[input.dataset.punchMain]||'');
  el('punchlistItemsList').innerHTML='';
