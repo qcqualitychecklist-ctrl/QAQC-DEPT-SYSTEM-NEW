@@ -303,6 +303,7 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
  #punchlistModal .dialoghead{padding:9px 10px!important}
 }
 
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(4),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(4){width:165px;min-width:165px;max-width:165px}
 /* Punchlist-only table layout: single-line cells, hover reveals full text */
 #monitoringPanel .tablewrap table.punchlist-table{table-layout:fixed;width:100%;min-width:1800px;border-collapse:separate;border-spacing:0}
 #monitoringPanel .tablewrap table.punchlist-table th{position:sticky;top:0;z-index:2;white-space:nowrap}
@@ -383,6 +384,7 @@ function openAddPunchlist(){
  [['Date','date',true],['J.O #','text',false],['S.O #','text',false],['Target Date','date',false],['Client','text',true]].forEach(([label,type,required])=>{const f=punchlistField(label,type,'',required);f.input.dataset.punchMain=label;el('punchlistMainFields').append(f.box)});
  addPunchlistItem();el('punchlistSave').disabled=false;el('punchlistSave').textContent='Save Punchlist';openModal('punchlistModal');
 }
+let editingPunchlistIds=[];
 function submitPunchlist(ev){
  ev.preventDefault();
  const main={};
@@ -399,11 +401,11 @@ function submitPunchlist(ev){
  const payloads=[];
  for(let i=0;i<items.length;i++){
   const item=items[i];
-  if(!item.Category){showStatus(false,'Category required','Choose Category for Item '+(i+1)+'.');return}
-  if(!item.descriptions.length){showStatus(false,'Description required','Add at least one punchlist description for Item '+(i+1)+'.');return}
+  if(!item.Category){showStatus(false,'Category required','Choose Category for Item Entry '+(i+1)+'.');return}
+  if(!item.descriptions.length){showStatus(false,'Description required','Add at least one punchlist description for Item Entry '+(i+1)+'.');return}
   for(let j=0;j<item.descriptions.length;j++){
    const d=item.descriptions[j];
-   if(!d['Description of Punchlist']){showStatus(false,'Description required','Enter Punchlist Description '+(j+1)+' for Item '+(i+1)+'.');return}
+   if(!d['Description of Punchlist']){showStatus(false,'Description required','Enter Punchlist Description '+(j+1)+' for Item Entry '+(i+1)+'.');return}
    payloads.push({
     'Date Issue':main.Date,'J.O':main['J.O #'],'S.O':main['S.O #'],'Client':main.Client,
     'Target Date':main['Target Date']||'','Item':item.Item||'','Panel Name':item['Panel Name']||'','Qty':item.Qty||'',
@@ -412,37 +414,47 @@ function submitPunchlist(ev){
    });
   }
  }
+ const retainedIds=new Set(payloads.map(p=>String(p['Punchlist ID']||'')).filter(Boolean));
+ const idsToDelete=editingPunchlistIds.filter(id=>!retainedIds.has(String(id)));
  const btn=el('punchlistSave');btn.disabled=true;btn.textContent='Saving 0/'+payloads.length+'...';
  let index=0;
+ const fail=(title,message)=>{btn.disabled=false;btn.textContent='Save Punchlist';showStatus(false,title,message)};
+ const deleteRemoved=()=>{
+  let di=0;
+  const nextDelete=()=>{
+   if(di>=idsToDelete.length){
+    editingPunchlistIds=[];delete recordCache['Punchlist Monitoring::'];
+    showStatus(true,'Punchlist updated',payloads.length+' description(s) saved; '+idsToDelete.length+' removed.');
+    closeModal('punchlistModal');loadRecords(false);return;
+   }
+   callServer('deletePunchlist',[idsToDelete[di]],r=>{
+    if(!r||r.ok===false){fail('Update partly completed','Saved the edited descriptions, but could not remove one deleted description: '+(r&&r.message||'Unknown error'));return}
+    di++;nextDelete();
+   },err=>fail('Update partly completed','Saved the edited descriptions, but could not remove a deleted description: '+(err&&err.message||String(err))));
+  };nextDelete();
+ };
  const saveNext=()=>{
-  if(index>=payloads.length){
-   delete recordCache['Punchlist Monitoring::'];
-   showStatus(true,'Punchlist saved',payloads.length+' punchlist description(s) saved as separate records.');
-   closeModal('punchlistModal');loadRecords();return;
-  }
+  if(index>=payloads.length){deleteRemoved();return}
   btn.textContent='Saving '+(index+1)+'/'+payloads.length+'...';
   callServer('saveRecord',['Punchlist Monitoring',payloads[index]],r=>{
-   if(!r||r.ok===false){btn.disabled=false;btn.textContent='Save Punchlist';showStatus(false,'Save incomplete',index+' of '+payloads.length+' descriptions saved. '+(r&&r.message?r.message:'The server did not confirm this record.'));return}
+   if(!r||r.ok===false){fail('Save incomplete',index+' of '+payloads.length+' descriptions saved. '+(r&&r.message?r.message:'The server did not confirm this record.'));return}
    index++;saveNext();
-  },err=>{
-   btn.disabled=false;btn.textContent='Save Punchlist';
-   showStatus(false,'Save incomplete',index+' of '+payloads.length+' descriptions saved. '+(err&&err.message?err.message:'Check the saved records before retrying to avoid duplicates.'));
-  });
+  },err=>fail('Save incomplete',index+' of '+payloads.length+' descriptions saved. '+(err&&err.message?err.message:'Check the saved records before retrying to avoid duplicates.')));
  };
  saveNext();
 }
 function renumberPunchlistItems(){
  [...el('punchlistItemsList').children].forEach((card,i)=>{
-  card.querySelector('.punchlist-item-head h4').textContent='Item '+(i+1);
+  card.querySelector('.punchlist-item-head h4').textContent='Item Entry '+(i+1);
   [...card.querySelectorAll('.punchlist-description-row')].forEach((row,j)=>{const label=row.querySelector('.punchlist-description-title');if(label)label.textContent='Punchlist '+(j+1)+' Description'});
  });
 }
 function addPunchlistItem(data){
  data=data||{};const host=el('punchlistItemsList'),card=document.createElement('section');card.className='punchlist-form-item';
- const head=document.createElement('div');head.className='punchlist-item-head';const title=document.createElement('h4');title.textContent='Item '+(host.children.length+1);
+ const head=document.createElement('div');head.className='punchlist-item-head';const title=document.createElement('h4');title.textContent='Item Entry '+(host.children.length+1);
  const remove=button('Remove Item','small danger',()=>{if(host.children.length===1){showStatus(false,'Required item','At least one item is required.');return}card.remove();renumberPunchlistItems()});head.append(title,remove);card.append(head);
  const grid=document.createElement('div');grid.className='punchlist-item-grid';
- [['Item','text',false],['Panel Name','text',false],['Qty','number',false],['Category','select',true]].forEach(([label,type,required])=>{const f=punchlistField(label,type,data[label]||'',required,label==='Category'?PUNCHLIST_FORM_CATEGORIES:null);f.input.dataset.punchItem=label;grid.append(f.box)});
+ [['Item No.','text',false],['Panel Name','text',false],['Qty','number',false],['Category','select',true]].forEach(([label,type,required])=>{const f=punchlistField(label,type,data[label==='Item No.'?'Item':label]||'',required,label==='Category'?PUNCHLIST_FORM_CATEGORIES:null);f.input.dataset.punchItem=label==='Item No.'?'Item':label;grid.append(f.box)});
  card.append(grid);
  const list=document.createElement('div');list.className='punchlist-description-list';list.dataset.punchlistDescriptions='true';
  addPunchlistDescription(list,{});
@@ -564,21 +576,25 @@ function renderPunchlistTable(){
  if(i===0)[['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=ig.items.length;td.className='punchlist-shared-cell';tr.append(td)});
  [['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date']].forEach(([label,key])=>tr.append(cell(r[key])));
  const statusCell=document.createElement('td'),statusBtn=button(String(r.Status||'Open'),'punchlist-status-button '+(String(r.Status||'Open').toLowerCase()==='closed'?'is-closed':'is-open'),()=>openClosePunchlist(r));statusBtn.title=String(r.Status||'Open')==='Closed'?'Already closed':'Click to close this punchlist';statusCell.append(statusBtn);tr.append(statusCell);
- if(g.items[0]===r){const act=document.createElement('td');act.rowSpan=g.items.length;act.className='actioncell punchlist-action-cell';act.append(button('Edit J.O','small primary',()=>openEditPunchlistGroup(r)),document.createTextNode(' '),button('Full Details','small',()=>openPunchlistDetails(r)));tr.append(act)}
+ if(g.items[0]===r){const act=document.createElement('td');act.rowSpan=g.items.length;act.className='actioncell punchlist-action-cell';act.append(button('Edit Punchlist','small primary',()=>openEditPunchlistGroup(r)),document.createTextNode(' '),button('Full Details','small',()=>openPunchlistDetails(r)));tr.append(act)}
  el('tbody').append(tr);
  }))});
 }
 function openPunchlistDetails(rec){
  const jo=String(rec['J.O']||'').trim(),group=records.filter(x=>jo?String(x['J.O']||'').trim()===jo:String(x['Punchlist ID']||'')===String(rec['Punchlist ID']||''));
- const all=group.length?group:[rec];
- el('punchlistDetailsTitle').textContent='Punchlist Details — J.O '+(jo||String(rec['S.O']||'—'));
- el('punchlistDetailsSubtitle').textContent=all.length+' punchlist description(s) for this J.O.';
+ const all=group.length?group:[rec],first=all[0];
+ el('punchlistDetailsTitle').textContent='Full Details — J.O '+(jo||String(rec['S.O']||'—'));
+ el('punchlistDetailsSubtitle').textContent=all.length+' punchlist description(s)';
  const host=el('punchlistDetailsBody');host.innerHTML='';
+ const summary=document.createElement('div');summary.className='transfer-detail-field full';summary.innerHTML='<strong>J.O Summary</strong>';
+ const summaryGrid=document.createElement('div');summaryGrid.className='transfer-details-body';
+ [['Date Issue',first['Date Issue']],['J.O',first['J.O']],['S.O',first['S.O']],['Client',first.Client],['Target Date',first['Target Date']]].forEach(([k,v])=>{const card=document.createElement('div');card.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=k;const val=document.createElement('span');val.className='transfer-detail-value';val.textContent=v||'—';card.append(l,val);summaryGrid.append(card)});
+ summary.append(summaryGrid);host.append(summary);
  all.forEach((row,index)=>{
-  const section=document.createElement('div');section.className='transfer-detail-field full';section.style.background='#f1f5f9';
-  const label=document.createElement('span');label.className='transfer-detail-label';label.textContent='Item '+(index+1)+' — '+String(row.Item||'')+' | '+String(row['Panel Name']||'');
+  const section=document.createElement('div');section.className='transfer-detail-field full';
+  const label=document.createElement('span');label.className='transfer-detail-label';label.textContent='Punchlist Description '+(index+1)+' — Item No. '+String(row.Item||'—')+' | '+String(row['Panel Name']||'');
   const desc=document.createElement('span');desc.className='transfer-detail-value';desc.style.fontWeight='700';desc.textContent=row['Description of Punchlist']||'—';section.append(label,desc);host.append(section);
-  ['Date Issue','J.O','S.O','Client','Qty','Category','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status','Punchlist ID'].forEach(k=>{const card=document.createElement('div');card.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=k;const v=document.createElement('span');v.className='transfer-detail-value';v.textContent=row[k]||'—';card.append(l,v);host.append(card)});
+  [['Qty',row.Qty],['Category',row.Category],['Concern Section',row['Concern Section']],['Received Date',row['Received Date']],['Received By',row['Received By']],['Closed By',row['Closed By']],['Closed Date',row['Closed Date']],['Status',row.Status||'Open']].forEach(([k,v])=>{const card=document.createElement('div');card.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=k;const val=document.createElement('span');val.className='transfer-detail-value';val.textContent=v||'—';card.append(l,val);host.append(card)});
  });
  openModal('punchlistDetailsModal');
 }
@@ -598,13 +614,14 @@ function openEditPunchlistGroup(rec){
  const jo=String(rec['J.O']||'').trim();
  const group=records.filter(x=>jo?String(x['J.O']||'').trim()===jo:String(x['Punchlist ID']||'')===String(rec['Punchlist ID']||''));
  if(!group.length){showStatus(false,'No records','No punchlist records found for this J.O.');return}
+ editingPunchlistIds=group.map(x=>String(x['Punchlist ID']||'')).filter(Boolean);
  openAddPunchlist();el('punchlistTitle').textContent='Edit Punchlist — J.O '+(jo||'—');
- const mainValues={'Date':group[0]['Date Issue']||'','J.O #':jo,'S.O #':so,'Target Date':group[0]['Target Date']||'','Client':client};
+ const first=group[0],mainValues={'Date':first['Date Issue']||'','J.O #':jo,'S.O #':first['S.O']||'','Target Date':first['Target Date']||'','Client':first.Client||''};
  el('punchlistMainFields').querySelectorAll('[data-punch-main]').forEach(input=>input.value=mainValues[input.dataset.punchMain]||'');
  el('punchlistItemsList').innerHTML='';
  const itemGroups=[];group.forEach(row=>{const key=['Item','Panel Name','Qty','Category'].map(k=>String(row[k]||'').trim()).join('¦');let g=itemGroups.find(x=>x.key===key);if(!g){g={key,record:row,rows:[]};itemGroups.push(g)}g.rows.push(row)});
  itemGroups.forEach(g=>{const data={};['Item','Panel Name','Qty','Category'].forEach(k=>data[k]=g.record[k]||'');addPunchlistItem(data);const card=el('punchlistItemsList').lastElementChild,list=card.querySelector('.punchlist-description-list');list.innerHTML='';g.rows.forEach(row=>addPunchlistDescription(list,row))});
- renumberPunchlistItems();el('punchlistSave').textContent='Save J.O Punchlist';openModal('punchlistModal');
+ renumberPunchlistItems();el('punchlistSave').textContent='Save Changes';openModal('punchlistModal');
 }
 function openEditPunchlist(rec){
  el('punchlistEditId').value=rec['Punchlist ID']||'';el('punchlistEditStatus').value=rec.Status||'Open';const host=el('punchlistEditFields');host.innerHTML='';const defs=[['Date Issue','date'],['J.O','text'],['S.O','text'],['Client','text'],['Item','text'],['Panel Name','text'],['Qty','number'],['Category','select'],['Description of Punchlist','text'],['Concern Section','text'],['Target Date','date'],['Received By','text'],['Received Date','date'],['Closed By','text'],['Closed Date','date']];
