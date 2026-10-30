@@ -343,6 +343,22 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 #punchlistDetailsBody .punchlist-entry-item-grid>.transfer-detail-field:last-child{grid-column:auto}
 }
 
+
+/* Punchlist-only refinements requested after Full View review */
+#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,.7fr)!important}
+#punchlistDetailsBody .punchlist-fullview-description-table{width:100%;table-layout:fixed}
+#punchlistDetailsBody .punchlist-fullview-description-table th,
+#punchlistDetailsBody .punchlist-fullview-description-table td{box-sizing:border-box}
+#punchlistDetailsBody .punchlist-fullview-description-table th:first-child,
+#punchlistDetailsBody .punchlist-fullview-description-table td:first-child{text-align:left!important}
+#punchlistDetailsBody .punchlist-fullview-description-table td:first-child{padding-left:12px!important;white-space:normal;overflow-wrap:anywhere}
+#monitoringPanel .tablewrap table.punchlist-table .punchlist-status-action{display:inline-flex!important;align-items:center;justify-content:center;width:auto!important;min-width:78px!important;max-width:none!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;word-break:normal!important;padding:4px 10px!important;line-height:1.25}
+#monitoringPanel .tablewrap table.punchlist-table td:nth-child(16){overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important}
+@media(max-width:760px){
+#punchlistDetailsBody .punchlist-entry-item-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)!important}
+#punchlistDetailsBody .punchlist-entry-item-grid>.transfer-detail-field:last-child{grid-column:1/-1}
+}
+
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
@@ -603,7 +619,7 @@ function renderPunchlistTable(){
  if(g.items[0]===r)[['Date Issue','Date Issue'],['J.O','J.O'],['S.O','S.O'],['Client','Client']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=g.items.length;td.className='punchlist-shared-cell';tr.append(td)});
  if(i===0)[['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=ig.items.length;td.className='punchlist-shared-cell';tr.append(td)});
  [['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date']].forEach(([label,key])=>tr.append(cell(r[key])));
- const statusCell=document.createElement('td'),statusBtn=button(String(r.Status||'Open'),'punchlist-status-button '+(String(r.Status||'Open').toLowerCase()==='closed'?'is-closed':'is-open'),()=>openClosePunchlist(r));statusBtn.title=String(r.Status||'Open')==='Closed'?'Already closed':'Click to close this punchlist';statusCell.append(statusBtn);tr.append(statusCell);
+ const statusCell=document.createElement('td'),statusBtn=button(String(r.Status||'Open'),'punchlist-status-button '+(String(r.Status||'Open').toLowerCase()==='closed'?'is-closed':'is-open'),()=>openClosePunchlist(r));statusBtn.classList.add('punchlist-status-action');statusBtn.title=String(r.Status||'Open')==='Closed'?'Already closed':'Click to close this punchlist';statusCell.append(statusBtn);tr.append(statusCell);
  if(g.items[0]===r){const act=document.createElement('td');act.rowSpan=g.items.length;act.className='actioncell punchlist-action-cell';const editBtn=button('Edit Punchlist','small primary',()=>openEditPunchlistGroup(r));const fullViewBtn=button('Full Details','small',()=>openPunchlistDetails(r));fullViewBtn.classList.add('punchlist-full-view-button');act.append(editBtn,document.createTextNode(' '),fullViewBtn);tr.append(act)}
  el('tbody').append(tr);
  }))});
@@ -640,10 +656,11 @@ function openPunchlistDetails(rec){
   entryNo++;
   const entry=document.createElement('section');entry.className='transfer-detail-field full';entry.style.marginTop='10px';
   const heading=document.createElement('div');heading.textContent='ENTRY '+entryNo;heading.style.fontWeight='800';heading.style.marginBottom='8px';entry.append(heading);
-  const itemGrid=makeGrid();itemGrid.classList.add('punchlist-entry-item-grid');itemGrid.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
+  const itemGrid=makeGrid();itemGrid.classList.add('punchlist-entry-item-grid');itemGrid.style.gridTemplateColumns='minmax(0,1fr) minmax(0,2fr) minmax(0,.7fr)';
   itemGrid.append(makeField('ITEM NO.',item.Item),makeField('PANEL NAME',item['Panel Name']),makeField('QTY',item.Qty));
   entry.append(itemGrid);
-  const table=document.createElement('table');table.style.width='100%';table.style.borderCollapse='collapse';table.style.marginTop='8px';table.style.fontSize='12px';
+  const table=document.createElement('table');table.className='punchlist-fullview-description-table';table.style.width='100%';table.style.tableLayout='fixed';table.style.borderCollapse='collapse';table.style.marginTop='8px';table.style.fontSize='12px';
+  const colgroup=document.createElement('colgroup');['42%','17%','14%','14%','13%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
   const thead=document.createElement('thead'),headRow=document.createElement('tr');
   ['PUNCHLIST DESCRIPTION','CONCERN SECTION','DATE RECEIVED','DATE CLOSED','STATUS'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.textAlign='left';th.style.padding='9px 7px';th.style.borderBottom='1px solid var(--line)';th.style.fontSize='10px';th.style.color='var(--muted)';headRow.append(th)});
   thead.append(headRow);table.append(thead);
@@ -651,7 +668,7 @@ function openPunchlistDetails(rec){
   rows.forEach(row=>{
    const tr=document.createElement('tr');
    [row['Description of Punchlist'],row['Concern Section'],row['Received Date'],row['Closed Date'],isClosed(row)?'CLOSED':'IN PROGRESS'].forEach((value,index)=>{
-    const td=document.createElement('td');td.textContent=value==null||String(value).trim()===''?'—':String(value);td.style.padding='9px 7px';td.style.borderBottom='1px solid var(--line)';td.style.verticalAlign='top';if(index===0){td.style.fontWeight='700';td.style.minWidth='220px'}tr.append(td);
+    const td=document.createElement('td');td.textContent=value==null||String(value).trim()===''?'—':String(value);td.style.padding='9px 7px';td.style.borderBottom='1px solid var(--line)';td.style.verticalAlign='middle';td.style.textAlign=index===0?'left':'center';td.style.whiteSpace=index===0?'normal':'nowrap';td.style.overflowWrap=index===0?'anywhere':'normal';if(index===0){td.style.fontWeight='700';td.style.minWidth='0';td.style.paddingLeft='12px'}tr.append(td);
    });
    tbody.append(tr);
   });
