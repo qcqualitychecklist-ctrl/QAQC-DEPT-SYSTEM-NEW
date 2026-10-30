@@ -584,18 +584,51 @@ function renderPunchlistTable(){
 function openPunchlistDetails(rec){
  const jo=String(rec['J.O']||'').trim(),group=records.filter(x=>jo?String(x['J.O']||'').trim()===jo:String(x['Punchlist ID']||'')===String(rec['Punchlist ID']||''));
  const all=group.length?group:[rec],first=all[0];
- el('punchlistDetailsTitle').textContent='Full Details — J.O '+(jo||String(rec['S.O']||'—'));
+ const isClosed=row=>String(row.Status||'Open').trim().toLowerCase()==='closed';
+ const overallClosed=all.length>0&&all.every(isClosed);
+ const uniqueValues=(key)=>[...new Set(all.map(row=>String(row[key]??'').trim()).filter(Boolean))];
+ const displayValues=(values)=>values.length?values.join(', '):'—';
+ el('punchlistDetailsTitle').textContent='Full View — J.O '+(jo||String(rec['S.O']||'—'));
  el('punchlistDetailsSubtitle').textContent=all.length+' punchlist description(s)';
  const host=el('punchlistDetailsBody');host.innerHTML='';
- const summary=document.createElement('div');summary.className='transfer-detail-field full';summary.innerHTML='<strong>J.O Summary</strong>';
- const summaryGrid=document.createElement('div');summaryGrid.className='transfer-details-body';
- [['Date Issue',first['Date Issue']],['J.O',first['J.O']],['S.O',first['S.O']],['Client',first.Client],['Target Date',first['Target Date']]].forEach(([k,v])=>{const card=document.createElement('div');card.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=k;const val=document.createElement('span');val.className='transfer-detail-value';val.textContent=v||'—';card.append(l,val);summaryGrid.append(card)});
- summary.append(summaryGrid);host.append(summary);
- all.forEach((row,index)=>{
-  const section=document.createElement('div');section.className='transfer-detail-field full';
-  const label=document.createElement('span');label.className='transfer-detail-label';label.textContent='Punchlist Description '+(index+1)+' — Item No. '+String(row.Item||'—')+' | '+String(row['Panel Name']||'');
-  const desc=document.createElement('span');desc.className='transfer-detail-value';desc.style.fontWeight='700';desc.textContent=row['Description of Punchlist']||'—';section.append(label,desc);host.append(section);
-  [['Qty',row.Qty],['Category',row.Category],['Concern Section',row['Concern Section']],['Received Date',row['Received Date']],['Received By',row['Received By']],['Closed By',row['Closed By']],['Closed Date',row['Closed Date']],['Status',row.Status||'Open']].forEach(([k,v])=>{const card=document.createElement('div');card.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=k;const val=document.createElement('span');val.className='transfer-detail-value';val.textContent=v||'—';card.append(l,val);host.append(card)});
+ const makeField=(label,value)=>{const card=document.createElement('div');card.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=label;const v=document.createElement('span');v.className='transfer-detail-value';v.textContent=value==null||String(value).trim()===''?'—':String(value);card.append(l,v);return card};
+ const makeGrid=()=>{const grid=document.createElement('div');grid.className='transfer-details-body';grid.style.padding='8px 0';grid.style.gridTemplateColumns='repeat(6,minmax(0,1fr))';return grid};
+ const summary=makeGrid();
+ [['DATE ISSUE',first['Date Issue']],['J.O',first['J.O']],['S.O',first['S.O']],['CLIENT NAME',first.Client],['TARGET DATE',first['Target Date']],['CATEGORY',displayValues(uniqueValues('Category'))]].forEach(([k,v])=>summary.append(makeField(k,v)));
+ host.append(summary);
+ const overall=makeGrid();
+ overall.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
+ overall.append(makeField('CLOSED DATE',overallClosed?displayValues(uniqueValues('Closed Date')):'—'));
+ overall.append(makeField('CLOSE BY',overallClosed?displayValues(uniqueValues('Closed By')):'—'));
+ overall.append(makeField('OVERALL STATUS',overallClosed?'CLOSED':'IN PROGRESS'));
+ host.append(overall);
+ const itemMap=new Map();
+ all.forEach(row=>{
+  const key=[String(row.Item||''),String(row['Panel Name']||''),String(row.Qty||'')].join('¦');
+  if(!itemMap.has(key))itemMap.set(key,{item:row,rows:[]});
+  itemMap.get(key).rows.push(row);
+ });
+ let entryNo=0;
+ itemMap.forEach(({item,rows})=>{
+  entryNo++;
+  const entry=document.createElement('section');entry.className='transfer-detail-field full';entry.style.marginTop='10px';
+  const heading=document.createElement('div');heading.textContent='ENTRY '+entryNo;heading.style.fontWeight='800';heading.style.marginBottom='8px';entry.append(heading);
+  const itemGrid=makeGrid();itemGrid.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
+  itemGrid.append(makeField('ITEM NO.',item.Item),makeField('PANEL NAME',item['Panel Name']),makeField('QTY',item.Qty));
+  entry.append(itemGrid);
+  const table=document.createElement('table');table.style.width='100%';table.style.borderCollapse='collapse';table.style.marginTop='8px';table.style.fontSize='12px';
+  const thead=document.createElement('thead'),headRow=document.createElement('tr');
+  ['PUNCHLIST DESCRIPTION','CONCERN SECTION','DATE RECEIVED','DATE CLOSED','STATUS'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.textAlign='left';th.style.padding='9px 7px';th.style.borderBottom='1px solid var(--line)';th.style.fontSize='10px';th.style.color='var(--muted)';headRow.append(th)});
+  thead.append(headRow);table.append(thead);
+  const tbody=document.createElement('tbody');
+  rows.forEach(row=>{
+   const tr=document.createElement('tr');
+   [row['Description of Punchlist'],row['Concern Section'],row['Received Date'],row['Closed Date'],isClosed(row)?'CLOSED':'IN PROGRESS'].forEach((value,index)=>{
+    const td=document.createElement('td');td.textContent=value==null||String(value).trim()===''?'—':String(value);td.style.padding='9px 7px';td.style.borderBottom='1px solid var(--line)';td.style.verticalAlign='top';if(index===0){td.style.fontWeight='700';td.style.minWidth='220px'}tr.append(td);
+   });
+   tbody.append(tr);
+  });
+  table.append(tbody);entry.append(table);host.append(entry);
  });
  openModal('punchlistDetailsModal');
 }
