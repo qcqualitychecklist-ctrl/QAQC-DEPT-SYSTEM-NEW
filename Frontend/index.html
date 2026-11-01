@@ -246,6 +246,13 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 
 \n.punchlist-table{min-width:1500px;border-collapse:separate;border-spacing:0}.punchlist-table th{white-space:normal;vertical-align:middle}.punchlist-table td{vertical-align:middle}.punchlist-table .punchlist-shared-cell{font-weight:400!important;background:transparent!important;vertical-align:middle}.punchlist-table td{max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.punchlist-table td[title]{cursor:default}.punchlist-table td.punchlist-shared-cell{font-weight:400!important;background:transparent!important}\n.punchlist-details-table{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:8px;font-size:12px;white-space:normal!important}
 
+/* Punchlist only: keep all filters and Clear Filters together in one horizontal row. */
+#recordFilters.punchlist-filterbar{display:flex!important;flex-wrap:nowrap!important;align-items:flex-end!important;gap:8px!important;overflow-x:auto;overflow-y:hidden;white-space:nowrap}
+#recordFilters.punchlist-filterbar>.field{flex:1 1 0;min-width:125px;max-width:none}
+#recordFilters.punchlist-filterbar>button{flex:0 0 auto;align-self:flex-end;white-space:nowrap;margin:0 0 1px!important;padding:7px 10px!important}
+@media(max-width:700px){#recordFilters.punchlist-filterbar{flex-wrap:nowrap!important}#recordFilters.punchlist-filterbar>.field{flex:0 0 145px;min-width:145px}#recordFilters.punchlist-filterbar>button{flex:0 0 auto}}
+
+
 /* Punchlist Full View only: use the full modal width for the summary area and give it a clear header. */
 #punchlistDetailsModal .transfer-details-dialog{width:min(1200px,96vw);max-width:1200px}
 #punchlistDetailsModal .dialoghead{padding:22px 28px!important;background:linear-gradient(115deg,#102b4e 0%,#1d4d80 58%,#2b6aa4 100%);border-bottom:3px solid #78a9dc;color:#fff}
@@ -662,7 +669,7 @@ function renderPunchlistTable(){
  if(i===0)[['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=ig.items.length;td.className='punchlist-shared-cell';tr.append(td)});
  [['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date']].forEach(([label,key])=>tr.append(cell(r[key])));
  const statusCell=document.createElement('td'),statusBtn=button(String(r.Status||'Open'),'punchlist-status-button '+(String(r.Status||'Open').toLowerCase()==='closed'?'is-closed':'is-open'),()=>openClosePunchlist(r));statusBtn.title=String(r.Status||'Open')==='Closed'?'Already closed':'Click to close this punchlist';statusCell.append(statusBtn);tr.append(statusCell);
- if(g.items[0]===r){const act=document.createElement('td');act.rowSpan=g.items.length;act.className='actioncell punchlist-action-cell';act.append(button('Edit Punchlist','small primary',()=>openEditPunchlistGroup(r)),document.createTextNode(' '),button('Full Details','small',()=>openPunchlistDetails(r)));tr.append(act)}
+ if(g.items[0]===r){const act=document.createElement('td');act.rowSpan=g.items.length;act.className='actioncell punchlist-action-cell';act.append(button('Edit','small primary',()=>openEditPunchlistGroup(r)),document.createTextNode(' '),button('Full Details','small',()=>openPunchlistDetails(r)));tr.append(act)}
  el('tbody').append(tr);
  }))});
 }
