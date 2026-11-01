@@ -429,7 +429,31 @@ table.ncr-table{min-width:1120px;}
 table.ncr-table th,table.ncr-table td{white-space:nowrap;}
 table.ncr-table td.ncr-description,table.ncr-table td.ncr-action{white-space:normal;min-width:220px;max-width:360px;line-height:1.35;}
 table.ncr-table td.ncr-description{min-width:260px;}
-.ncr-dialog{width:min(820px,96vw);padding:18px}.ncr-form-section{margin:0 0 12px;padding:12px}.ncr-section-heading{font-size:11px;font-weight:800;letter-spacing:.7px;color:var(--navy);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--line)}.ncr-pic-rows{display:grid;gap:8px}.ncr-pic-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}.ncr-pic-row .field label{margin-bottom:4px}@media(max-width:600px){.ncr-dialog{padding:12px}.ncr-pic-row{grid-template-columns:minmax(0,1fr) auto}}</style></head><body>
+.ncr-dialog{width:min(820px,96vw);padding:18px}.ncr-form-section{margin:0 0 12px;padding:12px}.ncr-section-heading{font-size:11px;font-weight:800;letter-spacing:.7px;color:var(--navy);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--line)}.ncr-pic-rows{display:grid;gap:8px}.ncr-pic-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}.ncr-pic-row .field label{margin-bottom:4px}@media(max-width:600px){.ncr-dialog{padding:12px}.ncr-pic-row{grid-template-columns:minmax(0,1fr) auto}}
+
+/* NCR form visual alignment: match the blue header, white cards, fields, and action bar used by Rework/Transfer. NCR-only scope. */
+#ncrModal .dialog{width:min(1080px,97vw);padding:0;border:1px solid #d9e4f2;border-radius:18px;overflow:auto;background:#f8fafc;box-shadow:0 24px 80px #0f274733}
+#ncrModal .dialoghead{position:sticky;top:0;z-index:5;margin:0;padding:20px 24px;background:linear-gradient(120deg,#12325a,#245ca7);color:#fff;border-bottom:1px solid #c6d8f0}
+#ncrModal .dialoghead h3{font-size:21px;letter-spacing:-.3px;margin:0 0 5px;color:#fff}
+#ncrModal .dialoghead .muted{color:#dbeafe;line-height:1.45;max-width:720px}
+#ncrModal .dialoghead>button{color:#fff;border-color:#ffffff55;background:#ffffff18}
+#ncrModal #ncrForm{padding:20px 24px 24px}
+#ncrModal .ncr-form-section{margin:0 0 14px;padding:16px!important;border:1px solid #dce6f2!important;border-radius:15px!important;background:#fff!important;box-shadow:0 4px 16px #19365b08}
+#ncrModal .ncr-section-heading{font-size:15px;font-weight:800;letter-spacing:.15px;color:#183b68;margin:0 0 12px;padding:0 0 9px;border-bottom:1px solid #e0e9f4}
+#ncrModal .fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+#ncrModal .field label{font-size:11px;font-weight:750;color:#344765;margin-bottom:6px}
+#ncrModal input,#ncrModal select,#ncrModal textarea{width:100%;min-width:0;border:1px solid #cbd7e6;border-radius:9px;background:#fff;padding:10px 11px;color:#172b46;font-size:12px;transition:border-color .15s,box-shadow .15s}
+#ncrModal input:focus,#ncrModal select:focus,#ncrModal textarea:focus{outline:none;border-color:#4f83cf;box-shadow:0 0 0 3px #dbeafe}
+#ncrModal .allocation-form-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+#ncrModal .allocation-form-head .ncr-section-heading{margin:0 0 5px;padding:0 0 8px}
+#ncrModal .allocation-form-head .muted{color:#68778c}
+#ncrModal .allocation-form-head button{border-radius:9px;background:#edf5ff;color:#2459a9;border-color:#c8dcf7;font-weight:700}
+#ncrModal .ncr-pic-row{padding:10px;border:1px solid #dce6f2;border-radius:10px;background:#f8fbff}
+#ncrModal .actions{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;gap:10px;margin:18px -24px -24px;padding:14px 24px;background:#ffffffef;border-top:1px solid #dfe8f2;backdrop-filter:blur(8px)}
+#ncrModal #ncrSave{min-width:145px;border-radius:10px;background:#1d5eb7;font-weight:800}
+@media(max-width:760px){#ncrModal .dialoghead{padding:16px}#ncrModal #ncrForm{padding:14px}#ncrModal .fields{grid-template-columns:1fr 1fr;padding:0}#ncrModal .actions{margin:16px -14px -14px;padding:12px 14px}}
+@media(max-width:520px){#ncrModal .fields{grid-template-columns:1fr}#ncrModal .ncr-dialog{width:96vw}}
+</style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
 <aside class="sidebar"><div class="brand"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></div><div class="navlabel">Main Menu</div>
@@ -1004,27 +1028,3 @@ function submitRework(ev){
 
 document.addEventListener('DOMContentLoaded',()=>{const intro=document.querySelector('.intro'),toolbar=document.querySelector('#monitoringPanel .toolbar'),filters=document.querySelector('#recordFilters'),actions=intro&&intro.querySelector('.actions');if(intro&&toolbar&&actions){const search=toolbar.querySelector('#search'),clear=toolbar.querySelector('#resetFilters'),tools=document.createElement('div'),right=document.createElement('div');tools.className='header-tools';right.className='header-right';if(search)tools.appendChild(search);if(clear&&filters){clear.textContent='Clear Filter';clear.title='Clear record filters';clear.classList.remove('header-clear-filter');filters.appendChild(clear)}right.appendChild(tools);right.appendChild(actions);intro.appendChild(right)}checkStatus()});
 </script></body></html>
-
-
-/* NCR form visual alignment: match the blue header, white cards, fields, and action bar used by Rework/Transfer. NCR-only scope. */
-#ncrModal .dialog{width:min(1080px,97vw);padding:0;border:1px solid #d9e4f2;border-radius:18px;overflow:auto;background:#f8fafc;box-shadow:0 24px 80px #0f274733}
-#ncrModal .dialoghead{position:sticky;top:0;z-index:5;margin:0;padding:20px 24px;background:linear-gradient(120deg,#12325a,#245ca7);color:#fff;border-bottom:1px solid #c6d8f0}
-#ncrModal .dialoghead h3{font-size:21px;letter-spacing:-.3px;margin:0 0 5px;color:#fff}
-#ncrModal .dialoghead .muted{color:#dbeafe;line-height:1.45;max-width:720px}
-#ncrModal .dialoghead>button{color:#fff;border-color:#ffffff55;background:#ffffff18}
-#ncrModal #ncrForm{padding:20px 24px 24px}
-#ncrModal .ncr-form-section{margin:0 0 14px;padding:16px!important;border:1px solid #dce6f2!important;border-radius:15px!important;background:#fff!important;box-shadow:0 4px 16px #19365b08}
-#ncrModal .ncr-section-heading{font-size:15px;font-weight:800;letter-spacing:.15px;color:#183b68;margin:0 0 12px;padding:0 0 9px;border-bottom:1px solid #e0e9f4}
-#ncrModal .fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-#ncrModal .field label{font-size:11px;font-weight:750;color:#344765;margin-bottom:6px}
-#ncrModal input,#ncrModal select,#ncrModal textarea{width:100%;min-width:0;border:1px solid #cbd7e6;border-radius:9px;background:#fff;padding:10px 11px;color:#172b46;font-size:12px;transition:border-color .15s,box-shadow .15s}
-#ncrModal input:focus,#ncrModal select:focus,#ncrModal textarea:focus{outline:none;border-color:#4f83cf;box-shadow:0 0 0 3px #dbeafe}
-#ncrModal .allocation-form-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-#ncrModal .allocation-form-head .ncr-section-heading{margin:0 0 5px;padding:0 0 8px}
-#ncrModal .allocation-form-head .muted{color:#68778c}
-#ncrModal .allocation-form-head button{border-radius:9px;background:#edf5ff;color:#2459a9;border-color:#c8dcf7;font-weight:700}
-#ncrModal .ncr-pic-row{padding:10px;border:1px solid #dce6f2;border-radius:10px;background:#f8fbff}
-#ncrModal .actions{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;gap:10px;margin:18px -24px -24px;padding:14px 24px;background:#ffffffef;border-top:1px solid #dfe8f2;backdrop-filter:blur(8px)}
-#ncrModal #ncrSave{min-width:145px;border-radius:10px;background:#1d5eb7;font-weight:800}
-@media(max-width:760px){#ncrModal .dialoghead{padding:16px}#ncrModal #ncrForm{padding:14px}#ncrModal .fields{grid-template-columns:1fr 1fr;padding:0}#ncrModal .actions{margin:16px -14px -14px;padding:12px 14px}}
-@media(max-width:520px){#ncrModal .fields{grid-template-columns:1fr}#ncrModal .ncr-dialog{width:96vw}}
