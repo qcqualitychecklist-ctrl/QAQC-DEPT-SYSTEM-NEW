@@ -18,6 +18,8 @@ const TRANSFER_SHEET = 'Transfer Monitoring';
 const ALLOCATION_SHEET = 'QC Allocation Details';
 const REWORK_SHEET = 'Rework Monitoring';
 const PUNCHLIST_SHEET = 'Punchlist Monitoring';
+const NCR_SHEET = 'NCR Monitoring';
+const NCR_HEADERS = ['Reference','Date','Prepared by','Section','Person In Charge','Description of Issue','Corrective Action','Status','Date Closed'];
 const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
 const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
 const REWORK_MAIN_SHEET = 'Rework Main';
@@ -60,14 +62,14 @@ function getSystemStatus() {
   try {
     const ss = SpreadsheetApp.openById(DATABASE_ID);
     return {ok:true,databaseName:ss.getName(),existingSheets:ss.getSheets().map(s=>s.getName()),
-      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,REWORK_SHEET,REWORK_MAIN_SHEET,REWORK_DETAILS_SHEET,REWORK_ASSIGNMENTS_SHEET,PUNCHLIST_SHEET]};
+      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,REWORK_SHEET,REWORK_MAIN_SHEET,REWORK_DETAILS_SHEET,REWORK_ASSIGNMENTS_SHEET,PUNCHLIST_SHEET,NCR_SHEET]};
   } catch (e) { return {ok:false,message:String(e.message||e)}; }
 }
 
 function setupDatabase() {
   const ss = SpreadsheetApp.openById(DATABASE_ID);
   const created = [];
-  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_SHEET,REWORK_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS],[PUNCHLIST_SHEET,PUNCHLIST_HEADERS]].forEach(pair=>{
+  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_SHEET,REWORK_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS],[PUNCHLIST_SHEET,PUNCHLIST_HEADERS],[NCR_SHEET,NCR_HEADERS]].forEach(pair=>{
     let sh=ss.getSheetByName(pair[0]);
     if (!sh) { sh=ss.insertSheet(pair[0]); created.push(pair[0]); }
     if (sh.getLastRow()===0) {
@@ -84,7 +86,7 @@ function setupDatabase() {
 }
 
 function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) {
-  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring','Punchlist Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
+  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring','Punchlist Monitoring','NCR Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const query=String(searchText||'').trim();
   // v3 stores the records already sorted, avoiding a full-array sort on the
   // immediate follow-up request used by the first-50 loading flow.
@@ -99,6 +101,7 @@ function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) 
     else if(moduleName==='J.O Register')result=getExternalJORecords_(query);
     else if(moduleName==='Rework Monitoring')result=getReworkRecords_(query);
     else if(moduleName==='Punchlist Monitoring')result=getPunchlistRecords_(query);
+    else if(moduleName==='NCR Monitoring')result=getNcrRecords_(query);
     else result=getFGTSMonitoringRecords_(query);
   }
   if(!result||!result.ok)return result;
@@ -198,7 +201,7 @@ function getReworkRecords_(searchText) {
 }
 
 function sortModuleRecordsNewestFirst_(moduleName, records) {
-  const dateField=moduleName==='J.O Register'?'Received':moduleName==='Rework Monitoring'?'Date Issue':'Date Received';
+  const dateField=moduleName==='J.O Register'?'Received':moduleName==='Rework Monitoring'?'Date Issue':moduleName==='NCR Monitoring'?'Date':'Date Received';
   return (records||[]).map((record,index)=>({record:record,index:index,date:joParseDate_(record&&record[dateField])}))
     .sort((a,b)=>{
       const at=a.date?a.date.getTime():-Infinity,bt=b.date?b.date.getTime():-Infinity;
@@ -207,6 +210,15 @@ function sortModuleRecordsNewestFirst_(moduleName, records) {
     }).map(item=>item.record);
 }
 
+
+function getNcrRecords_(searchText){
+ const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(NCR_SHEET);
+ if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:NCR_HEADERS};
+ const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String);
+ const records=sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues().map(row=>{const rec={};headers.forEach((h,i)=>rec[h]=formatCell_(row[i]));if(!String(rec.Status||'').trim())rec.Status=String(rec['Date Closed']||'').trim()?'Closed':'Open';return rec;});
+ const q=String(searchText||'').trim().toLowerCase();
+ return {ok:true,records:q?records.filter(rec=>Object.values(rec).some(v=>String(v||'').toLowerCase().includes(q))):records,fields:NCR_HEADERS};
+}
 
 function getPunchlistRecords_(searchText){
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
