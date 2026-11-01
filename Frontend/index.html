@@ -333,6 +333,27 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 #monitoringPanel .tablewrap table.punchlist-table .punchlist-status-button.is-open{background:#fff0d2;color:#8a4b00;border-color:#f5d08a}
 #monitoringPanel .tablewrap table.punchlist-table .punchlist-status-button.is-closed{background:#d9f5e5;color:#146c3a;border-color:#a8dfbf}
 
+
+/* Punchlist only: lock all 17 columns so changing one column cannot squeeze another. */
+#monitoringPanel .tablewrap table.punchlist-table{table-layout:fixed!important;width:2135px!important;min-width:2135px!important;max-width:none!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(1),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(1){width:115px!important;min-width:115px!important;max-width:115px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(2),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(2){width:90px!important;min-width:90px!important;max-width:90px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(3),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(3){width:90px!important;min-width:90px!important;max-width:90px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(4),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(4){width:180px!important;min-width:180px!important;max-width:180px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(5),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(5){width:75px!important;min-width:75px!important;max-width:75px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(6),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(6){width:165px!important;min-width:165px!important;max-width:165px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(7),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(7){width:55px!important;min-width:55px!important;max-width:55px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(8),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(8){width:90px!important;min-width:90px!important;max-width:90px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(9),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(9){width:220px!important;min-width:220px!important;max-width:220px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(10),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(10){width:145px!important;min-width:145px!important;max-width:145px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(11),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(11){width:120px!important;min-width:120px!important;max-width:120px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(12),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(12){width:125px!important;min-width:125px!important;max-width:125px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(13),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(13){width:130px!important;min-width:130px!important;max-width:130px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(14),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(14){width:125px!important;min-width:125px!important;max-width:125px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(15),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(15){width:115px!important;min-width:115px!important;max-width:115px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(16),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(16){width:105px!important;min-width:105px!important;max-width:105px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(17),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(17){width:190px!important;min-width:190px!important;max-width:190px!important}
+
 /* Compact the main page header across monitoring modules only. */
 main > .intro{padding:7px 10px!important;gap:8px!important;min-height:0!important}
 main > .intro h2{font-size:19px!important;line-height:1.15!important;margin:0!important}
