@@ -246,6 +246,19 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 
 \n.punchlist-table{min-width:1500px;border-collapse:separate;border-spacing:0}.punchlist-table th{white-space:normal;vertical-align:middle}.punchlist-table td{vertical-align:middle}.punchlist-table .punchlist-shared-cell{font-weight:400!important;background:transparent!important;vertical-align:middle}.punchlist-table td{max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.punchlist-table td[title]{cursor:default}.punchlist-table td.punchlist-shared-cell{font-weight:400!important;background:transparent!important}\n.punchlist-details-table{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:8px;font-size:12px;white-space:normal!important}
 
+
+/* Punchlist only: full-bleed sticky headers and consistent save-button typography. */
+#punchlistModal .dialog,#punchlistDetailsModal .dialog{padding:0!important;overflow-y:auto!important;overscroll-behavior:contain}
+#punchlistModal .dialoghead,#punchlistDetailsModal .dialoghead{position:sticky!important;top:0!important;z-index:20!important;display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;margin:0!important;padding:20px 24px!important;background:linear-gradient(120deg,#12325a,#245ca7)!important;color:#fff!important;border-bottom:1px solid #c6d8f0!important}
+#punchlistModal .dialoghead h3,#punchlistDetailsModal .dialoghead h3{color:#fff!important}
+#punchlistModal .dialoghead .muted,#punchlistDetailsModal .dialoghead .muted{color:#dbeafe!important}
+#punchlistModal .dialoghead>button,#punchlistDetailsModal .dialoghead>button{color:#fff!important;border-color:#ffffff55!important;background:#ffffff18!important}
+#punchlistModal #punchlistForm{padding:20px 24px 24px!important}
+#punchlistDetailsModal #punchlistDetailsBody{padding:18px 24px 24px!important}
+#punchlistDetailsModal .transfer-details-actions{position:sticky;bottom:0;z-index:4;padding:12px 24px!important;margin:0!important;background:#ffffffef;border-top:1px solid #dfe8f2;backdrop-filter:blur(8px)}
+#punchlistModal #punchlistSave,#punchlistEditModal #punchlistEditSave,#punchlistCloseModal #punchlistCloseSave{font-family:inherit!important;font-size:13px!important;font-weight:800!important;line-height:1.2!important;min-height:36px;padding:9px 16px!important;border-radius:10px!important;background:#1d5eb7!important;color:#fff!important}
+@media(max-width:760px){#punchlistModal .dialoghead,#punchlistDetailsModal .dialoghead{padding:12px 14px!important}#punchlistModal #punchlistForm,#punchlistDetailsModal #punchlistDetailsBody{padding:12px!important}#punchlistDetailsModal .transfer-details-actions{padding:10px 14px!important}}
+
 /* Punchlist only: keep all filters and Clear Filters together in one horizontal row. */
 #recordFilters.punchlist-filterbar{display:flex!important;flex-wrap:nowrap!important;align-items:flex-end!important;gap:8px!important;overflow-x:auto;overflow-y:hidden;white-space:nowrap}
 #recordFilters.punchlist-filterbar>.field{flex:1 1 0;min-width:125px;max-width:none}
