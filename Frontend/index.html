@@ -141,13 +141,13 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 
 /* Compact Transfer Monitoring filters to match the other monitoring modules. */
 .toolbar .refresh-btn{background:#fff!important;color:#2459a9!important;border-color:#b8cbed!important;min-width:34px}.toolbar .refresh-btn span{display:inline-block;font-size:18px;line-height:1;color:#2459a9;font-weight:600}
-#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar){grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:6px;padding:7px;margin-bottom:9px;align-items:end}#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) #resetFilters{align-self:end;justify-self:start;width:auto;min-width:0;height:29px;padding:5px 8px;margin:0;font-size:10px;line-height:1;white-space:nowrap;flex:none}
-#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) .field{min-width:0}
-#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) .field label{font-size:9px;margin-bottom:3px;white-space:nowrap}
-#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) input,
-#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) select{height:29px;padding:5px 6px;font-size:10px;min-width:0}
-@media(max-width:900px){#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar){grid-template-columns:repeat(2,minmax(0,1fr))}#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) #resetFilters{grid-column:auto}}
-@media(max-width:520px){#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar){grid-template-columns:1fr}}
+#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar){grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:6px;padding:7px;margin-bottom:9px;align-items:end}#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar) #resetFilters{align-self:end;justify-self:start;width:auto;min-width:0;height:29px;padding:5px 8px;margin:0;font-size:10px;line-height:1;white-space:nowrap;flex:none}
+#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar) .field{min-width:0}
+#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar) .field label{font-size:9px;margin-bottom:3px;white-space:nowrap}
+#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar) input,
+#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar) select{height:29px;padding:5px 6px;font-size:10px;min-width:0}
+@media(max-width:900px){#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar){grid-template-columns:repeat(2,minmax(0,1fr))}#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar) #resetFilters{grid-column:auto}}
+@media(max-width:520px){#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar){grid-template-columns:1fr}}
 
 /* Hotfix: keep the Transfer Monitoring header controls compact and stable when switching modules. */
 .intro .header-right{flex:0 1 auto;min-width:0;flex-wrap:nowrap}
@@ -157,8 +157,8 @@ table.jo-table{table-layout:fixed;min-width:1450px;width:100%;white-space:nowrap
 .intro .header-tools .refresh-btn:hover,
 .intro .header-tools button[aria-label="Refresh records"]:hover{background:#ffffff18!important;border-color:#ffffff20!important;color:#fff!important}
 #monitoringPanel #recordFilters>button{width:auto!important;min-width:0!important;max-width:max-content!important;height:29px!important;padding:5px 8px!important;font-size:10px!important;line-height:1.2!important;align-self:end;white-space:nowrap}
-#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) .field input,
-#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar) .field select{height:29px!important;padding:5px 6px!important;font-size:10px!important;min-width:0!important}
+#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar) .field input,
+#monitoringPanel #recordFilters.filterbar:not(.jo-filterbar):not(.fgts-filterbar):not(.rework-filterbar):not(.ncr-filterbar) .field select{height:29px!important;padding:5px 6px!important;font-size:10px!important;min-width:0!important}
 @media(max-width:700px){.intro .header-right{width:100%;flex-wrap:wrap;justify-content:flex-start}.intro .header-tools{width:100%;flex:1 1 100%;max-width:100%}}
 
 
