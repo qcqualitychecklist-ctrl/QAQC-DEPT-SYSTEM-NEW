@@ -211,6 +211,23 @@ function sortModuleRecordsNewestFirst_(moduleName, records) {
 }
 
 
+function saveNcr_(input){
+ if(!input)throw new Error('No NCR data received.');
+ const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(NCR_SHEET);
+ if(!sh)throw new Error('Click Prepare Database first to create the NCR Monitoring tab.');
+ const data=sh.getDataRange().getValues(),headers=data[0].map(String),now=new Date();
+ const required=['Date','Prepared by','Section','Person In Charge','Description of Issue'];
+ required.forEach(h=>{if(!String(input[h]||'').trim())throw new Error(h+' is required.')});
+ const status=String(input.Status||'Open').trim();
+ if(!['Open','Closed'].includes(status))throw new Error('Status must be Open or Closed.');
+ if(status==='Closed'&&!String(input['Date Closed']||'').trim())throw new Error('Date Closed is required when Status is Closed.');
+ const ref=String(input.Reference||'').trim()||('NCR-'+Utilities.formatDate(now,Session.getScriptTimeZone(),'yyyyMMdd-HHmmss'));
+ const rec=Object.assign({},input,{Reference:ref,Status:status});
+ const out=headers.map(h=>rec[h]===undefined?'':rec[h]);
+ sh.appendRow(out);invalidateModuleCache_('NCR Monitoring');
+ return {ok:true,recordId:ref,message:'NCR record saved.'};
+}
+
 function getNcrRecords_(searchText){
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(NCR_SHEET);
  if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:NCR_HEADERS};
@@ -271,6 +288,7 @@ function deletePunchlist(id){
  sh.deleteRow(row);invalidateModuleCache_('Punchlist Monitoring');return {ok:true,recordId:key,message:'Punchlist description deleted.'};
 }
 function saveRecord(moduleName,input) {
+  if(moduleName==='NCR Monitoring') return saveNcr_(input);
   if(moduleName==='Rework Monitoring') return saveReworkCase_(input);
   if(moduleName==='Punchlist Monitoring') return savePunchlist_(input);
   if(moduleName==='Transfer Monitoring') return saveTransfer(input);
