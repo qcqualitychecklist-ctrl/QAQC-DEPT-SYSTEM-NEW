@@ -289,6 +289,17 @@ function closePunchlist(id,closedBy,closedDate){
  set('Closed By',by);set('Closed Date',date);set('Status','Closed');set('Updated At',new Date());
  invalidateModuleCache_('Punchlist Monitoring');return {ok:true,recordId:key,message:'Punchlist closed.'};
 }
+function deletePunchlistByJO(jo){
+ const jobOrder=String(jo||'').trim();if(!jobOrder)throw new Error('Missing J.O. number.');
+ const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PUNCHLIST_SHEET);
+ if(!sh||sh.getLastRow()<2)throw new Error('No punchlist records were found.');
+ const data=sh.getDataRange().getValues(),headers=data[0].map(v=>String(v||'').trim()),joCol=headers.indexOf('J.O');
+ if(joCol<0)throw new Error('J.O. column is missing from Punchlist Monitoring.');
+ const rows=[];for(let i=1;i<data.length;i++)if(String(data[i][joCol]||'').trim()===jobOrder)rows.push(i+1);
+ if(!rows.length)throw new Error('No punchlist entries found for J.O. '+jobOrder+'.');
+ const deletedCount=rows.length;rows.reverse().forEach(row=>sh.deleteRow(row));invalidateModuleCache_('Punchlist Monitoring');
+ return {ok:true,deletedCount,message:'Deleted '+deletedCount+' punchlist entr'+(deletedCount===1?'y':'ies')+' under J.O. '+jobOrder+'.'};
+}
 function deletePunchlist(id){
  const key=String(id||'').trim();if(!key)throw new Error('Missing Punchlist ID.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
@@ -617,9 +628,10 @@ function updateReworkFinishedDate(reworkId, concernSection, dateValue) {
   const rows=details.getDataRange().getValues(),sectionRows=[];
   for(let i=1;i<rows.length;i++)if(String(rows[i][1])===caseId&&String(rows[i][sectionCol-1]||'Unassigned')===section)sectionRows.push({row:i+1,data:rows[i]});
   if(!sectionRows.length)throw new Error('No descriptions found for this Concern Section.');
-  sectionRows.forEach(x=>details.getRange(x.row,finishedCol).setValue(value?new Date(value+'T12:00:00'):''));
-  const allClosed=sectionRows.every(x=>String(x.data[statusCol-1]||'Open').trim().toLowerCase()==='closed');
-  const leadTime=allClosed&&value?reworkLeadTimeDays_(mainData[3],value):'';
+  const closedAt=new Date();
+  sectionRows.forEach(x=>{details.getRange(x.row,finishedCol).setValue(value?new Date(value+'T12:00:00'):'');details.getRange(x.row,statusCol).setValue(value?'Closed':'Open');const closedCol=findHeader('Closed At')+1;if(closedCol)details.getRange(x.row,closedCol).setValue(value?closedAt:'');});
+  const allClosed=!!value;
+  const leadTime=allClosed?reworkLeadTimeDays_(mainData[3],value):'';
   if(leadCol)sectionRows.forEach(x=>details.getRange(x.row,leadCol).setValue(leadTime));
   invalidateModuleCache_('Rework Monitoring');
   return {ok:true,dateFinished:value,concernSection:section,leadTime:leadTime,message:'Section Date Finished updated.'};
