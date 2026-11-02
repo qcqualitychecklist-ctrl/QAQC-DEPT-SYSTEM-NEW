@@ -537,9 +537,10 @@ table.ncr-table td.ncr-description{min-width:260px;}
 }
 
 /* Rework Monitoring only: normalize dashboard card height and keep row actions visible */
-.dashboard-cards.rework-dashboard .dash-card{min-height:0!important;height:76px!important;padding:8px 9px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:5px!important}
-.dashboard-cards.rework-dashboard .dash-label{font-size:9px!important;line-height:1.1!important}
-.dashboard-cards.rework-dashboard .dash-value{font-size:18px!important;line-height:1.1!important}
+#dashboardCards.rework-dashboard{align-items:start!important;grid-auto-rows:76px!important}
+#dashboardCards.rework-dashboard>.dash-card{height:76px!important;min-height:76px!important;max-height:76px!important;padding:8px 9px!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-self:start!important;gap:5px!important;overflow:hidden!important}
+#dashboardCards.rework-dashboard>.dash-card .dash-label{font-size:9px!important;line-height:1.1!important}
+#dashboardCards.rework-dashboard>.dash-card .dash-value{font-size:18px!important;line-height:1.1!important;margin-top:3px!important}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(17),
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(17){width:210px!important;min-width:210px!important;max-width:210px!important}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td.actioncell{white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;vertical-align:middle!important}
