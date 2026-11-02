@@ -423,13 +423,14 @@ main > .intro .header-tools input{height:27px!important;padding:5px 7px!importan
 main > .intro h2.jo-register-title{font-size:19px!important;line-height:1.15!important}
 
 /* NCR Monitoring styles are intentionally scoped to NCR elements only. */
-#monitoringPanel #recordFilters.ncr-filterbar{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr)) auto;align-items:end;gap:6px;padding:7px;margin-bottom:9px}
-#monitoringPanel #recordFilters.ncr-filterbar>.field{min-width:0}
-#monitoringPanel #recordFilters.ncr-filterbar>.field label{white-space:nowrap}
-#monitoringPanel #recordFilters.ncr-filterbar input,#monitoringPanel #recordFilters.ncr-filterbar select{width:100%;min-width:0}
-#monitoringPanel #recordFilters.ncr-filterbar>button{align-self:end;justify-self:end;flex:0 0 auto;white-space:nowrap;margin:0!important}
-@media(max-width:1050px){#monitoringPanel #recordFilters.ncr-filterbar{grid-template-columns:repeat(3,minmax(0,1fr)) auto}}
-@media(max-width:700px){#monitoringPanel #recordFilters.ncr-filterbar{grid-template-columns:repeat(2,minmax(0,1fr))}#monitoringPanel #recordFilters.ncr-filterbar>button{justify-self:start}}
+/* NCR filters: fixed compact sizing from first paint through data rendering. */
+#monitoringPanel #recordFilters.ncr-filterbar{display:grid!important;grid-template-columns:repeat(5,minmax(115px,1fr)) auto!important;align-items:end;gap:6px!important;padding:7px!important;margin-bottom:9px!important}
+#monitoringPanel #recordFilters.ncr-filterbar>.field{min-width:0!important;margin:0!important}
+#monitoringPanel #recordFilters.ncr-filterbar>.field label{display:block;font-size:9px!important;line-height:1.15!important;margin:0 0 3px!important;white-space:nowrap}
+#monitoringPanel #recordFilters.ncr-filterbar input,#monitoringPanel #recordFilters.ncr-filterbar select{display:block;width:100%!important;min-width:0!important;max-width:100%!important;height:29px!important;min-height:29px!important;max-height:29px!important;box-sizing:border-box!important;padding:5px 6px!important;font-size:10px!important;line-height:1.1!important}
+#monitoringPanel #recordFilters.ncr-filterbar>button{align-self:end;justify-self:end;flex:0 0 auto;white-space:nowrap;margin:0!important;height:29px!important;min-height:29px!important;padding:5px 8px!important;font-size:10px!important;line-height:1!important}
+@media(max-width:1050px){#monitoringPanel #recordFilters.ncr-filterbar{grid-template-columns:repeat(3,minmax(0,1fr)) auto!important}}
+@media(max-width:700px){#monitoringPanel #recordFilters.ncr-filterbar{grid-template-columns:repeat(2,minmax(0,1fr))!important}#monitoringPanel #recordFilters.ncr-filterbar>button{justify-self:start}}
 #dashboardCards.ncr-dashboard{grid-template-columns:repeat(auto-fit,minmax(145px,1fr));}
 table.ncr-table{min-width:1120px;}
 table.ncr-table th,table.ncr-table td{white-space:nowrap;}
