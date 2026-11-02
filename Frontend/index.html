@@ -1234,3 +1234,18 @@ function submitRework(ev){
 
 document.addEventListener('DOMContentLoaded',()=>{const intro=document.querySelector('.intro'),toolbar=document.querySelector('#monitoringPanel .toolbar'),filters=document.querySelector('#recordFilters'),actions=intro&&intro.querySelector('.actions');if(intro&&toolbar&&actions){const search=toolbar.querySelector('#search'),clear=toolbar.querySelector('#resetFilters'),tools=document.createElement('div'),right=document.createElement('div');tools.className='header-tools';right.className='header-right';if(search)tools.appendChild(search);if(clear&&filters){clear.textContent='Clear Filter';clear.title='Clear record filters';clear.classList.remove('header-clear-filter');filters.appendChild(clear)}right.appendChild(tools);right.appendChild(actions);intro.appendChild(right)}checkStatus()});
 </script></body></html>
+
+/* Fit only Transfer, Punchlist, and NCR dashboard cards across the full available panel width. */
+#dashboardCards.transfer-dashboard{grid-template-columns:repeat(5,minmax(0,1fr))!important;width:100%!important;max-width:100%!important}
+#dashboardCards.punchlist-dashboard{grid-template-columns:repeat(4,minmax(0,1fr))!important;width:100%!important;max-width:100%!important}
+#dashboardCards.ncr-dashboard{grid-template-columns:repeat(3,minmax(0,1fr))!important;width:100%!important;max-width:100%!important}
+@media(max-width:1100px){
+  #dashboardCards.transfer-dashboard,
+  #dashboardCards.punchlist-dashboard,
+  #dashboardCards.ncr-dashboard{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:600px){
+  #dashboardCards.transfer-dashboard,
+  #dashboardCards.punchlist-dashboard,
+  #dashboardCards.ncr-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
