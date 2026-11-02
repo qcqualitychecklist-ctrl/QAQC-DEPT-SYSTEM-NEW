@@ -780,7 +780,7 @@ function renderPunchlistTable(){
  if(i===0)[['Item','Item'],['Panel Name','Panel Name'],['Qty','Qty'],['Category','Category']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=ig.items.length;td.className='punchlist-shared-cell';tr.append(td)});
  [['Description of Punchlist','Description of Punchlist'],['Concern Section','Concern Section'],['Target Date','Target Date'],['Received By','Received By'],['Received Date','Received Date'],['Closed By','Closed By'],['Closed Date','Closed Date']].forEach(([label,key])=>tr.append(cell(r[key])));
  const statusCell=document.createElement('td'),statusBtn=button(String(r.Status||'Open'),'punchlist-status-button '+(String(r.Status||'Open').toLowerCase()==='closed'?'is-closed':'is-open'),()=>openClosePunchlist(r));statusBtn.title=String(r.Status||'Open')==='Closed'?'Already closed':'Click to close this punchlist';statusCell.append(statusBtn);tr.append(statusCell);
- const act=document.createElement('td');act.className='actioncell punchlist-action-cell';if(g.items[0]===r)act.append(button('Edit','small primary',()=>openEditPunchlistGroup(r)),document.createTextNode(' '),button('Full Details','small',()=>openPunchlistDetails(r)),document.createTextNode(' '),button('Delete J.O.','small danger',()=>deletePunchlistRecord(r)));tr.append(act)
+ if(g.items[0]===r){const act=document.createElement('td');act.className='actioncell punchlist-action-cell';act.rowSpan=g.items.length;act.append(button('Edit','small primary',()=>openEditPunchlistGroup(r)),document.createTextNode(' '),button('Full Details','small',()=>openPunchlistDetails(r)),document.createTextNode(' '),button('Delete J.O.','small danger',()=>deletePunchlistRecord(r)));tr.append(act)}
  el('tbody').append(tr);
  }))});
 }
