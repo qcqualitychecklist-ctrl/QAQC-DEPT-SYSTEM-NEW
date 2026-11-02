@@ -487,6 +487,54 @@ table.ncr-table td.ncr-description{min-width:260px;}
 #ncrModal #ncrSave{min-width:145px;border-radius:10px;background:#1d5eb7;font-weight:800}
 @media(max-width:760px){#ncrModal .dialoghead{padding:16px}#ncrModal #ncrForm{padding:14px}#ncrModal .fields{grid-template-columns:1fr 1fr;padding:0}#ncrModal .actions{margin:16px -14px -14px;padding:12px 14px}}
 @media(max-width:520px){#ncrModal .fields{grid-template-columns:1fr}#ncrModal .ncr-dialog{width:96vw}}
+
+/* Dashboard cards: match J.O Register / FGTS compact card sizing and fill each row evenly. */
+#dashboardCards.transfer-dashboard,
+#dashboardCards.punchlist-dashboard,
+#dashboardCards.ncr-dashboard{
+  display:grid!important;
+  gap:6px!important;
+  margin-bottom:9px!important;
+  align-items:stretch;
+}
+#dashboardCards.transfer-dashboard{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+#dashboardCards.punchlist-dashboard{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#dashboardCards.ncr-dashboard{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#dashboardCards.transfer-dashboard .dash-card,
+#dashboardCards.punchlist-dashboard .dash-card,
+#dashboardCards.ncr-dashboard .dash-card{
+  min-height:0!important;
+  height:auto!important;
+  box-sizing:border-box!important;
+  padding:8px 9px!important;
+  border-radius:8px!important;
+  display:flex!important;
+  flex-direction:column;
+  justify-content:center;
+}
+#dashboardCards.transfer-dashboard .dash-label,
+#dashboardCards.punchlist-dashboard .dash-label,
+#dashboardCards.ncr-dashboard .dash-label{
+  font-size:9px!important;
+  line-height:1.2!important;
+}
+#dashboardCards.transfer-dashboard .dash-value,
+#dashboardCards.punchlist-dashboard .dash-value,
+#dashboardCards.ncr-dashboard .dash-value{
+  font-size:18px!important;
+  line-height:1.15!important;
+  margin-top:4px!important;
+}
+@media(max-width:1100px){
+  #dashboardCards.transfer-dashboard,
+  #dashboardCards.punchlist-dashboard,
+  #dashboardCards.ncr-dashboard{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:600px){
+  #dashboardCards.transfer-dashboard,
+  #dashboardCards.punchlist-dashboard,
+  #dashboardCards.ncr-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
