@@ -431,16 +431,21 @@ main > .intro h2.jo-register-title{font-size:19px!important;line-height:1.15!imp
 #monitoringPanel #recordFilters.ncr-filterbar>button{align-self:end;justify-self:end;flex:0 0 auto;white-space:nowrap;margin:0!important;height:29px!important;min-height:29px!important;padding:5px 8px!important;font-size:10px!important;line-height:1!important}
 @media(max-width:1050px){#monitoringPanel #recordFilters.ncr-filterbar{grid-template-columns:repeat(3,minmax(0,1fr)) auto!important}}
 @media(max-width:700px){#monitoringPanel #recordFilters.ncr-filterbar{grid-template-columns:repeat(2,minmax(0,1fr))!important}#monitoringPanel #recordFilters.ncr-filterbar>button{justify-self:start}}
-/* Increase dashboard card height only; preserve each module's existing column count and card widths. */
-.dashboard-cards.transfer-dashboard .dash-card,
+/* Keep Transfer, Punchlist, and NCR dashboard cards compact like the original layout. */
 #dashboardCards.punchlist-dashboard .dash-card,
 #dashboardCards.ncr-dashboard .dash-card{
-  min-height:86px;
-  padding:12px 9px;
-  box-sizing:border-box;
+  min-height:0!important;
+  height:auto!important;
+  padding:8px 9px!important;
+  box-sizing:border-box!important;
   display:flex;
   flex-direction:column;
   justify-content:center;
+}
+.dashboard-cards.transfer-dashboard .dash-card{
+  min-height:0!important;
+  height:auto!important;
+  padding:8px 9px!important;
 }
 /* NCR dashboard card colors. */
 #dashboardCards.ncr-dashboard .dash-card.ncr-total{background:#eff6ff;border-color:#bfdbfe}
@@ -537,10 +542,9 @@ table.ncr-table td.ncr-description{min-width:260px;}
 }
 
 /* Rework Monitoring only: normalize dashboard card height and keep row actions visible */
-#dashboardCards.rework-dashboard{align-items:start!important;grid-auto-rows:76px!important}
-#dashboardCards.rework-dashboard>.dash-card{height:76px!important;min-height:76px!important;max-height:76px!important;padding:8px 9px!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-self:start!important;gap:5px!important;overflow:hidden!important}
-#dashboardCards.rework-dashboard>.dash-card .dash-label{font-size:9px!important;line-height:1.1!important}
-#dashboardCards.rework-dashboard>.dash-card .dash-value{font-size:18px!important;line-height:1.1!important;margin-top:3px!important}
+.dashboard-cards.rework-dashboard .dash-card{min-height:0!important;height:auto!important;max-height:none!important;padding:8px 9px!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:4px!important}
+.dashboard-cards.rework-dashboard .dash-label{font-size:9px!important;line-height:1.2!important}
+.dashboard-cards.rework-dashboard .dash-value{font-size:18px!important;line-height:1.15!important;margin-top:4px!important}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(17),
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(17){width:210px!important;min-width:210px!important;max-width:210px!important}
 #monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td.actioncell{white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;vertical-align:middle!important}
