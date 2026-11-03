@@ -738,6 +738,57 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
 .access-login,.access-register{padding:4px;min-width:0}.access-section-title{background:#142b4a;color:white;border-radius:8px;padding:12px 14px;font-size:16px;font-weight:700}.access-note{margin:8px 0 14px;color:#68778c;font-size:11px;line-height:1.5}.access-login label,.access-register label{display:block;font-weight:700;font-size:11px;margin:11px 0 5px;color:#34445c}.access-login input,.access-register input,.access-register select{height:38px;padding:8px 10px}.access-login-btn,.access-register-btn,.access-guest-btn,.access-register-toggle{width:100%;height:40px;margin-top:14px;font-weight:700;border-radius:8px}.access-login-btn,.access-register-btn{background:#174f99;color:white;border-color:#174f99}.access-register-toggle{margin-top:9px;background:#fff;color:#174f99;border-color:#9bb9df}.access-or{display:flex;align-items:center;gap:10px;margin:12px 0;color:#718096;font-size:10px;font-weight:700}.access-or span{height:1px;background:#dce4ef;flex:1}.access-guest-btn{margin-top:0;background:#e7f1ff;border:1px solid #80b4ff;color:#123b70}
 .access-register{display:none;border-left:1px solid #e4eaf2;padding-left:22px}.access-card.registration-open .access-register{display:block}.access-card.registration-open{width:min(1050px,100%)}.access-error{display:none;margin-top:10px;padding:9px;border-radius:7px;background:#fff1f0;color:#a3261d;font-size:11px}.access-register-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 @media(max-width:760px){.login-landing{align-items:flex-start;padding:12px}.access-card{grid-template-columns:1fr;padding:16px;gap:12px}.access-brand,.access-divider{grid-column:1}.access-register{border-left:0;border-top:1px solid #e4eaf2;padding:14px 4px 4px}.access-register-grid{grid-template-columns:1fr}.access-brand h1{font-size:18px}}
+
+/* Normalize the shared monitoring toolbar after the count label is hidden. */
+#monitoringPanel .toolbar.monitoring-toolbar{
+ display:grid!important;
+ grid-template-columns:34px max-content minmax(180px,240px) minmax(0,1fr)!important;
+ align-items:center!important;
+ column-gap:9px!important;
+ row-gap:8px!important;
+ width:100%!important;
+ min-width:0!important;
+ flex-wrap:initial!important;
+}
+#monitoringPanel .toolbar.monitoring-toolbar>.refresh-btn{grid-column:1;grid-row:1;justify-self:start}
+#monitoringPanel .toolbar.monitoring-toolbar>#pagination{grid-column:2;grid-row:1;justify-self:start;min-width:0;max-width:100%}
+#monitoringPanel .toolbar.monitoring-toolbar>#count{display:none!important}
+#monitoringPanel .toolbar.monitoring-toolbar>#search{
+ grid-column:3;grid-row:1;
+ width:100%!important;min-width:0!important;max-width:none!important;
+ flex:none!important;margin:0!important;justify-self:stretch;box-sizing:border-box!important;
+}
+#monitoringPanel .toolbar.monitoring-toolbar>.monitoring-actions{
+ grid-column:4;grid-row:1;
+ display:flex!important;align-items:center!important;justify-content:flex-end!important;
+ gap:7px!important;min-width:0!important;max-width:100%!important;
+ flex-wrap:wrap!important;margin:0!important;
+}
+#monitoringPanel .toolbar.monitoring-toolbar>.monitoring-actions button{
+ flex:0 0 auto!important;white-space:nowrap!important;margin:0!important;
+}
+@media(max-width:1050px){
+ #monitoringPanel .toolbar.monitoring-toolbar{
+  grid-template-columns:34px max-content minmax(150px,1fr)!important;
+ }
+ #monitoringPanel .toolbar.monitoring-toolbar>.monitoring-actions{
+  grid-column:1/-1;grid-row:2;justify-content:flex-start!important;
+ }
+}
+@media(max-width:620px){
+ #monitoringPanel .toolbar.monitoring-toolbar{
+  grid-template-columns:34px minmax(0,1fr)!important;
+  column-gap:8px!important;
+ }
+ #monitoringPanel .toolbar.monitoring-toolbar>#pagination{grid-column:2;grid-row:1}
+ #monitoringPanel .toolbar.monitoring-toolbar>#search{
+  grid-column:1/-1;grid-row:2;
+ }
+ #monitoringPanel .toolbar.monitoring-toolbar>.monitoring-actions{
+  grid-column:1/-1;grid-row:3;justify-content:flex-start!important;
+ }
+}
+
 </style></head><body>
 <section class="login-landing" id="loginLanding">
  <div class="access-card" id="accessCard">
