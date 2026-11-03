@@ -677,7 +677,11 @@ table.ncr-table{table-layout:fixed;width:100%;min-width:1250px}
 .ncr-table th:nth-child(5),.ncr-table td:nth-child(5){width:150px;max-width:150px}
 .ncr-table th:nth-child(6),.ncr-table td:nth-child(6){width:260px;max-width:260px}
 .ncr-table th:nth-child(7),.ncr-table td:nth-child(7){width:260px;max-width:260px}
-.ncr-table td:nth-child(5),.ncr-table td.ncr-description,.ncr-table td.ncr-action{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Override the older NCR description rule that allowed wrapping and enforced a wide minimum. */
+table.ncr-table td.ncr-description,table.ncr-table td.ncr-action{
+  width:260px!important;min-width:0!important;max-width:260px!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
 
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
