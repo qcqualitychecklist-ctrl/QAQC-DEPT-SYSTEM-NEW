@@ -723,8 +723,49 @@ body.guest-mode .nav button[data-page]:not([data-page="Transfer Monitoring"]):no
 body.guest-mode #setupBtn,body.guest-mode #addBtn,body.guest-mode #additionalTransferBtn,body.guest-mode #addReworkBtn,body.guest-mode #addPunchlistBtn,body.guest-mode #addNcrBtn,body.guest-mode td.actioncell,body.guest-mode th:last-child{display:none!important}
 body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
 @media(max-width:760px){.login-landing{overflow:auto;align-items:flex-start;padding:12px}.access-card{grid-template-columns:1fr;padding:17px;gap:12px}.access-brand h1{font-size:18px}.access-divider{grid-column:1}.guest-options{grid-template-columns:1fr}.guest-options>div{min-height:0}}
-</style></head><body class="guest-mode">
-<div class="app" id="qaqcApp" style="display:grid">
+
+.login-landing{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#eaf2fc,#f7faff)}
+.access-card{width:min(1050px,100%);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;background:#fff;border:1px solid #d8e3f2;border-radius:18px;padding:26px;box-shadow:0 18px 55px #142b4a20}
+.access-brand,.access-divider{grid-column:1/-1}.access-brand{display:flex;align-items:center;gap:13px}.access-logo{width:48px;height:48px;border-radius:12px;background:#e8f1ff;color:#174c91;display:grid;place-items:center;font-weight:800;font-size:20px}.access-brand h1{font-size:21px;margin:0;color:#142b4a}.access-brand p{font-size:11px;color:#68778c;margin:4px 0 0}.access-divider{height:3px;background:linear-gradient(90deg,#2459a9 0 32%,#dce8f8 32%);margin-top:-8px}
+.access-login,.access-register{padding:4px;min-width:0}.access-section-title{background:#142b4a;color:white;border-radius:8px;padding:12px 14px;font-size:16px;font-weight:700}.access-note{margin:8px 0 14px;color:#68778c;font-size:11px;line-height:1.5}.access-login label,.access-register label{display:block;font-weight:700;font-size:11px;margin:11px 0 5px;color:#34445c}.access-login input,.access-register input,.access-register select{height:38px;padding:8px 10px}.access-login-btn,.access-register-btn,.access-guest-btn,.access-register-toggle{width:100%;height:40px;margin-top:14px;font-weight:700;border-radius:8px}.access-login-btn,.access-register-btn{background:#174f99;color:white;border-color:#174f99}.access-register-toggle{margin-top:9px;background:#fff;color:#174f99;border-color:#9bb9df}.access-or{display:flex;align-items:center;gap:10px;margin:12px 0;color:#718096;font-size:10px;font-weight:700}.access-or span{height:1px;background:#dce4ef;flex:1}.access-guest-btn{margin-top:0;background:#e7f1ff;border:1px solid #80b4ff;color:#123b70}
+.access-register{display:none;border-left:1px solid #e4eaf2;padding-left:22px}.access-card.registration-open .access-register{display:block}.access-card.registration-open{width:min(1050px,100%)}.access-error{display:none;margin-top:10px;padding:9px;border-radius:7px;background:#fff1f0;color:#a3261d;font-size:11px}.access-register-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+@media(max-width:760px){.login-landing{align-items:flex-start;padding:12px}.access-card{grid-template-columns:1fr;padding:16px;gap:12px}.access-brand,.access-divider{grid-column:1}.access-register{border-left:0;border-top:1px solid #e4eaf2;padding:14px 4px 4px}.access-register-grid{grid-template-columns:1fr}.access-brand h1{font-size:18px}}
+</style></head><body>
+<section class="login-landing" id="loginLanding">
+ <div class="access-card" id="accessCard">
+  <div class="access-brand"><div class="access-logo">QC</div><div><h1>QAQC Department System</h1><p>Quality Assurance &amp; Quality Control</p></div></div>
+  <div class="access-divider"></div>
+  <section class="access-login">
+   <div class="access-section-title">Department Login</div>
+   <p class="access-note">Sign in using your registered QAQC account.</p>
+   <form onsubmit="event.preventDefault();showLoginPreviewNotice();">
+    <label for="loginUsername">Username</label><input id="loginUsername" name="username" autocomplete="username" required placeholder="Enter username">
+    <label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Enter password">
+    <button class="access-login-btn" type="submit">LOG IN</button>
+   </form>
+   <button class="access-register-toggle" type="button" onclick="toggleRegistration()">REGISTER NEW ACCOUNT</button>
+   <div class="access-or"><span></span>OR<span></span></div>
+   <button class="access-guest-btn" type="button" onclick="continueAsGuest()">CONTINUE AS GUEST</button>
+   <small class="access-note">Guest access is limited to viewing permitted records.</small>
+   <div class="access-error" id="loginNotice"></div>
+  </section>
+  <section class="access-register" id="registrationPanel">
+   <div class="access-section-title">Create QAQC Account</div>
+   <p class="access-note">Complete the details below to request a registered account.</p>
+   <form onsubmit="event.preventDefault();showRegistrationPreviewNotice();">
+    <div class="access-register-grid">
+     <div><label for="registerFullName">Full Name</label><input id="registerFullName" required placeholder="Enter full name" autocomplete="name"></div>
+     <div><label for="registerPosition">Position</label><select id="registerPosition" required><option value="">Select position</option><option>Associate</option><option>Team Leader</option><option>Supervisor</option><option>Manager</option><option>Other</option></select></div>
+     <div><label for="registerUsername">Username</label><input id="registerUsername" required autocomplete="username" placeholder="Create username"></div>
+     <div><label for="registerPassword">Password</label><input id="registerPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters"></div>
+     <div style="grid-column:1/-1"><label for="registerConfirmPassword">Confirm Password</label><input id="registerConfirmPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="Re-enter password"></div>
+    </div>
+    <button class="access-register-btn" type="submit">CREATE ACCOUNT</button>
+   </form>
+  </section>
+ </div>
+</section>
+<div class="app" id="qaqcApp" style="display:none">
 <aside class="sidebar"><div class="brand"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></div><div class="navlabel">Main Menu</div>
 <nav class="nav"><button class="active" data-page="Transfer Monitoring" onclick="switchPage('Transfer Monitoring')"><span>⇄</span>Transfer Monitoring</button><button data-page="J.O Register" onclick="switchPage('J.O Register')"><span>▦</span>J.O Register</button><button data-page="FGTS Monitoring" onclick="switchPage('FGTS Monitoring')"><span>▤</span>FGTS Monitoring</button><button data-page="Rework Monitoring" onclick="switchPage('Rework Monitoring')"><span>↺</span>Rework Monitoring</button><button data-page="Punchlist Monitoring" onclick="switchPage('Punchlist Monitoring')"><span>☷</span>Punchlist Monitoring</button><button data-page="NCR Monitoring" onclick="switchPage('NCR Monitoring')"><span>▣</span>NCR Monitoring</button></nav>
 <button id="menuToggle" class="menu-toggle" type="button" aria-label="Hide main menu" aria-expanded="true" title="Hide main menu" onclick="toggleMainMenu()"><span></span><span></span><span></span></button></aside>
@@ -1353,6 +1394,23 @@ function submitRework(ev){
 }
 
 
+function toggleRegistration(){
+ const card=document.getElementById('accessCard');
+ if(!card)return;
+ const open=card.classList.toggle('registration-open');
+ const panel=document.getElementById('registrationPanel');
+ if(open&&panel){const field=panel.querySelector('input');if(field)field.focus();}
+}
+function showLoginPreviewNotice(){
+ const notice=document.getElementById('loginNotice');
+ if(notice){notice.textContent='Login authentication is not connected yet. Accounts must be securely registered and verified before access is enabled.';notice.style.display='block';}
+}
+function showRegistrationPreviewNotice(){
+ const pass=document.getElementById('registerPassword'),confirm=document.getElementById('registerConfirmPassword');
+ if(pass.value!==confirm.value){confirm.setCustomValidity('Passwords do not match.');confirm.reportValidity();return;}
+ confirm.setCustomValidity('');
+ alert('Registration form preview only. Account creation will be enabled together with secure backend authentication.');
+}
 function continueAsGuest(){
  document.body.classList.add('guest-mode');
  const landing=document.getElementById('loginLanding');if(landing)landing.style.display='none';
@@ -1360,6 +1418,5 @@ function continueAsGuest(){
  switchPage('Transfer Monitoring');
  checkStatus();
 }
-function showLoginPreviewNotice(){alert('Department Login is currently a visual preview. Authentication and server-side access controls still need to be implemented before deployment.');}
 document.addEventListener('DOMContentLoaded',()=>{const intro=document.querySelector('.intro'),toolbar=document.querySelector('#monitoringPanel .toolbar'),filters=document.querySelector('#recordFilters'),actions=intro&&intro.querySelector('.actions');if(intro&&toolbar&&actions){const search=toolbar.querySelector('#search'),clear=toolbar.querySelector('#resetFilters'),tools=document.createElement('div'),right=document.createElement('div');tools.className='header-tools';right.className='header-right';if(search)tools.appendChild(search);if(clear&&filters){clear.textContent='Clear Filter';clear.title='Clear record filters';clear.classList.remove('header-clear-filter');filters.appendChild(clear)}right.appendChild(tools);right.appendChild(actions);intro.appendChild(right)}});
 </script></body></html>
