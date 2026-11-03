@@ -985,9 +985,21 @@ function saveNcrStatus(reference,status,date){
  callServer('updateNcrStatus',[reference,status,date],r=>{
   if(btn)btn.disabled=false;
   if(!r||r.ok===false){showStatus(false,'Status update failed',r&&r.message||'Unable to update NCR status.');return}
+  // Update the visible NCR data and its cache locally; a full reload here
+  // causes the table to return to its loading state after every status change.
+  const ref=String(reference||'').trim(),nextStatus=String(status||'').trim();
+  const updateRecord=rec=>{
+   if(String(rec.Reference||'').trim()!==ref)return rec;
+   return Object.assign({},rec,{Status:nextStatus,'Date Closed':nextStatus==='Closed'?(date||''):''});
+  };
+  records=records.map(updateRecord);
+  const cacheKey='NCR Monitoring::';
+  if(Object.prototype.hasOwnProperty.call(recordCache,cacheKey))recordCache[cacheKey]=recordCache[cacheKey].map(updateRecord);
+  recordsLoadedFully=true;
   if(el('ncrCloseModal').classList.contains('open'))closeModal('ncrCloseModal');
-  ncrStatusTarget=null;delete recordCache['NCR Monitoring::'];recordsLoadedFully=false;loadRecords(false);
-  showStatus(true,'NCR status updated',status==='Closed'?'NCR marked Closed.':'NCR reopened.');
+  ncrStatusTarget=null;
+  renderNcrTable();
+  showStatus(true,'NCR status updated',nextStatus==='Closed'?'NCR marked Closed.':'NCR reopened.');
  },err=>{if(btn)btn.disabled=false;showStatus(false,'Status update failed',err&&err.message||String(err))});
 }
 function openNcrDetails(rec){const host=el('ncrDetailsBody');host.innerHTML='';el('ncrDetailsTitle').textContent='NCR Full View — '+(rec.Reference||'');[['Reference',rec.Reference],['Date',rec.Date],['Prepared by',rec['Prepared by']],['Section',rec.Section],['Person In Charge',rec['Person In Charge']],['Description of Issue',rec['Description of Issue']],['Corrective Action',rec['Corrective Action']],['Status',rec.Status],['Date Closed',rec['Date Closed']]].forEach(([label,value])=>{const box=document.createElement('div');box.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=label;const v=document.createElement('span');v.className='transfer-detail-value';v.textContent=value||'—';box.append(l,v);host.append(box)});openModal('ncrDetailsModal')}
