@@ -671,15 +671,18 @@ table.ncr-table td.ncr-description{min-width:260px;}
 }
 
 
-/* NCR table: truncate long text only; keep the Action controls fully visible. */
+/* NCR table: keep the three long-text columns on one line with ellipsis.
+   The cell() renderer sets title to the full cell text for the hover tooltip. */
 table.ncr-table{table-layout:fixed;width:100%;min-width:1450px}
 .ncr-table th{white-space:nowrap}
-.ncr-table th:nth-child(5),.ncr-table td:nth-child(5){width:150px;max-width:150px}
-.ncr-table th:nth-child(6),.ncr-table td:nth-child(6){width:260px;max-width:260px}
-.ncr-table th:nth-child(7),.ncr-table td:nth-child(7){width:260px;max-width:260px}
-table.ncr-table td.ncr-description,table.ncr-table td.ncr-action{
-  width:260px!important;min-width:0!important;max-width:260px!important;
+.ncr-table th:nth-child(5),.ncr-table td:nth-child(5){width:180px!important;min-width:180px!important;max-width:180px!important}
+.ncr-table th:nth-child(6),.ncr-table td:nth-child(6){width:260px!important;min-width:260px!important;max-width:260px!important}
+.ncr-table th:nth-child(7),.ncr-table td:nth-child(7){width:260px!important;min-width:260px!important;max-width:260px!important}
+table.ncr-table td:nth-child(5),
+table.ncr-table td.ncr-description,
+table.ncr-table td.ncr-action{
   white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  line-height:1.35;
 }
 /* Action column: reserve enough room and never clip Full View, Edit, or Delete. */
 table.ncr-table th:nth-child(10),table.ncr-table td:nth-child(10){
