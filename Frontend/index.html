@@ -981,7 +981,7 @@ if(tablePage>totalPages)tablePage=totalPages;
 const pageStart=(tablePage-1)*PAGE_SIZE;
 const pageRows=shown.slice(pageStart,pageStart+PAGE_SIZE);
 el('thead').innerHTML='';el('tbody').innerHTML='';const hr=document.createElement('tr');heads.forEach(h=>{const th=document.createElement('th');th.textContent=isJO&&h==='CLASSIFICATION'?'Classification':h;hr.appendChild(th)});el('thead').appendChild(hr);
-el('count').textContent=recordsLoadedFully?(filteredCount?'Showing '+(pageStart+1)+'–'+Math.min(pageStart+PAGE_SIZE,filteredCount)+' of '+filteredCount+' records':'0 records'):'Showing '+Math.min(records.length,PAGE_SIZE)+' records · loading remaining records…';
+el('count').textContent=recordsLoadedFully?(filteredCount?'Showing '+(pageStart+1)+'–'+Math.min(pageStart+PAGE_SIZE,filteredCount)+' of '+filteredCount+' records':'0 records'):(currentPage==='Transfer Monitoring'?'Loading…':'Showing '+Math.min(records.length,PAGE_SIZE)+' records · loading remaining records…');
 renderPagination(filteredCount);
 if(!pageRows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;if(recordsLoadedFully){td.className='empty';td.textContent='No records found.'}else{td.innerHTML='<div class="loading-state"><span class="loading-spinner" aria-hidden="true"></span><span>Loading records, please wait…</span></div>'}tr.appendChild(td);el('tbody').appendChild(tr);return}
 pageRows.forEach(rec=>{const tr=document.createElement('tr');heads.forEach(h=>{const td=document.createElement('td');if(h==='Action'){td.className='actioncell';if(!isFGTS&&!isJO){td.append(button('View Details','small',()=>viewTransferDetails(rec)),document.createTextNode(' '),button('FGTS/QC Allocation','small primary',()=>openAllocations(rec)),document.createTextNode(' '),button('Edit','small',()=>openEdit(rec)),document.createTextNode(' '),button('Delete','small danger',()=>removeTransfer(rec)))}else if(isJO)td.append(button('Edit','small',()=>openEditJO(rec)))}
@@ -991,12 +991,13 @@ else{let value=rec[h]??'';if((isFGTS&&(h==='Classification'||h==='Category'))||(
 function renderPagination(filteredCount){
  const host=el('pagination');if(!host)return;host.innerHTML='';
  const pages=Math.max(1,Math.ceil(filteredCount/PAGE_SIZE));
- const prev=button('‹  Previous','',()=>{if(tablePage>1){tablePage--;renderTable()}});
+ const transferToolbar=currentPage==='Transfer Monitoring';
+ const prev=button(transferToolbar?'‹ Prev':'‹  Previous','',()=>{if(tablePage>1){tablePage--;renderTable()}});
  prev.setAttribute('aria-label','Previous page');prev.disabled=tablePage<=1;host.appendChild(prev);
  const label=document.createElement('span');label.className='pagination-label';
  label.textContent=recordsLoadedFully?'Page '+tablePage+' of '+pages:(records.length?'Loading pages…':'Loading records…');
  host.appendChild(label);
- const next=button('Next  ›','',()=>{if(recordsLoadedFully&&tablePage<pages){tablePage++;renderTable()}});
+ const next=button(transferToolbar?'Next ›':'Next  ›','',()=>{if(recordsLoadedFully&&tablePage<pages){tablePage++;renderTable()}});
  next.setAttribute('aria-label','Next page');next.disabled=!recordsLoadedFully||tablePage>=pages;host.appendChild(next);
 }
 
