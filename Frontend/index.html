@@ -674,6 +674,11 @@ table.ncr-table td.ncr-description{min-width:260px;}
 /* NCR table: keep the three long-text columns on one line with ellipsis.
    The cell() renderer sets title to the full cell text for the hover tooltip. */
 table.ncr-table{table-layout:fixed;width:100%;min-width:1450px}
+ /* Keep the first four NCR columns stable whether the sidebar is open or collapsed. */
+ .ncr-table th:nth-child(1),.ncr-table td:nth-child(1){width:125px!important;min-width:125px!important;max-width:125px!important}
+ .ncr-table th:nth-child(2),.ncr-table td:nth-child(2){width:110px!important;min-width:110px!important;max-width:110px!important}
+ .ncr-table th:nth-child(3),.ncr-table td:nth-child(3){width:170px!important;min-width:170px!important;max-width:170px!important}
+ .ncr-table th:nth-child(4),.ncr-table td:nth-child(4){width:130px!important;min-width:130px!important;max-width:130px!important}
 .ncr-table th{white-space:nowrap}
 .ncr-table th:nth-child(5),.ncr-table td:nth-child(5){width:180px!important;min-width:180px!important;max-width:180px!important}
 .ncr-table th:nth-child(6),.ncr-table td:nth-child(6){width:260px!important;min-width:260px!important;max-width:260px!important}
