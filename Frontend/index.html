@@ -994,9 +994,11 @@ function renderPagination(filteredCount){
  const transferToolbar=currentPage==='Transfer Monitoring';
  const prev=button(transferToolbar?'‹ Prev':'‹  Previous','',()=>{if(tablePage>1){tablePage--;renderTable()}});
  prev.setAttribute('aria-label','Previous page');prev.disabled=tablePage<=1;host.appendChild(prev);
- const label=document.createElement('span');label.className='pagination-label';
- label.textContent=recordsLoadedFully?'Page '+tablePage+' of '+pages:(records.length?'Loading pages…':'Loading records…');
- host.appendChild(label);
+ if(!transferToolbar){
+  const label=document.createElement('span');label.className='pagination-label';
+  label.textContent=recordsLoadedFully?'Page '+tablePage+' of '+pages:(records.length?'Loading pages…':'Loading records…');
+  host.appendChild(label);
+ }
  const next=button(transferToolbar?'Next ›':'Next  ›','',()=>{if(recordsLoadedFully&&tablePage<pages){tablePage++;renderTable()}});
  next.setAttribute('aria-label','Next page');next.disabled=!recordsLoadedFully||tablePage>=pages;host.appendChild(next);
  
