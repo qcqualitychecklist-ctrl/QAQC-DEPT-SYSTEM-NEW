@@ -229,6 +229,24 @@ function saveNcr_(input){
  invalidateModuleCache_('NCR Monitoring');
  return {ok:true,recordId:ref,message:row>0?'NCR record updated.':'NCR record saved.'};
 }
+function updateNcrStatus(reference,status,dateClosed){
+ const ref=String(reference||'').trim(),next=String(status||'').trim(),closedDate=String(dateClosed||'').trim();
+ if(!ref)throw new Error('Missing NCR Reference.');
+ if(!['Open','Closed'].includes(next))throw new Error('Status must be Open or Closed.');
+ if(next==='Closed'&&!closedDate)throw new Error('Date Closed is required.');
+ const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(NCR_SHEET);
+ if(!sh||sh.getLastRow()<2)throw new Error('NCR record was not found.');
+ const data=sh.getDataRange().getValues(),headers=data[0].map(String),refCol=headers.indexOf('Reference');
+ if(refCol<0)throw new Error('Reference column is missing.');
+ let row=-1;for(let i=1;i<data.length;i++)if(String(data[i][refCol]).trim()===ref){row=i+1;break}
+ if(row<0)throw new Error('NCR record was not found. Refresh and try again.');
+ const statusCol=headers.indexOf('Status'),dateCol=headers.indexOf('Date Closed');
+ if(statusCol<0||dateCol<0)throw new Error('NCR Status or Date Closed column is missing.');
+ sh.getRange(row,statusCol+1).setValue(next);
+ sh.getRange(row,dateCol+1).setValue(next==='Closed'?closedDate:'');
+ invalidateModuleCache_('NCR Monitoring');
+ return {ok:true,recordId:ref,status:next,dateClosed:next==='Closed'?closedDate:'',message:next==='Closed'?'NCR closed.':'NCR reopened.'};
+}
 function deleteNcr(reference){
  const ref=String(reference||'').trim();if(!ref)throw new Error('Missing NCR Reference.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(NCR_SHEET);

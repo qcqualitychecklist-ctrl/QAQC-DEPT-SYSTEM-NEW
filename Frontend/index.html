@@ -702,6 +702,7 @@ table.ncr-table td.ncr-action-cell button{display:inline-block!important;visibil
 #ncrDetailsModal .transfer-details-actions{display:flex;justify-content:flex-end;position:sticky;bottom:0;padding:12px 24px!important;margin:0!important;background:#ffffffef;border-top:1px solid #dfe8f2}
 @media(max-width:760px){#ncrDetailsModal .dialoghead{padding:14px 16px!important}#ncrDetailsModal #ncrDetailsBody{padding:12px!important;grid-template-columns:repeat(1,minmax(0,1fr))}#ncrDetailsModal .transfer-details-actions{padding:10px 14px!important}}
 
+#ncrCloseModal .ncr-close-dialog{width:min(420px,94vw);padding:20px;border-radius:14px}#ncrCloseModal .dialoghead{margin-bottom:16px}#ncrCloseModal .actions{justify-content:flex-end;margin-top:16px}#ncrCloseModal .ncr-close-dialog input{margin-top:5px}.ncr-status-toggle{min-width:76px;font-weight:700;border-radius:16px;background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}.ncr-status-toggle.primary{background:#dcfce7;color:#166534;border-color:#86efac}
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
@@ -738,13 +739,13 @@ table.ncr-table td.ncr-action-cell button{display:inline-block!important;visibil
 <div class="field"><label for="ncrDate">Date *</label><input id="ncrDate" type="date" required></div>
 <div class="field"><label for="ncrPreparedBy">Prepared by *</label><input id="ncrPreparedBy" type="text" required></div>
 <div class="field"><label for="ncrSection">Section *</label><input id="ncrSection" type="text" required></div>
-<div class="field"><label for="ncrStatusInput">Status</label><select id="ncrStatusInput"><option value="Open">Open</option><option value="Closed">Closed</option></select></div>
-<div class="field"><label for="ncrDateClosed">Date Closed</label><input id="ncrDateClosed" type="date"></div>
+<input id="ncrStatusInput" type="hidden" value="Open"><input id="ncrDateClosed" type="hidden">
 <div class="field full"><label for="ncrIssue">Description of Issue *</label><textarea id="ncrIssue" rows="3" required></textarea></div>
 <div class="field full"><label for="ncrAction">Corrective Action</label><textarea id="ncrAction" rows="3"></textarea></div>
 </div></section>
 <section class="panel ncr-form-section"><div class="allocation-form-head"><div><div class="ncr-section-heading">PERSON IN CHARGE</div><div class="muted">Add one or more persons assigned to this NCR.</div></div><button type="button" onclick="addNcrPicRow()">＋ Add Another</button></div><div id="ncrPicRows" class="ncr-pic-rows"></div></section>
 <div class="actions"><button class="primary" type="submit" id="ncrSave">Save NCR</button><button type="button" onclick="closeModal('ncrModal')">Cancel</button></div></form></div></div>
+<div class="modal" id="ncrCloseModal" role="dialog" aria-modal="true" aria-labelledby="ncrCloseTitle"><div class="dialog ncr-close-dialog"><div class="dialoghead"><div><h3 id="ncrCloseTitle">Close NCR</h3><div class="muted" id="ncrCloseReference">Enter the date this NCR was closed.</div></div></div><form onsubmit="submitNcrClose(event)"><div class="field"><label for="ncrCloseDate">Date Closed *</label><input id="ncrCloseDate" type="date" required></div><div class="actions"><button type="submit" class="primary" id="ncrCloseSave">Save Date Closed</button><button type="button" onclick="closeModal('ncrCloseModal')">Cancel</button></div></form></div></div>
 <div class="modal" id="reworkModal"><div class="dialog"><div class="dialoghead"><div><h3 id="reworkTitle">Add Rework</h3><div class="muted">Enter the main J.O. / S.O. information, add multiple items, then add each item’s rework descriptions and PICs.</div></div><button type="button" onclick="closeModal('reworkModal')">✕</button></div>
 <form id="reworkForm" onsubmit="submitRework(event)"><input type="hidden" id="reworkRecordId"><div class="fields" id="reworkMainFields"></div>
 <section class="panel" style="margin-top:14px"><div class="allocation-form-head"><h3>Items Under This J.O. / S.O.</h3><button type="button" onclick="addReworkItem({})">＋ Add Item</button></div><div class="muted">Add multiple items for this J.O. Each item can have multiple rework descriptions, and each description can have multiple people in charge.</div><div id="reworkDetailsList"></div></section>
@@ -956,8 +957,39 @@ let joModalDefs=null;
 function openEditJO(rec){freeFormTransfer=false;const defs=[['CLASSIFICATION','text',false],['J.O','text',false],['S.O','text',false],['Received','date',false],['Delivery Date','date',false],['Client','text',false],['Item No.','text',false],['Panel Name','text',false],['Qty','number',false],['Unit','text',false],['Transferred','number',false],['Balance','number',false],['FGTS No.','text',false],['Date Served','date',false],['Remarks','textarea',false],['Status','select',false],['Timeliness','select',false]];activeTransferFields=defs;joModalDefs=defs;el('transferRecordId').value=rec['Record ID'];el('transferTitle').textContent='Edit J.O Register — '+(rec['J.O']||'');el('transferSave').textContent='Save Changes';el('additionalItemsSection').style.display='none';makeFields('transferFields',defs,rec);const status=el('transferFields_15');status.innerHTML='';['Finished','Partial','Not Served','Cancelled'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;status.appendChild(o)});status.value=rec.Status||'Not Served';const time=el('transferFields_16');time.innerHTML='';['On Time','Delayed','Pending'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;time.appendChild(o)});time.value=rec.Timeliness||'Pending';openModal('transferModal')}
 const originalSubmitTransfer=submitTransfer;
 submitTransfer=function(ev){ev.preventDefault();if(currentPage==='J.O Register'){const data=readFields('transferFields',joModalDefs);data['Record ID']=el('transferRecordId').value;const btn=el('transferSave');btn.disabled=true;callServer('saveRecord',['J.O Register',data],r=>{btn.disabled=false;const idx=records.findIndex(x=>String(x['Record ID'])===String(data['Record ID']));if(idx>=0){const updated=Object.assign({},records[idx],data);const served=updated['Date Served']?new Date(String(updated['Date Served']).slice(0,10)+'T00:00:00'):null;const due=updated['Delivery Date']?new Date(String(updated['Delivery Date']).slice(0,10)+'T00:00:00'):null;updated.Timeliness=served&&due&&!isNaN(served.getTime())&&!isNaN(due.getTime())?(served.getTime()<=due.getTime()?'On Time':'Delayed'):'Pending';records[idx]=updated;recordCache['J.O Register::']=records;renderTable()}showStatus(true,'Changes saved',r.message||'J.O Register updated.');closeModal('transferModal')},()=>{btn.disabled=false});return}originalSubmitTransfer(ev)}
-function openAddNcr(){el('ncrForm').reset();el('ncrReference').readOnly=false;el('ncrReference').value='';el('ncrDate').value=new Date().toISOString().slice(0,10);el('ncrStatusInput').value='Open';el('ncrPicRows').innerHTML='';addNcrPicRow();el('ncrModal').querySelector('.dialoghead h3').textContent='Add NCR';el('ncrSave').textContent='Save NCR';openModal('ncrModal')}
+function openAddNcr(){el('ncrForm').reset();el('ncrReference').readOnly=false;el('ncrReference').value='';el('ncrDate').value=new Date().toISOString().slice(0,10);el('ncrStatusInput').value='Open';el('ncrDateClosed').value='';el('ncrPicRows').innerHTML='';addNcrPicRow();el('ncrModal').querySelector('.dialoghead h3').textContent='Add NCR';el('ncrSave').textContent='Save NCR';openModal('ncrModal')}
 function openEditNcr(rec){el('ncrForm').reset();el('ncrReference').value=rec.Reference||'';el('ncrReference').readOnly=true;el('ncrDate').value=rec.Date||'';el('ncrPreparedBy').value=rec['Prepared by']||'';el('ncrSection').value=rec.Section||'';el('ncrIssue').value=rec['Description of Issue']||'';el('ncrAction').value=rec['Corrective Action']||'';el('ncrStatusInput').value=rec.Status||'Open';el('ncrDateClosed').value=rec['Date Closed']||'';el('ncrPicRows').innerHTML='';String(rec['Person In Charge']||'').split(',').map(x=>x.trim()).filter(Boolean).forEach(v=>addNcrPicRow(v));if(!el('ncrPicRows').children.length)addNcrPicRow();el('ncrModal').querySelector('.dialoghead h3').textContent='Edit NCR';el('ncrSave').textContent='Save Changes';openModal('ncrModal')}
+let ncrStatusTarget=null;
+function toggleNcrStatus(rec){
+ if(!rec||!rec.Reference)return;
+ const current=String(rec.Status||'Open').trim();
+ if(current.toLowerCase()==='closed'){
+  if(!confirm('Reopen NCR '+rec.Reference+'? The Date Closed will be cleared.'))return;
+  saveNcrStatus(rec.Reference,'Open','');
+  return;
+ }
+ ncrStatusTarget=rec;
+ el('ncrCloseDate').value=new Date().toISOString().slice(0,10);
+ el('ncrCloseReference').textContent='NCR '+rec.Reference;
+ openModal('ncrCloseModal');
+}
+function submitNcrClose(ev){
+ ev.preventDefault();
+ const date=el('ncrCloseDate').value;
+ if(!date){showStatus(false,'Date Closed required','Choose the date this NCR was closed.');return}
+ if(!ncrStatusTarget)return;
+ saveNcrStatus(ncrStatusTarget.Reference,'Closed',date);
+}
+function saveNcrStatus(reference,status,date){
+ const btn=el('ncrCloseSave');if(btn)btn.disabled=true;
+ callServer('updateNcrStatus',[reference,status,date],r=>{
+  if(btn)btn.disabled=false;
+  if(!r||r.ok===false){showStatus(false,'Status update failed',r&&r.message||'Unable to update NCR status.');return}
+  if(el('ncrCloseModal').classList.contains('open'))closeModal('ncrCloseModal');
+  ncrStatusTarget=null;delete recordCache['NCR Monitoring::'];recordsLoadedFully=false;loadRecords(false);
+  showStatus(true,'NCR status updated',status==='Closed'?'NCR marked Closed.':'NCR reopened.');
+ },err=>{if(btn)btn.disabled=false;showStatus(false,'Status update failed',err&&err.message||String(err))});
+}
 function openNcrDetails(rec){const host=el('ncrDetailsBody');host.innerHTML='';el('ncrDetailsTitle').textContent='NCR Full View — '+(rec.Reference||'');[['Reference',rec.Reference],['Date',rec.Date],['Prepared by',rec['Prepared by']],['Section',rec.Section],['Person In Charge',rec['Person In Charge']],['Description of Issue',rec['Description of Issue']],['Corrective Action',rec['Corrective Action']],['Status',rec.Status],['Date Closed',rec['Date Closed']]].forEach(([label,value])=>{const box=document.createElement('div');box.className='transfer-detail-field';const l=document.createElement('span');l.className='transfer-detail-label';l.textContent=label;const v=document.createElement('span');v.className='transfer-detail-value';v.textContent=value||'—';box.append(l,v);host.append(box)});openModal('ncrDetailsModal')}
 function deleteNcrRecord(rec){const ref=String(rec&&rec.Reference||'').trim();if(!ref){showStatus(false,'Delete failed','Missing NCR Reference.');return}if(!confirm('Delete NCR '+ref+'? This cannot be undone.'))return;callServer('deleteNcr',[ref],r=>{if(!r||r.ok===false){showStatus(false,'Delete failed',r&&r.message||'Unable to delete NCR.');return}delete recordCache['NCR Monitoring::'];showStatus(true,'NCR deleted',r.message||ref+' deleted.');loadRecords(false)},err=>showStatus(false,'Delete failed',err&&err.message||String(err)))}
 function addNcrPicRow(value){
@@ -988,7 +1020,7 @@ function renderNcrTable(){
  el('count').textContent=shown.length?(start+1)+'–'+Math.min(start+PAGE_SIZE,shown.length)+' of '+shown.length+' NCR records':'0 NCR records';renderPagination(shown.length);
  const cell=(v,c)=>{const td=document.createElement('td');if(c)td.className=c;td.textContent=v==null||String(v).trim()===''?'—':String(v);td.title=td.textContent;return td};
  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;if(recordsLoadedFully){td.className='empty';td.textContent='No NCR records found.'}else{td.innerHTML='<div class="loading-state ncr-loading-state"><span class="loading-spinner" aria-hidden="true"></span><span>Loading NCR records, please wait…</span></div>'}tr.append(td);el('tbody').append(tr);return}
- rows.forEach(r=>{const tr=document.createElement('tr');tr.append(cell(r.Reference),cell(r.Date),cell(r['Prepared by']),cell(r.Section),cell(r['Person In Charge']),cell(r['Description of Issue'],'ncr-description'),cell(r['Corrective Action'],'ncr-action'),cell(statusOf(r)),cell(r['Date Closed']));const act=document.createElement('td');act.className='actioncell ncr-action-cell';act.append(button('Full View','small',()=>openNcrDetails(r)),document.createTextNode(' '),button('Edit','small primary',()=>openEditNcr(r)),document.createTextNode(' '),button('Delete','small danger',()=>deleteNcrRecord(r)));tr.append(act);el('tbody').append(tr)});
+ rows.forEach(r=>{const tr=document.createElement('tr');tr.append(cell(r.Reference),cell(r.Date),cell(r['Prepared by']),cell(r.Section),cell(r['Person In Charge']),cell(r['Description of Issue'],'ncr-description'),cell(r['Corrective Action'],'ncr-action'));const statusCell=document.createElement('td');const statusButton=button(statusOf(r),'small '+(statusOf(r)==='Closed'?'primary':''),()=>toggleNcrStatus(r));statusButton.classList.add('ncr-status-toggle');statusButton.title=statusOf(r)==='Open'?'Click to enter Date Closed':'Click to reopen this NCR';statusCell.append(statusButton);tr.append(statusCell,cell(r['Date Closed']));const act=document.createElement('td');act.className='actioncell ncr-action-cell';act.append(button('Full View','small',()=>openNcrDetails(r)),document.createTextNode(' '),button('Edit','small primary',()=>openEditNcr(r)),document.createTextNode(' '),button('Delete','small danger',()=>deleteNcrRecord(r)));tr.append(act);el('tbody').append(tr)});
 }
 function renderPunchlistTable(){
  el('recordFilters')?.classList.add('punchlist-filterbar');el('dashboardCards')?.classList.add('punchlist-dashboard');el('dashboardCards').style.display='grid';
