@@ -738,7 +738,7 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
   <section class="access-login">
    <div class="access-section-title">Department Login</div>
    <p class="access-note">Sign in using your registered QAQC account.</p>
-   <form onsubmit="event.preventDefault();showLoginPreviewNotice();">
+   <form onsubmit="event.preventDefault();submitLogin();">
     <label for="loginUsername">Username</label><input id="loginUsername" name="username" autocomplete="username" required placeholder="Enter username">
     <label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Enter password">
     <button class="access-login-btn" type="submit">LOG IN</button>
@@ -752,7 +752,7 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
   <section class="access-register" id="registrationPanel">
    <div class="access-section-title">Create QAQC Account</div>
    <p class="access-note">Complete the details below to request a registered account.</p>
-   <form onsubmit="event.preventDefault();showRegistrationPreviewNotice();">
+   <form onsubmit="event.preventDefault();submitRegistration();">
     <div class="access-register-grid">
      <div><label for="registerFullName">Full Name</label><input id="registerFullName" required placeholder="Enter full name" autocomplete="name"></div>
      <div><label for="registerDepartment">Department</label><input id="registerDepartment" required placeholder="Enter department" autocomplete="organization"></div>
@@ -1402,15 +1402,44 @@ function toggleRegistration(){
  const panel=document.getElementById('registrationPanel');
  if(open&&panel){const field=panel.querySelector('input');if(field)field.focus();}
 }
-function showLoginPreviewNotice(){
+function showLoginMessage(message){
  const notice=document.getElementById('loginNotice');
- if(notice){notice.textContent='Login authentication is not connected yet. Accounts must be securely registered and verified before access is enabled.';notice.style.display='block';}
+ if(notice){notice.textContent=message;notice.style.display='block';}
 }
-function showRegistrationPreviewNotice(){
+function submitLogin(){
+ const username=document.getElementById('loginUsername').value.trim();
+ const password=document.getElementById('loginPassword').value;
+ const btn=document.querySelector('.access-login-btn');btn.disabled=true;
+ callServer('loginAccount',[username,password],r=>{
+  btn.disabled=false;
+  if(!r||!r.ok){showLoginMessage(r&&r.message?r.message:'Invalid username or password.');return;}
+  window.qaqcCurrentUser={fullName:r.fullName,role:r.role};
+  document.body.classList.toggle('guest-mode',false);
+  document.getElementById('loginLanding').style.display='none';
+  document.getElementById('qaqcApp').style.display='grid';
+  switchPage('Transfer Monitoring');checkStatus();
+ },()=>{btn.disabled=false;});
+}
+function submitRegistration(){
  const pass=document.getElementById('registerPassword'),confirm=document.getElementById('registerConfirmPassword');
  if(pass.value!==confirm.value){confirm.setCustomValidity('Passwords do not match.');confirm.reportValidity();return;}
  confirm.setCustomValidity('');
- alert('Registration form preview only. Account creation will be enabled together with secure backend authentication.');
+ const btn=document.querySelector('.access-register-btn');btn.disabled=true;
+ callServer('createAccount',[
+  document.getElementById('registerFullName').value,
+  document.getElementById('registerDepartment').value,
+  document.getElementById('registerPosition').value,
+  document.getElementById('registerUsername').value,
+  pass.value
+ ],r=>{
+  btn.disabled=false;
+  if(!r||!r.ok){showLoginMessage(r&&r.message?r.message:'Unable to create account.');return;}
+  showLoginMessage(r.message||'Account created. Please log in.');
+  document.getElementById('loginUsername').value=document.getElementById('registerUsername').value.trim();
+  document.getElementById('loginPassword').value='';
+  document.getElementById('registrationPanel').classList.remove('active');
+  document.getElementById('accessCard').classList.remove('registration-open');
+ },()=>{btn.disabled=false;});
 }
 function continueAsGuest(){
  document.body.classList.add('guest-mode');
