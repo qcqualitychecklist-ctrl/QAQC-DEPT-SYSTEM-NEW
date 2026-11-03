@@ -739,12 +739,12 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
 .access-register{display:none;border-left:1px solid #e4eaf2;padding-left:22px}.access-card.registration-open .access-register{display:block}.access-card.registration-open{width:min(1050px,100%)}.access-error{display:none;margin-top:10px;padding:9px;border-radius:7px;background:#fff1f0;color:#a3261d;font-size:11px}.access-register-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 @media(max-width:760px){.login-landing{align-items:flex-start;padding:12px}.access-card{grid-template-columns:1fr;padding:16px;gap:12px}.access-brand,.access-divider{grid-column:1}.access-register{border-left:0;border-top:1px solid #e4eaf2;padding:14px 4px 4px}.access-register-grid{grid-template-columns:1fr}.access-brand h1{font-size:18px}}
 
-/* Normalize the shared monitoring toolbar after the count label is hidden. */
+/* Normalize the shared monitoring toolbar; keep search immediately beside its action buttons. */
 #monitoringPanel .toolbar.monitoring-toolbar{
  display:grid!important;
- grid-template-columns:34px max-content minmax(180px,240px) minmax(0,1fr)!important;
+ grid-template-columns:34px max-content minmax(150px,210px) max-content!important;
  align-items:center!important;
- column-gap:9px!important;
+ column-gap:8px!important;
  row-gap:8px!important;
  width:100%!important;
  min-width:0!important;
@@ -760,19 +760,17 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
 }
 #monitoringPanel .toolbar.monitoring-toolbar>.monitoring-actions{
  grid-column:4;grid-row:1;
- display:flex!important;align-items:center!important;justify-content:flex-end!important;
+ display:flex!important;align-items:center!important;justify-content:flex-start!important;
  gap:7px!important;min-width:0!important;max-width:100%!important;
  flex-wrap:wrap!important;margin:0!important;
 }
 #monitoringPanel .toolbar.monitoring-toolbar>.monitoring-actions button{
  flex:0 0 auto!important;white-space:nowrap!important;margin:0!important;
 }
-@media(max-width:1050px){
+@media(max-width:1050px) and (min-width:621px){
  #monitoringPanel .toolbar.monitoring-toolbar{
-  grid-template-columns:34px max-content minmax(150px,1fr)!important;
- }
- #monitoringPanel .toolbar.monitoring-toolbar>.monitoring-actions{
-  grid-column:1/-1;grid-row:2;justify-content:flex-start!important;
+  grid-template-columns:34px max-content minmax(130px,180px) max-content!important;
+  column-gap:7px!important;
  }
 }
 @media(max-width:620px){
@@ -781,14 +779,11 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
   column-gap:8px!important;
  }
  #monitoringPanel .toolbar.monitoring-toolbar>#pagination{grid-column:2;grid-row:1}
- #monitoringPanel .toolbar.monitoring-toolbar>#search{
-  grid-column:1/-1;grid-row:2;
- }
+ #monitoringPanel .toolbar.monitoring-toolbar>#search{grid-column:1;grid-row:2}
  #monitoringPanel .toolbar.monitoring-toolbar>.monitoring-actions{
-  grid-column:1/-1;grid-row:3;justify-content:flex-start!important;
+  grid-column:2;grid-row:2;justify-content:flex-start!important;
  }
 }
-
 </style></head><body>
 <section class="login-landing" id="loginLanding">
  <div class="access-card" id="accessCard">
