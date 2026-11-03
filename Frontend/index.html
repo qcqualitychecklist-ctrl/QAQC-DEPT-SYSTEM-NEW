@@ -670,6 +670,15 @@ table.ncr-table td.ncr-description{min-width:260px;}
   #dashboardCards.ncr-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 
+
+/* NCR table: keep long text columns to one line with hover title. */
+table.ncr-table{table-layout:fixed;width:100%;min-width:1250px}
+.ncr-table th,.ncr-table td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ncr-table th:nth-child(5),.ncr-table td:nth-child(5){width:150px;max-width:150px}
+.ncr-table th:nth-child(6),.ncr-table td:nth-child(6){width:260px;max-width:260px}
+.ncr-table th:nth-child(7),.ncr-table td:nth-child(7){width:260px;max-width:260px}
+.ncr-table td:nth-child(5),.ncr-table td.ncr-description,.ncr-table td.ncr-action{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
 </style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><div class="loading-orbit" aria-hidden="true"></div><div class="loading-title">Loading...</div><div class="loading-subtitle">Please wait while your QAQC data is prepared.</div><div class="loading-track" aria-hidden="true"><span></span></div></div></div>
 <div class="app">
