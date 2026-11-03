@@ -41,6 +41,44 @@ const TRANSFER_FIELDS = ['Date Received','Time Received','Section','Transfer No.
 const JO_FIELDS = ['J.O No','S.O No','Customer','Item No','Description','Quantity','Date Received','Target Date','Status','Remarks'];
 const REMINDER_AFTER_DAYS = 3;
 
+const ACCOUNT_SHEET = 'System Accounts';
+const ACCOUNT_HEADERS = ['Full Name','Department','Position','Username','Password Hash','Role','Created At'];
+function accountHash_(password) {
+  const bytes=Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,String(password),Utilities.Charset.UTF_8);
+  return bytes.map(b=>('0'+((b+256)%256).toString(16)).slice(-2)).join('');
+}
+function createAccount(fullName,department,position,username,password) {
+  fullName=String(fullName||'').trim(); department=String(department||'').trim();
+  position=String(position||'').trim(); username=String(username||'').trim();
+  password=String(password||'');
+  if(!fullName||!department||!position||!username||!password)throw new Error('Please complete all required fields.');
+  if(password.length<8)throw new Error('Password must be at least 8 characters.');
+  if(!/^[A-Za-z0-9._-]{3,30}$/.test(username))throw new Error('Username must be 3-30 characters and use letters, numbers, dot, underscore, or hyphen.');
+  const lock=LockService.getScriptLock();lock.waitLock(10000);
+  try {
+    const ss=SpreadsheetApp.openById(DATABASE_ID);
+    let sh=ss.getSheetByName(ACCOUNT_SHEET);
+    if(!sh){sh=ss.insertSheet(ACCOUNT_SHEET);sh.getRange(1,1,1,ACCOUNT_HEADERS.length).setValues([ACCOUNT_HEADERS]);sh.setFrozenRows(1);}
+    const values=sh.getDataRange().getDisplayValues();
+    const normalized=username.toLowerCase();
+    if(values.slice(1).some(r=>String(r[3]||'').toLowerCase()===normalized))throw new Error('Username already exists.');
+    const isAdmin=normalized==='assocadmin' && fullName.toLowerCase()==='aprillyn de guia';
+    if(normalized==='assocadmin'&&!isAdmin)throw new Error('This username is reserved for the system administrator.');
+    sh.appendRow([fullName,department,position,username,accountHash_(password),isAdmin?'Admin':'User',new Date()]);
+    return {ok:true,message:'Account created successfully. You can now log in.'};
+  } finally {lock.releaseLock();}
+}
+function loginAccount(username,password) {
+  username=String(username||'').trim();password=String(password||'');
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ACCOUNT_SHEET);
+  if(!sh||sh.getLastRow()<2)return {ok:false,message:'Invalid username or password.'};
+  const rows=sh.getDataRange().getValues(),hash=accountHash_(password);
+  for(let i=1;i<rows.length;i++)if(String(rows[i][3]||'').toLowerCase()===username.toLowerCase()&&String(rows[i][4]||'')===hash)
+    return {ok:true,fullName:String(rows[i][0]||''),role:String(rows[i][5]||'User')};
+  return {ok:false,message:'Invalid username or password.'};
+}
+
+
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('QAQC Department System')
