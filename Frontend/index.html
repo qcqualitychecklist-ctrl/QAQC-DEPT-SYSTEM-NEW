@@ -739,10 +739,10 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
 .access-register{display:none;border-left:1px solid #e4eaf2;padding-left:22px}.access-card.registration-open .access-register{display:block}.access-card.registration-open{width:min(1050px,100%)}.access-error{display:none;margin-top:10px;padding:9px;border-radius:7px;background:#fff1f0;color:#a3261d;font-size:11px}.access-register-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 @media(max-width:760px){.login-landing{align-items:flex-start;padding:12px}.access-card{grid-template-columns:1fr;padding:16px;gap:12px}.access-brand,.access-divider{grid-column:1}.access-register{border-left:0;border-top:1px solid #e4eaf2;padding:14px 4px 4px}.access-register-grid{grid-template-columns:1fr}.access-brand h1{font-size:18px}}
 
-/* Keep search on the left and action buttons at the far right of the toolbar. */
+/* Keep refresh/pagination at the far left; group search and actions at the far right. */
 #monitoringPanel .toolbar.monitoring-toolbar{
  display:grid!important;
- grid-template-columns:34px max-content minmax(170px,220px) minmax(0,1fr) max-content!important;
+ grid-template-columns:34px max-content minmax(0,1fr) minmax(170px,220px) max-content!important;
  align-items:center!important;
  column-gap:8px!important;
  row-gap:8px!important;
@@ -754,9 +754,9 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
 #monitoringPanel .toolbar.monitoring-toolbar>#pagination{grid-column:2;grid-row:1;justify-self:start;min-width:0;max-width:100%}
 #monitoringPanel .toolbar.monitoring-toolbar>#count{display:none!important}
 #monitoringPanel .toolbar.monitoring-toolbar>#search{
- grid-column:3;grid-row:1;
+ grid-column:4;grid-row:1;
  width:100%!important;min-width:0!important;max-width:none!important;
- flex:none!important;margin:0!important;justify-self:start;box-sizing:border-box!important;
+ flex:none!important;margin:0!important;justify-self:end;box-sizing:border-box!important;
 }
 #monitoringPanel .toolbar.monitoring-toolbar>.monitoring-actions{
  grid-column:5;grid-row:1;
@@ -769,7 +769,7 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
 }
 @media(max-width:1050px) and (min-width:621px){
  #monitoringPanel .toolbar.monitoring-toolbar{
-  grid-template-columns:34px max-content minmax(150px,200px) minmax(0,1fr) max-content!important;
+  grid-template-columns:34px max-content minmax(0,1fr) minmax(150px,200px) max-content!important;
   column-gap:7px!important;
  }
 }
@@ -779,9 +779,11 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
   column-gap:8px!important;
  }
  #monitoringPanel .toolbar.monitoring-toolbar>#pagination{grid-column:2;grid-row:1}
- #monitoringPanel .toolbar.monitoring-toolbar>#search{grid-column:1;grid-row:2}
+ #monitoringPanel .toolbar.monitoring-toolbar>#search{
+  grid-column:2;grid-row:2;justify-self:end;width:min(220px,100%)!important;
+ }
  #monitoringPanel .toolbar.monitoring-toolbar>.monitoring-actions{
-  grid-column:2;grid-row:2;justify-content:flex-end!important;
+  grid-column:2;grid-row:3;justify-self:end;justify-content:flex-end!important;
  }
 }
 </style></head><body>
