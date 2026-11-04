@@ -19,6 +19,8 @@ const ALLOCATION_SHEET = 'QC Allocation Details';
 const REWORK_SHEET = 'Rework Monitoring';
 const PUNCHLIST_SHEET = 'Punchlist Monitoring';
 const NCR_SHEET = 'NCR Monitoring';
+const COMPLAINT_SHEET = 'Complaint Monitoring';
+const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','QC In-Charge','Cause','Status','Created At','Updated At'];
 const NCR_HEADERS = ['Reference','Date','Prepared by','Section','Person In Charge','Description of Issue','Corrective Action','Status','Date Closed'];
 const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
 const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
@@ -125,14 +127,14 @@ function getSystemStatus() {
   try {
     const ss = SpreadsheetApp.openById(DATABASE_ID);
     return {ok:true,databaseName:ss.getName(),existingSheets:ss.getSheets().map(s=>s.getName()),
-      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,REWORK_SHEET,REWORK_MAIN_SHEET,REWORK_DETAILS_SHEET,REWORK_ASSIGNMENTS_SHEET,PUNCHLIST_SHEET,NCR_SHEET]};
+      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,REWORK_SHEET,REWORK_MAIN_SHEET,REWORK_DETAILS_SHEET,REWORK_ASSIGNMENTS_SHEET,PUNCHLIST_SHEET,NCR_SHEET,COMPLAINT_SHEET]};
   } catch (e) { return {ok:false,message:String(e.message||e)}; }
 }
 
 function setupDatabase() {
   const ss = SpreadsheetApp.openById(DATABASE_ID);
   const created = [];
-  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_SHEET,REWORK_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS],[PUNCHLIST_SHEET,PUNCHLIST_HEADERS],[NCR_SHEET,NCR_HEADERS]].forEach(pair=>{
+  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_SHEET,REWORK_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS],[PUNCHLIST_SHEET,PUNCHLIST_HEADERS],[NCR_SHEET,NCR_HEADERS],[COMPLAINT_SHEET,COMPLAINT_HEADERS]].forEach(pair=>{
     let sh=ss.getSheetByName(pair[0]);
     if (!sh) { sh=ss.insertSheet(pair[0]); created.push(pair[0]); }
     if (sh.getLastRow()===0) {
@@ -149,7 +151,7 @@ function setupDatabase() {
 }
 
 function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) {
-  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring','Punchlist Monitoring','NCR Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
+  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring','Punchlist Monitoring','NCR Monitoring','Complaint Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const query=String(searchText||'').trim();
   // v3 stores the records already sorted, avoiding a full-array sort on the
   // immediate follow-up request used by the first-50 loading flow.
@@ -165,6 +167,7 @@ function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) 
     else if(moduleName==='Rework Monitoring')result=getReworkRecords_(query);
     else if(moduleName==='Punchlist Monitoring')result=getPunchlistRecords_(query);
     else if(moduleName==='NCR Monitoring')result=getNcrRecords_(query);
+    else if(moduleName==='Complaint Monitoring')result=getComplaintRecords_(query);
     else result=getFGTSMonitoringRecords_(query);
   }
   if(!result||!result.ok)return result;
@@ -264,7 +267,7 @@ function getReworkRecords_(searchText) {
 }
 
 function sortModuleRecordsNewestFirst_(moduleName, records) {
-  const dateField=moduleName==='J.O Register'?'Received':moduleName==='Rework Monitoring'?'Date Issue':moduleName==='NCR Monitoring'?'Date':'Date Received';
+  const dateField=moduleName==='J.O Register'?'Received':moduleName==='Rework Monitoring'?'Date Issue':moduleName==='NCR Monitoring'?'Date':moduleName==='Complaint Monitoring'?'Date':'Date Received';
   return (records||[]).map((record,index)=>({record:record,index:index,date:joParseDate_(record&&record[dateField])}))
     .sort((a,b)=>{
       const at=a.date?a.date.getTime():-Infinity,bt=b.date?b.date.getTime():-Infinity;
@@ -319,6 +322,58 @@ function deleteNcr(reference){
  let row=-1;for(let i=1;i<data.length;i++)if(String(data[i][col]).trim()===ref){row=i+1;break}
  if(row<0)throw new Error('NCR record was not found. Refresh and try again.');
  sh.deleteRow(row);invalidateModuleCache_('NCR Monitoring');return {ok:true,recordId:ref,message:'NCR record deleted.'};
+}
+
+function invalidateComplaintCache_(){try{CacheService.getScriptCache().remove('qaqc_module_v3_Complaint_Monitoring');}catch(e){}}
+function saveComplaint_(input){
+ if(!input)throw new Error('No complaint data received.');
+ const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
+ if(!sh)throw new Error('Click Prepare Database first to create the Complaint Monitoring tab.');
+ const data=sh.getDataRange().getValues(),headers=data[0].map(String),now=new Date();
+ const required=['Date','Company','Client','Name of Complainant','Complaint Description'];
+ required.forEach(h=>{if(!String(input[h]||'').trim())throw new Error(h+' is required.')});
+ if(!['GEMCOR','GPI'].includes(String(input.Company||'').trim().toUpperCase()))throw new Error('Company must be GEMCOR or GPI.');
+ const qty=String(input.Qty||'').trim();
+ if(qty&&(!isFinite(Number(qty))||Number(qty)<=0))throw new Error('Qty must be greater than zero.');
+ const status=String(input.Status||'Open').trim();
+ if(!['Open','In Progress','Closed'].includes(status))throw new Error('Invalid complaint status.');
+ const id=String(input['Complaint ID']||'').trim()||('CMP-'+Utilities.getUuid().slice(0,8).toUpperCase());
+ const rec=Object.assign({},input,{'Complaint ID':id,Status:status,'Created At':now,'Updated At':now});
+ let row=-1;const idCol=headers.indexOf('Complaint ID');
+ if(input['Complaint ID']&&idCol>=0)for(let i=1;i<data.length;i++)if(String(data[i][idCol]).trim()===id){row=i+1;rec['Created At']=data[i][headers.indexOf('Created At')]||now;break;}
+ const out=headers.map(h=>rec[h]===undefined?'':rec[h]);
+ if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
+ invalidateComplaintCache_();
+ return {ok:true,recordId:id,message:row>0?'Complaint updated.':'Complaint saved.'};
+}
+function getComplaintRecords_(searchText){
+ const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
+ if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:COMPLAINT_HEADERS};
+ const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String);
+ const records=sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues().map(row=>{const rec={};headers.forEach((h,i)=>rec[h]=formatCell_(row[i]));if(!rec.Status)rec.Status='Open';return rec;});
+ const q=String(searchText||'').trim().toLowerCase();
+ return {ok:true,records:q?records.filter(rec=>Object.values(rec).some(v=>String(v||'').toLowerCase().includes(q))):records,fields:COMPLAINT_HEADERS};
+}
+function updateComplaintStatus(id,status,qcInCharge,cause){
+ const key=String(id||'').trim(),next=String(status||'').trim();
+ if(!key)throw new Error('Missing Complaint ID.');
+ if(!['Open','In Progress','Closed'].includes(next))throw new Error('Invalid complaint status.');
+ const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
+ if(!sh||sh.getLastRow()<2)throw new Error('Complaint record was not found.');
+ const data=sh.getDataRange().getValues(),headers=data[0].map(String),idCol=headers.indexOf('Complaint ID');
+ let row=-1;for(let i=1;i<data.length;i++)if(String(data[i][idCol]).trim()===key){row=i+1;break;}
+ if(row<0)throw new Error('Complaint record was not found. Refresh and try again.');
+ [['Status',next],['QC In-Charge',String(qcInCharge||'').trim()],['Cause',String(cause||'').trim()],['Updated At',new Date()]].forEach(([name,value])=>{const col=headers.indexOf(name);if(col>=0)sh.getRange(row,col+1).setValue(value);});
+ invalidateModuleCache_('Complaint Monitoring');
+ return {ok:true,recordId:key,message:'Complaint updated.'};
+}
+function deleteComplaint(id){
+ const key=String(id||'').trim();if(!key)throw new Error('Missing Complaint ID.');
+ const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
+ if(!sh||sh.getLastRow()<2)throw new Error('Complaint record was not found.');
+ const data=sh.getDataRange().getValues(),headers=data[0].map(String),col=headers.indexOf('Complaint ID');
+ for(let i=1;i<data.length;i++)if(String(data[i][col]).trim()===key){sh.deleteRow(i+1);invalidateComplaintCache_();return {ok:true,message:'Complaint deleted.'};}
+ throw new Error('Complaint record was not found. Refresh and try again.');
 }
 
 function getNcrRecords_(searchText){
@@ -393,6 +448,7 @@ function deletePunchlist(id){
 }
 function saveRecord(moduleName,input) {
   if(moduleName==='NCR Monitoring') return saveNcr_(input);
+  if(moduleName==='Complaint Monitoring') return saveComplaint_(input);
   if(moduleName==='Rework Monitoring') return saveReworkCase_(input);
   if(moduleName==='Punchlist Monitoring') return savePunchlist_(input);
   if(moduleName==='Transfer Monitoring') return saveTransfer(input);
