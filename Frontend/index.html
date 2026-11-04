@@ -1687,7 +1687,7 @@ function saveAccountSettings(event){
  callServer('updateAccountCredentials',[user.username,currentPassword,newUsername,newPassword],r=>{
   if(button)button.disabled=false;
   if(!r||!r.ok){showMessage(r&&r.message?r.message:'Unable to update account settings.',false);return;}
-  user.username=r.username||newUsername;window.qaqcCurrentUser=user;updateSystemAccountHeader();
+  user.username=r.username||newUsername;window.qaqcCurrentUser=user;saveQaqcSession();updateSystemAccountHeader();
   showMessage(r.message||'Account settings updated successfully.',true);
   document.getElementById('accountCurrentPassword').value='';document.getElementById('accountNewPassword').value='';document.getElementById('accountConfirmPassword').value='';
  },()=>{if(button)button.disabled=false;showMessage('Unable to contact the server. Please try again.',false);});
@@ -1705,16 +1705,63 @@ document.addEventListener('click',function(event){
   if(menu)menu.hidden=true;if(trigger)trigger.setAttribute('aria-expanded','false');
  }
 });
-function logoutUser(){
+const QAQC_SESSION_KEY='qaqcSystemSessionV1';
+const QAQC_IDLE_LIMIT=60*60*1000;
+let qaqcLastActivity=0,qaqcIdleTimer=null,qaqcActivityWrite=0;
+function saveQaqcSession(){
+ const user=window.qaqcCurrentUser;
+ if(!user||!user.username||user.role==='Guest Access')return;
+ try{localStorage.setItem(QAQC_SESSION_KEY,JSON.stringify({user,lastActivity:qaqcLastActivity||Date.now()}));}catch(e){}
+}
+function startQaqcSession(){
+ qaqcLastActivity=Date.now();saveQaqcSession();scheduleQaqcIdleCheck();
+}
+function recordQaqcActivity(){
+ if(!window.qaqcCurrentUser)return;
+ const now=Date.now();
+ if(now-qaqcLastActivity<5000)return;
+ qaqcLastActivity=now;
+ if(now-qaqcActivityWrite>=15000){qaqcActivityWrite=now;saveQaqcSession();}
+ scheduleQaqcIdleCheck();
+}
+function scheduleQaqcIdleCheck(){
+ if(qaqcIdleTimer)clearTimeout(qaqcIdleTimer);
+ if(!window.qaqcCurrentUser)return;
+ const remaining=QAQC_IDLE_LIMIT-(Date.now()-qaqcLastActivity);
+ if(remaining<=0){logoutUser(true);return;}
+ qaqcIdleTimer=setTimeout(()=>{if(Date.now()-qaqcLastActivity>=QAQC_IDLE_LIMIT)logoutUser(true);else scheduleQaqcIdleCheck();},Math.min(remaining,15000));
+}
+function restoreQaqcSession(){
+ let saved=null;
+ try{saved=JSON.parse(localStorage.getItem(QAQC_SESSION_KEY)||'null');}catch(e){}
+ if(!saved||!saved.user||!saved.user.username||!saved.lastActivity)return false;
+ if(Date.now()-Number(saved.lastActivity)>=QAQC_IDLE_LIMIT||Date.now()<Number(saved.lastActivity)){
+  try{localStorage.removeItem(QAQC_SESSION_KEY);}catch(e){}
+  return false;
+ }
+ window.qaqcCurrentUser=saved.user;qaqcLastActivity=Number(saved.lastActivity);
+ document.body.classList.remove('guest-mode');
+ updateSystemAccountHeader();
+ const landing=document.getElementById('loginLanding'),app=document.getElementById('qaqcApp');
+ if(landing)landing.style.display='none';if(app)app.style.display='grid';
+ switchPage('Transfer Monitoring');scheduleQaqcIdleCheck();checkStatus();
+ return true;
+}
+['click','keydown','pointerdown','scroll','touchstart'].forEach(type=>document.addEventListener(type,recordQaqcActivity,{passive:true}));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&window.qaqcCurrentUser){if(Date.now()-qaqcLastActivity>=QAQC_IDLE_LIMIT)logoutUser(true);else scheduleQaqcIdleCheck();}});
+window.addEventListener('storage',event=>{if(event.key===QAQC_SESSION_KEY&&event.newValue){try{const s=JSON.parse(event.newValue);if(s&&s.lastActivity){qaqcLastActivity=Number(s.lastActivity);scheduleQaqcIdleCheck();}}catch(e){}}});
+function logoutUser(sessionExpired=false){
  const menu=document.getElementById('systemAccountMenu'),trigger=document.getElementById('systemAccountTrigger');
  if(menu)menu.hidden=true;if(trigger)trigger.setAttribute('aria-expanded','false');
- window.qaqcCurrentUser=null;
+ if(qaqcIdleTimer)clearTimeout(qaqcIdleTimer);qaqcIdleTimer=null;
+ try{localStorage.removeItem(QAQC_SESSION_KEY);}catch(e){}
+ qaqcLastActivity=0;window.qaqcCurrentUser=null;
  document.body.classList.remove('guest-mode');
  const app=document.getElementById('qaqcApp'),landing=document.getElementById('loginLanding');
  if(app)app.style.display='none';if(landing)landing.style.display='';
  const username=document.getElementById('loginUsername'),password=document.getElementById('loginPassword');
  if(username)username.value='';if(password)password.value='';
- const notice=document.getElementById('loginNotice');if(notice){notice.textContent='You have been logged out.';notice.style.display='block';}
+ const notice=document.getElementById('loginNotice');if(notice){notice.textContent=sessionExpired?'Your session expired after 1 hour of inactivity. Please log in again.':'You have been logged out.';notice.style.display='block';}
  updateSystemAccountHeader();
 }
 function showLoginMessage(message){
@@ -1729,6 +1776,7 @@ function submitLogin(){
   btn.disabled=false;
   if(!r||!r.ok){showLoginMessage(r&&r.message?r.message:'Invalid username or password.');return;}
   window.qaqcCurrentUser={fullName:r.fullName,department:r.department,position:r.position,username:r.username,role:r.role};
+  startQaqcSession();
   updateSystemAccountHeader();
   document.body.classList.toggle('guest-mode',false);
   document.getElementById('loginLanding').style.display='none';
@@ -1766,6 +1814,7 @@ function continueAsGuest(){
  switchPage('Transfer Monitoring');
  checkStatus();
 }
+restoreQaqcSession();
 const monitoringToolbar=document.querySelector('#monitoringPanel .toolbar');
 if(currentPage==='Transfer Monitoring')monitoringToolbar?.classList.add('transfer-monitoring-toolbar');
 if(monitoringToolbar){
