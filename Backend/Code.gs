@@ -324,6 +324,7 @@ function deleteNcr(reference){
  sh.deleteRow(row);invalidateModuleCache_('NCR Monitoring');return {ok:true,recordId:ref,message:'NCR record deleted.'};
 }
 
+function invalidateComplaintCache_(){try{CacheService.getScriptCache().remove('qaqc_module_v3_Complaint_Monitoring');}catch(e){}}
 function saveComplaint_(input){
  if(!input)throw new Error('No complaint data received.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
@@ -342,7 +343,7 @@ function saveComplaint_(input){
  if(input['Complaint ID']&&idCol>=0)for(let i=1;i<data.length;i++)if(String(data[i][idCol]).trim()===id){row=i+1;rec['Created At']=data[i][headers.indexOf('Created At')]||now;break;}
  const out=headers.map(h=>rec[h]===undefined?'':rec[h]);
  if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
- invalidateModuleCache_('Complaint Monitoring');
+ invalidateComplaintCache_();
  return {ok:true,recordId:id,message:row>0?'Complaint updated.':'Complaint saved.'};
 }
 function getComplaintRecords_(searchText){
