@@ -837,14 +837,15 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
 .intro .header-tools button[aria-label="Refresh records"]{color:#2459a9!important;}
 @media(max-width:700px){.intro{top:56px!important;padding:10px 11px!important;}.intro h2{font-size:15px!important;}}
 
-/* Monitoring header accents: distinct module identity, shared compact structure. */
-.intro{background:linear-gradient(110deg,#17365d,#2459a9)!important;border:1px solid transparent!important}
-.intro.intro-transfer{background:linear-gradient(110deg,#17365d,#2864aa)!important}
-.intro.intro-jo{background:linear-gradient(110deg,#312e81,#4f46a5)!important}
-.intro.intro-fgts{background:linear-gradient(110deg,#075b57,#0f8b83)!important}
-.intro.intro-rework{background:linear-gradient(110deg,#854d0e,#c07818)!important}
-.intro.intro-punchlist{background:linear-gradient(110deg,#5b3285,#8754b5)!important}
-.intro.intro-ncr{background:linear-gradient(110deg,#842b36,#bd4654)!important}
+/* Unified solid monitoring header: identical navy background and white typography on every module. */
+.intro,
+.intro.intro-transfer,
+.intro.intro-jo,
+.intro.intro-fgts,
+.intro.intro-rework,
+.intro.intro-punchlist,
+.intro.intro-ncr{background:#17365d!important;background-image:none!important;border:1px solid #17365d!important}
+.intro h1,.intro h2,.intro h3,.intro p,.intro .muted,.intro #pageHeading,.intro #pageDescription{color:#fff!important}
 /* Neutral dashboard cards; category color is reserved for the metric value. */
 #dashboardCards .dash-card{background:#fff!important;border:1px solid #e1e7ef!important;box-shadow:0 2px 7px #142b4a0a!important}
 #dashboardCards .dash-card .dash-label{color:#66758a!important}
