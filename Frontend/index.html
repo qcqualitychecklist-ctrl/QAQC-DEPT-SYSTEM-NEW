@@ -1860,7 +1860,16 @@ function continueAsGuest(){
  switchPage('Transfer Monitoring');
  checkStatus();
 }
-restoreQaqcSession();
+if(PUBLIC_COMPLAINT_MODE){
+ document.getElementById('loginLanding')?.style.setProperty('display','none');
+ document.getElementById('qaqcApp')?.style.setProperty('display','none');
+ document.getElementById('publicComplaintPage')?.style.setProperty('display','block');
+ const today=new Date(),localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+ const dateInput=el('pubDate');if(dateInput)dateInput.value=localDate;
+ if(!el('publicComplaintItems').children.length)addPublicComplaintItem();
+}else{
+ restoreQaqcSession();
+}
 const monitoringToolbar=document.querySelector('#monitoringPanel .toolbar');
 if(currentPage==='Transfer Monitoring')monitoringToolbar?.classList.add('transfer-monitoring-toolbar');
 if(monitoringToolbar){
