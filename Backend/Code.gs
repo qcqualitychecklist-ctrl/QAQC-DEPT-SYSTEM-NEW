@@ -282,7 +282,7 @@ function saveNcr_(input){
  if(!input)throw new Error('No NCR data received.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(NCR_SHEET);
  if(!sh)throw new Error('Click Prepare Database first to create the NCR Monitoring tab.');
- const headers=ensureComplaintSchema_(sh),data=sh.getDataRange().getValues(),now=new Date();
+ const data=sh.getDataRange().getValues(),headers=data[0].map(String),now=new Date();
  const required=['Date','Prepared by','Section','Person In Charge','Description of Issue'];
  required.forEach(h=>{if(!String(input[h]||'').trim())throw new Error(h+' is required.')});
  const status=String(input.Status||'Open').trim();
