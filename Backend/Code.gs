@@ -74,8 +74,33 @@ function loginAccount(username,password) {
   if(!sh||sh.getLastRow()<2)return {ok:false,message:'Invalid username or password.'};
   const rows=sh.getDataRange().getValues(),hash=accountHash_(password);
   for(let i=1;i<rows.length;i++)if(String(rows[i][3]||'').toLowerCase()===username.toLowerCase()&&String(rows[i][4]||'')===hash)
-    return {ok:true,fullName:String(rows[i][0]||''),role:String(rows[i][5]||'User')};
+    return {ok:true,fullName:String(rows[i][0]||''),department:String(rows[i][1]||''),position:String(rows[i][2]||''),username:String(rows[i][3]||''),role:String(rows[i][5]||'User')};
   return {ok:false,message:'Invalid username or password.'};
+}
+function updateAccountCredentials(currentUsername,currentPassword,newUsername,newPassword) {
+  currentUsername=String(currentUsername||'').trim();
+  currentPassword=String(currentPassword||'');
+  newUsername=String(newUsername||'').trim();
+  newPassword=String(newPassword||'');
+  if(!currentUsername||!currentPassword||!newUsername)throw new Error('Username and current password are required.');
+  if(!/^[A-Za-z0-9._-]{3,30}$/.test(newUsername))throw new Error('Username must be 3-30 characters and use letters, numbers, dot, underscore, or hyphen.');
+  if(newPassword&&newPassword.length<8)throw new Error('New password must be at least 8 characters.');
+  const lock=LockService.getScriptLock();lock.waitLock(10000);
+  try {
+    const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ACCOUNT_SHEET);
+    if(!sh||sh.getLastRow()<2)throw new Error('Account was not found.');
+    const rows=sh.getDataRange().getValues(),hash=accountHash_(currentPassword);
+    let rowNumber=0,rowData=null;
+    for(let i=1;i<rows.length;i++)if(String(rows[i][3]||'').toLowerCase()===currentUsername.toLowerCase()&&String(rows[i][4]||'')===hash){rowNumber=i+1;rowData=rows[i];break;}
+    if(!rowNumber)throw new Error('Current password is incorrect. No changes were made.');
+    const normalized=newUsername.toLowerCase();
+    for(let i=1;i<rows.length;i++)if(i+1!==rowNumber&&String(rows[i][3]||'').toLowerCase()===normalized)throw new Error('Username already exists. Please choose another username.');
+    const isAdmin=String(rowData[5]||'User')==='Admin';
+    if(normalized==='assocadmin'&&(!isAdmin||String(rowData[0]||'').toLowerCase()!=='aprillyn de guia'))throw new Error('This username is reserved for the system administrator.');
+    sh.getRange(rowNumber,4).setValue(newUsername);
+    if(newPassword)sh.getRange(rowNumber,5).setValue(accountHash_(newPassword));
+    return {ok:true,username:newUsername,message:'Account settings updated successfully.'};
+  } finally {lock.releaseLock();}
 }
 
 
