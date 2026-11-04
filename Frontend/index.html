@@ -883,6 +883,41 @@ td.actioncell button.action-icon-btn:not(.primary):not(.danger){background:#f1f5
 #monitoringPanel .tablewrap td.actioncell button.action-icon-btn svg{display:block;width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #monitoringPanel .tablewrap table.jo-table th:last-child,#monitoringPanel .tablewrap table.jo-table td.actioncell{width:112px!important;min-width:112px!important;max-width:112px!important}
 @media(max-width:700px){#monitoringPanel .tablewrap th:last-child,#monitoringPanel .tablewrap td.actioncell{width:104px!important;min-width:104px!important;max-width:104px!important}}
+
+/* Compact account dropdown and dedicated profile/settings dialogs. */
+.system-account-menu{min-width:245px;padding:9px}
+.system-account-menu-summary{padding:4px 5px 10px}
+.system-account-menu-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 9px;border:0;border-radius:7px;background:transparent;text-align:left;font-size:11px;font-weight:600;color:#24364f}
+.system-account-menu-item:hover{background:#f1f5fb}
+.system-account-menu-item>span{width:17px;text-align:center;font-size:15px;color:#526781}
+.system-account-menu-divider{height:1px;margin:5px 0;background:#e7edf5}
+.system-account-menu-item.system-account-logout,.system-account-menu-item.system-account-logout>span{color:#b42318}
+.account-dialog{width:min(430px,calc(100vw - 28px));max-height:calc(100vh - 32px);overflow:auto;padding:0;border:1px solid #dce5f0;border-radius:14px;background:#fff;color:#17253a;box-shadow:0 22px 60px #142b4a30}
+.account-dialog::backdrop{background:#10233d66;backdrop-filter:blur(2px)}
+.account-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:17px 18px 13px;border-bottom:1px solid #e8edf4}
+.account-dialog-head h2{margin:0;color:#17365d;font-size:17px}
+.account-dialog-head p{margin:5px 0 0;color:#718096;font-size:11px}
+.account-dialog-close{width:29px;height:29px;padding:0;border:0;background:#f1f5f9;border-radius:7px;font-size:20px;line-height:1;color:#526176}
+.account-profile-summary{display:flex;flex-direction:column;align-items:center;gap:5px;padding:17px 15px 13px}
+.account-profile-avatar{width:48px;height:48px;display:grid;place-items:center;border-radius:50%;background:#e8f1ff;color:#2459a9;font-size:19px;font-weight:800}
+.account-profile-summary strong{font-size:13px;color:#1c2f49}
+.account-profile-summary span{font-size:10px;color:#718096}
+.account-information-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:0 18px 16px}
+.account-information-field{min-width:0;padding:10px;border:1px solid #e4eaf2;border-radius:8px;background:#f8fafd}
+.account-information-field label{display:block;margin-bottom:5px;color:#718096;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.35px}
+.account-information-field strong{display:block;overflow-wrap:anywhere;color:#26384f;font-size:11px}
+.account-dialog-actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px 16px;border-top:1px solid #e8edf4}
+.account-dialog-actions button{min-width:82px;font-size:11px}
+.account-settings-dialog form{padding:0}
+.account-settings-section{display:grid;gap:7px;padding:15px 18px 4px}
+.account-settings-section h3{margin:0 0 2px;color:#17365d;font-size:12px}
+.account-settings-section label{margin-top:4px;color:#44546a;font-size:10px;font-weight:700}
+.account-settings-section label span{font-weight:400;color:#718096}
+.account-settings-section input{height:36px;padding:8px 10px;font-size:11px}
+.account-settings-section small{color:#718096;font-size:9px}
+.account-settings-message{min-height:15px;margin:8px 18px 0;font-size:10px;color:#b42318}
+.account-settings-message.success{color:#16834a}
+@media(max-width:480px){.account-information-grid{grid-template-columns:1fr}.account-dialog-head{padding:14px}.account-dialog-actions{padding:10px 14px 14px}}
 </style></head><body>
 <section class="login-landing" id="loginLanding">
  <div class="access-card" id="accessCard">
@@ -932,13 +967,38 @@ td.actioncell button.action-icon-btn:not(.primary):not(.danger){background:#f1f5
    <span class="system-account-chevron" aria-hidden="true">▾</span>
   </button>
   <div class="system-account-menu" id="systemAccountMenu" role="menu" hidden>
-   <span class="system-account-menu-label">Signed in as</span>
-   <strong class="system-account-menu-name" id="systemAccountMenuName">Guest User</strong>
-   <span class="system-account-menu-role" id="systemAccountMenuRole">Guest Access</span>
-   <button type="button" class="system-logout-btn" role="menuitem" onclick="logoutUser()">↪ Log Out</button>
+   <div class="system-account-menu-summary">
+    <span class="system-account-menu-label">Signed in as</span>
+    <strong class="system-account-menu-name" id="systemAccountMenuName">Guest User</strong>
+    <span class="system-account-menu-role" id="systemAccountMenuRole">Guest Access</span>
+   </div>
+   <button type="button" class="system-account-menu-item" role="menuitem" onclick="openAccountInformation()"><span aria-hidden="true">♙</span>Account Information</button>
+   <button type="button" class="system-account-menu-item" role="menuitem" onclick="openAccountSettings()"><span aria-hidden="true">⚙</span>Settings</button>
+   <div class="system-account-menu-divider"></div>
+   <button type="button" class="system-account-menu-item system-account-logout" role="menuitem" onclick="logoutUser()"><span aria-hidden="true">↪</span>Log Out</button>
   </div>
  </div>
 </header>
+<dialog class="account-dialog" id="accountInformationDialog" aria-labelledby="accountInformationTitle">
+ <div class="account-dialog-head"><div><h2 id="accountInformationTitle">Account Information</h2><p>Your registered account details</p></div><button type="button" class="account-dialog-close" aria-label="Close" onclick="closeAccountDialog('accountInformationDialog')">×</button></div>
+ <div class="account-profile-summary"><div class="account-profile-avatar" id="accountProfileAvatar">Q</div><strong id="accountProfileName">—</strong><span id="accountProfileRole">—</span></div>
+ <div class="account-information-grid">
+  <div class="account-information-field"><label>Full Name</label><strong id="accountInfoFullName">—</strong></div>
+  <div class="account-information-field"><label>Department</label><strong id="accountInfoDepartment">—</strong></div>
+  <div class="account-information-field"><label>Position</label><strong id="accountInfoPosition">—</strong></div>
+  <div class="account-information-field"><label>Username</label><strong id="accountInfoUsername">—</strong></div>
+ </div>
+ <div class="account-dialog-actions"><button type="button" class="primary" onclick="closeAccountDialog('accountInformationDialog')">Close</button></div>
+</dialog>
+<dialog class="account-dialog account-settings-dialog" id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
+ <form id="accountSettingsForm" onsubmit="saveAccountSettings(event)">
+  <div class="account-dialog-head"><div><h2 id="accountSettingsTitle">Account Settings</h2><p>Update your username or password</p></div><button type="button" class="account-dialog-close" aria-label="Close" onclick="closeAccountDialog('accountSettingsDialog')">×</button></div>
+  <div class="account-settings-section"><h3>Change Username</h3><label for="accountNewUsername">New Username</label><input id="accountNewUsername" required minlength="3" maxlength="30" autocomplete="username" placeholder="Enter new username"><small>3–30 characters: letters, numbers, dot, underscore, or hyphen.</small></div>
+  <div class="account-settings-section"><h3>Change Password</h3><label for="accountCurrentPassword">Current Password</label><input id="accountCurrentPassword" type="password" required autocomplete="current-password" placeholder="Enter current password"><label for="accountNewPassword">New Password <span>(leave blank to keep current)</span></label><input id="accountNewPassword" type="password" minlength="8" autocomplete="new-password" placeholder="At least 8 characters"><label for="accountConfirmPassword">Confirm New Password</label><input id="accountConfirmPassword" type="password" minlength="8" autocomplete="new-password" placeholder="Re-enter new password"></div>
+  <p class="account-settings-message" id="accountSettingsMessage" role="status" aria-live="polite"></p>
+  <div class="account-dialog-actions"><button type="button" onclick="closeAccountDialog('accountSettingsDialog')">Cancel</button><button type="submit" class="primary" id="accountSettingsSaveButton">Save Changes</button></div>
+ </form>
+</dialog>
 <aside class="sidebar"><div class="brand"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></div><div class="navlabel">Main Menu</div>
 <nav class="nav"><button class="active" data-page="Transfer Monitoring" onclick="switchPage('Transfer Monitoring')"><span>⇄</span>Transfer Monitoring</button><button data-page="J.O Register" onclick="switchPage('J.O Register')"><span>▦</span>J.O Register</button><button data-page="FGTS Monitoring" onclick="switchPage('FGTS Monitoring')"><span>▤</span>FGTS Monitoring</button><button data-page="Rework Monitoring" onclick="switchPage('Rework Monitoring')"><span>↺</span>Rework Monitoring</button><button data-page="Punchlist Monitoring" onclick="switchPage('Punchlist Monitoring')"><span>☷</span>Punchlist Monitoring</button><button data-page="NCR Monitoring" onclick="switchPage('NCR Monitoring')"><span>▣</span>NCR Monitoring</button></nav>
 <button id="menuToggle" class="menu-toggle" type="button" aria-label="Hide main menu" aria-expanded="true" title="Hide main menu" onclick="toggleMainMenu()"><span></span><span></span><span></span></button></aside>
@@ -1585,6 +1645,52 @@ function updateSystemAccountHeader(){
  const avatar=document.getElementById('systemAccountAvatar'),menuName=document.getElementById('systemAccountMenuName'),menuRole=document.getElementById('systemAccountMenuRole');
  if(nameEl)nameEl.textContent=name;if(roleEl)roleEl.textContent=role;if(avatar)avatar.textContent=initial;
  if(menuName)menuName.textContent=name;if(menuRole)menuRole.textContent=role;
+ const profileName=document.getElementById('accountProfileName'),profileRole=document.getElementById('accountProfileRole'),profileAvatar=document.getElementById('accountProfileAvatar');
+ if(profileName)profileName.textContent=name;if(profileRole)profileRole.textContent=role;if(profileAvatar)profileAvatar.textContent=initial;
+}
+function closeAccountMenu(){
+ const menu=document.getElementById('systemAccountMenu'),trigger=document.getElementById('systemAccountTrigger');
+ if(menu)menu.hidden=true;if(trigger)trigger.setAttribute('aria-expanded','false');
+}
+function closeAccountDialog(id){
+ const dialog=document.getElementById(id);if(dialog&&dialog.open)dialog.close();
+}
+function openAccountInformation(){
+ closeAccountMenu();
+ const user=window.qaqcCurrentUser||{};
+ const values={accountInfoFullName:user.fullName,accountInfoDepartment:user.department,accountInfoPosition:user.position,accountInfoUsername:user.username};
+ Object.keys(values).forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=String(values[id]||'—');});
+ const dialog=document.getElementById('accountInformationDialog');if(dialog)dialog.showModal();
+}
+function openAccountSettings(){
+ closeAccountMenu();
+ const user=window.qaqcCurrentUser||{};
+ const username=document.getElementById('accountNewUsername'),current=document.getElementById('accountCurrentPassword'),next=document.getElementById('accountNewPassword'),confirm=document.getElementById('accountConfirmPassword'),message=document.getElementById('accountSettingsMessage');
+ if(username)username.value=String(user.username||'');
+ if(current)current.value='';if(next)next.value='';if(confirm)confirm.value='';
+ if(message){message.textContent='';message.classList.remove('success');}
+ const dialog=document.getElementById('accountSettingsDialog');if(dialog)dialog.showModal();
+}
+function saveAccountSettings(event){
+ if(event)event.preventDefault();
+ const user=window.qaqcCurrentUser||{},newUsername=document.getElementById('accountNewUsername').value.trim(),currentPassword=document.getElementById('accountCurrentPassword').value,newPassword=document.getElementById('accountNewPassword').value,confirmPassword=document.getElementById('accountConfirmPassword').value;
+ const message=document.getElementById('accountSettingsMessage'),button=document.getElementById('accountSettingsSaveButton');
+ const showMessage=(text,success)=>{if(message){message.textContent=text;message.classList.toggle('success',!!success);}};
+ if(!user.username){showMessage('Please log in again before changing account settings.',false);return;}
+ if(!/^[A-Za-z0-9._-]{3,30}$/.test(newUsername)){showMessage('Username must be 3–30 characters and use letters, numbers, dot, underscore, or hyphen.',false);return;}
+ if(!currentPassword){showMessage('Enter your current password to verify this change.',false);return;}
+ if(newPassword&&newPassword.length<8){showMessage('New password must be at least 8 characters.',false);return;}
+ if(newPassword!==confirmPassword){showMessage('New password and confirmation do not match.',false);return;}
+ if(!newPassword&&confirmPassword){showMessage('Enter a new password or clear the confirmation field.',false);return;}
+ if(newUsername===user.username&&!newPassword){showMessage('No account changes to save.',false);return;}
+ if(button)button.disabled=true;
+ callServer('updateAccountCredentials',[user.username,currentPassword,newUsername,newPassword],r=>{
+  if(button)button.disabled=false;
+  if(!r||!r.ok){showMessage(r&&r.message?r.message:'Unable to update account settings.',false);return;}
+  user.username=r.username||newUsername;window.qaqcCurrentUser=user;updateSystemAccountHeader();
+  showMessage(r.message||'Account settings updated successfully.',true);
+  document.getElementById('accountCurrentPassword').value='';document.getElementById('accountNewPassword').value='';document.getElementById('accountConfirmPassword').value='';
+ },()=>{if(button)button.disabled=false;showMessage('Unable to contact the server. Please try again.',false);});
 }
 function toggleAccountMenu(event){
  if(event)event.stopPropagation();
@@ -1622,7 +1728,7 @@ function submitLogin(){
  callServer('loginAccount',[username,password],r=>{
   btn.disabled=false;
   if(!r||!r.ok){showLoginMessage(r&&r.message?r.message:'Invalid username or password.');return;}
-  window.qaqcCurrentUser={fullName:r.fullName,role:r.role};
+  window.qaqcCurrentUser={fullName:r.fullName,department:r.department,position:r.position,username:r.username,role:r.role};
   updateSystemAccountHeader();
   document.body.classList.toggle('guest-mode',false);
   document.getElementById('loginLanding').style.display='none';
