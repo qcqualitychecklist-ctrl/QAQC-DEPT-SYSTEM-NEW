@@ -20,7 +20,7 @@ const REWORK_SHEET = 'Rework Monitoring';
 const PUNCHLIST_SHEET = 'Punchlist Monitoring';
 const NCR_SHEET = 'NCR Monitoring';
 const COMPLAINT_SHEET = 'Complaint Monitoring';
-const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','QC In-Charge','Cause','Status','Created At','Updated At'];
+const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','QC In-Charge','Cause','Status','Created At','Updated At','Items JSON','Attachment URL'];
 const NCR_HEADERS = ['Reference','Date','Prepared by','Section','Person In Charge','Description of Issue','Corrective Action','Status','Date Closed'];
 const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
 const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
@@ -106,9 +106,10 @@ function updateAccountCredentials(currentUsername,currentPassword,newUsername,ne
 }
 
 
-function doGet() {
+function doGet(e) {
+  const publicComplaint=String(e&&e.parameter&&e.parameter.page||'').toLowerCase()==='complaint';
   return HtmlService.createHtmlOutputFromFile('index')
-    .setTitle('QAQC Department System')
+    .setTitle(publicComplaint?'Submit a Complaint | QAQC':'QAQC Department System')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
 }
 
@@ -346,6 +347,44 @@ function saveComplaint_(input){
  invalidateComplaintCache_();
  return {ok:true,recordId:id,message:row>0?'Complaint updated.':'Complaint saved.'};
 }
+
+function submitPublicComplaint(payload){
+  if(!payload||!payload.header||!Array.isArray(payload.items)||!payload.items.length)throw new Error('Complete the complaint details and add at least one item.');
+  const h=payload.header,required=['Date','Company','Client','Name of Complainant','Complaint Description'];
+  required.forEach(k=>{if(!String(h[k]||'').trim())throw new Error(k+' is required.')});
+  const company=String(h.Company||'').trim().toUpperCase();
+  if(!['GEMCOR','GPI'].includes(company))throw new Error('Please select GEMCOR or GPI.');
+  if(payload.items.length>30)throw new Error('A maximum of 30 items can be included in one submission.');
+  payload.items.forEach((item,i)=>{
+    if(!String(item.Item||'').trim())throw new Error('Item is required for item row '+(i+1)+'.');
+    if(item.Qty!==''&&item.Qty!=null&&(!isFinite(Number(item.Qty))||Number(item.Qty)<=0))throw new Error('Qty must be greater than zero for item row '+(i+1)+'.');
+  });
+  const lock=LockService.getScriptLock();lock.waitLock(20000);
+  try{
+    const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
+    if(!sh)throw new Error('Complaint Monitoring database is not prepared yet. Please contact QA/QC.');
+    const id='CMP-'+Utilities.getUuid().slice(0,8).toUpperCase(),now=new Date();
+    let attachmentUrl='';
+    if(payload.attachment&&payload.attachment.data){
+      const a=payload.attachment, mime=String(a.mimeType||'');
+      if(!/^(image\/(jpeg|png|gif|webp)|video\/(mp4|quicktime|webm))$/.test(mime))throw new Error('Only image or video attachments are allowed.');
+      const bytes=Utilities.base64Decode(String(a.data).split(',').pop());
+      if(bytes.length>10*1024*1024)throw new Error('Attachment must not exceed 10 MB.');
+      let folder;const folders=DriveApp.getFoldersByName('QAQC Complaint Attachments');
+      folder=folders.hasNext()?folders.next():DriveApp.createFolder('QAQC Complaint Attachments');
+      const ext=(String(a.fileName||'attachment').match(/\.[A-Za-z0-9]{2,5}$/)||[''])[0];
+      const file=folder.createFile(Utilities.newBlob(bytes,mime,id+ext));
+      attachmentUrl=file.getUrl();
+    }
+    const items=payload.items.map(x=>({Item:String(x.Item||'').trim(), 'Panel Name':String(x['Panel Name']||'').trim(),Qty:String(x.Qty||'').trim()}));
+    const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String);
+    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':String(h['Complaint Description']).trim(),'QC In-Charge':'',Cause:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl};
+    sh.appendRow(headers.map(k=>rec[k]===undefined?'':rec[k]));
+    invalidateComplaintCache_();
+    return {ok:true,recordId:id,message:'Your complaint has been submitted successfully.'};
+  }finally{lock.releaseLock();}
+}
+
 function getComplaintRecords_(searchText){
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
  if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:COMPLAINT_HEADERS};
