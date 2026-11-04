@@ -337,7 +337,7 @@ function saveComplaint_(input){
  if(!input)throw new Error('No complaint data received.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
  if(!sh)throw new Error('Click Prepare Database first to create the Complaint Monitoring tab.');
- const data=sh.getDataRange().getValues(),headers=data[0].map(String),now=new Date();
+ const headers=ensureComplaintSchema_(sh),data=sh.getDataRange().getValues(),now=new Date();
  const required=['Date','Company','Client','Name of Complainant','Complaint Description'];
  required.forEach(h=>{if(!String(input[h]||'').trim())throw new Error(h+' is required.')});
  if(!['GEMCOR','GPI'].includes(String(input.Company||'').trim().toUpperCase()))throw new Error('Company must be GEMCOR or GPI.');
@@ -385,7 +385,7 @@ function submitPublicComplaint(payload){
       attachmentUrl=file.getUrl();
     }
     const items=payload.items.map(x=>({Item:String(x.Item||'').trim(), 'Panel Name':String(x['Panel Name']||'').trim(),Qty:String(x.Qty||'').trim()}));
-    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':String(h['Complaint Description']).trim(),'QC In-Charge':'',Cause:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl};
+    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':String(h['Complaint Description']).trim(),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl};
     sh.appendRow(headers.map(k=>rec[k]===undefined?'':rec[k]));
     invalidateComplaintCache_();
     return {ok:true,recordId:id,message:'Your complaint has been submitted successfully.'};
