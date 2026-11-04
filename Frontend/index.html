@@ -1862,21 +1862,45 @@ function continueAsGuest(){
 }
 function openGuestComplaintForm(){
  if(!document.body.classList.contains('guest-mode'))return;
- const app=document.getElementById('qaqcApp'),page=document.getElementById('publicComplaintPage');
- if(!app||!page)return;
- app.style.display='none';page.style.display='block';
- const header=page.querySelector('.public-complaint-head');
- if(header&&!document.getElementById('guestComplaintBack')){
-  const back=document.createElement('button');back.id='guestComplaintBack';back.type='button';back.className='public-complaint-back';back.textContent='← Back to Dashboard';back.onclick=closeGuestComplaintForm;header.insertBefore(back,header.firstChild);
+ const app=el('qaqcApp'),page=el('publicComplaintPage'),main=document.querySelector('#qaqcApp main');
+ if(!app||!page||!main)return;
+ app.style.display='grid';
+ document.querySelectorAll('.nav button[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page==='Complain'));
+ currentPage='Complain';
+ el('pageHeading').textContent='Complain Monitoring';
+ el('pageDescription').textContent='Submit a complaint to the QA/QC Department.';
+ el('status').style.display='none';
+ el('monitoringPanel').style.display='none';
+ let workspace=el('guestComplainWorkspace');
+ if(!workspace){
+  workspace=document.createElement('section');workspace.id='guestComplainWorkspace';workspace.className='panel';
+  workspace.style.cssText='display:flex;flex-direction:column;gap:16px;min-height:180px';
+  const action=document.createElement('div');action.style.cssText='display:flex;justify-content:flex-start;align-items:center';
+  const create=document.createElement('button');create.type='button';create.className='primary';create.textContent='＋ Create Complain';create.onclick=()=>{
+   const form=el('guestComplainFormArea');if(form)form.style.display='block';
+   create.style.display='none';
+   const today=new Date(),localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+   const dateInput=el('pubDate');if(dateInput&&!dateInput.value)dateInput.value=localDate;
+   if(!el('publicComplaintItems').children.length)addPublicComplaintItem();
+   form?.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  action.appendChild(create);workspace.appendChild(action);
+  const formArea=document.createElement('div');formArea.id='guestComplainFormArea';formArea.style.display='none';
+  formArea.appendChild(page.querySelector('.public-complaint-card'));
+  workspace.appendChild(formArea);
+  const back=document.createElement('button');back.type='button';back.textContent='← Back to Dashboard';back.onclick=closeGuestComplaintForm;back.style.cssText='align-self:flex-start';
+  workspace.appendChild(back);
+  const intro=main.querySelector('.intro');intro?.insertAdjacentElement('afterend',workspace);
  }
- const today=new Date(),localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
- const dateInput=el('pubDate');if(dateInput&&!dateInput.value)dateInput.value=localDate;
- if(!el('publicComplaintItems').children.length)addPublicComplaintItem();
+ workspace.style.display='flex';
  window.scrollTo(0,0);
 }
 function closeGuestComplaintForm(){
- const app=document.getElementById('qaqcApp'),page=document.getElementById('publicComplaintPage');
- if(page)page.style.display='none';if(app)app.style.display='grid';
+ const app=el('qaqcApp'),workspace=el('guestComplainWorkspace');
+ if(workspace)workspace.style.display='none';
+ if(app)app.style.display='grid';
+ el('status').style.display='';
+ el('monitoringPanel').style.display='';
  switchPage('Transfer Monitoring');window.scrollTo(0,0);
 }
 if(PUBLIC_COMPLAINT_MODE){
