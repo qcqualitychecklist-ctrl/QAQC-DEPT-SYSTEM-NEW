@@ -367,7 +367,7 @@ function submitPublicComplaint(payload){
     let attachmentUrl='';
     if(payload.attachment&&payload.attachment.data){
       const a=payload.attachment, mime=String(a.mimeType||'');
-      if(!/^image\/(jpeg|png|gif|webp)|^video\/(mp4|quicktime|webm)$/.test(mime))throw new Error('Only image or video attachments are allowed.');
+      if(!/^(image\/(jpeg|png|gif|webp)|video\/(mp4|quicktime|webm))$/.test(mime))throw new Error('Only image or video attachments are allowed.');
       const bytes=Utilities.base64Decode(String(a.data).split(',').pop());
       if(bytes.length>10*1024*1024)throw new Error('Attachment must not exceed 10 MB.');
       let folder;const folders=DriveApp.getFoldersByName('QAQC Complaint Attachments');
