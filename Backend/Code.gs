@@ -372,7 +372,7 @@ function deleteComplaint(id){
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
  if(!sh||sh.getLastRow()<2)throw new Error('Complaint record was not found.');
  const data=sh.getDataRange().getValues(),headers=data[0].map(String),col=headers.indexOf('Complaint ID');
- for(let i=1;i<data.length;i++)if(String(data[i][col]).trim()===key){sh.deleteRow(i+1);invalidateModuleCache_('Complaint Monitoring');return {ok:true,message:'Complaint deleted.'};}
+ for(let i=1;i<data.length;i++)if(String(data[i][col]).trim()===key){sh.deleteRow(i+1);invalidateComplaintCache_();return {ok:true,message:'Complaint deleted.'};}
  throw new Error('Complaint record was not found. Refresh and try again.');
 }
 
