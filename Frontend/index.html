@@ -2163,7 +2163,7 @@ function openGuestComplaintForm(){
   const notice=document.createElement('div');notice.id='guestComplaintNotice';notice.className='public-complaint-message success';notice.style.display='none';workspace.append(notice);
   const formArea=document.createElement('div');formArea.id='guestComplainFormArea';formArea.style.display='none';formArea.append(page.querySelector('.public-complaint-card'));workspace.append(formArea);
   const history=document.createElement('section');history.id='complaintHistorySection';history.style.cssText='display:flex;flex-direction:column;gap:10px';const historyTitle=document.createElement('h3');historyTitle.textContent='Complaint History';historyTitle.style.cssText='margin:0;color:#18365d';const historyWrap=document.createElement('div');historyWrap.id='complaintHistoryBody';historyWrap.style.cssText='width:100%;overflow-x:auto';history.append(historyTitle,historyWrap);workspace.append(history);
-  const back=document.createElement('button');back.type='button';back.textContent='← Back to Dashboard';back.onclick=()=>returnGuestToWorkspace('complaint');back.style.cssText='align-self:flex-start';workspace.append(back);
+  const back=document.createElement('button');back.type='button';back.textContent='Exit';back.onclick=()=>returnGuestToWorkspace('complaint');back.style.cssText='align-self:flex-start';workspace.append(back);
   const intro=main.querySelector('.intro');intro?.insertAdjacentElement('afterend',workspace);
  }
  workspace.style.display='flex';if(el('guestComplainFormArea'))el('guestComplainFormArea').style.display='none';if(el('createGuestComplainButton'))el('createGuestComplainButton').style.display='';
@@ -2191,7 +2191,7 @@ function openGuestPdiRequest(){
   const notice=document.createElement('div');notice.id='guestPdiNotice';notice.className='public-complaint-message success';notice.style.display='none';workspace.append(notice);
   const formArea=document.createElement('div');formArea.id='guestPdiFormArea';formArea.style.display='none';formArea.append(page.querySelector('.pdi-request-card'));workspace.append(formArea);
   const history=document.createElement('section');history.style.cssText='display:flex;flex-direction:column;gap:10px';const title=document.createElement('h3');title.textContent='PDI Request History';title.style.cssText='margin:0;color:#18365d';const wrap=document.createElement('div');wrap.id='pdiRequestHistoryBody';wrap.style.cssText='width:100%;overflow-x:auto';history.append(title,wrap);workspace.append(history);
-  const back=document.createElement('button');back.type='button';back.textContent='← Back to Dashboard';back.onclick=()=>returnGuestToWorkspace('pdi');back.style.cssText='align-self:flex-start';workspace.append(back);
+  const back=document.createElement('button');back.type='button';back.textContent='Exit';back.onclick=()=>returnGuestToWorkspace('pdi');back.style.cssText='align-self:flex-start';workspace.append(back);
   const intro=main.querySelector('.intro');intro?.insertAdjacentElement('afterend',workspace);
  }
  workspace.style.display='flex';if(el('guestPdiFormArea'))el('guestPdiFormArea').style.display='none';if(el('createGuestPdiButton'))el('createGuestPdiButton').style.display='';
