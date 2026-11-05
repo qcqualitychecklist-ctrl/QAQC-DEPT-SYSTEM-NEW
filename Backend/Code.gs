@@ -114,9 +114,10 @@ function updateAccountCredentials(currentUsername,currentPassword,newUsername,ne
 
 
 function doGet(e) {
-  const publicComplaint=String(e&&e.parameter&&e.parameter.page||'').toLowerCase()==='complaint';
+  const page=String(e&&e.parameter&&e.parameter.page||'').toLowerCase();
+  const publicComplaint=page==='complaint',publicPdi=page==='pdi';
   return HtmlService.createHtmlOutputFromFile('index')
-    .setTitle(publicComplaint?'Submit a Complaint | QAQC':'QAQC Department System')
+    .setTitle(publicPdi?'PDI Request Form':publicComplaint?'Submit a Complaint | QAQC':'QAQC Department System')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
 }
 
@@ -405,6 +406,27 @@ function submitPublicComplaint(payload,sessionToken){
 function getMyComplaintHistory(sessionToken){
   const username=getComplaintSessionUsername_(sessionToken);if(!username)throw new Error('Your account session expired. Please log in again to view complaint history.');
   const result=getComplaintRecords_('');return {ok:true,records:(result.records||[]).filter(r=>String(r['Submitted By Username']||'').toLowerCase()===username.toLowerCase())};
+}
+
+function submitPdiRequest(payload){
+ const required=["Requestor's Email","Requestor's Name",'J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection'];
+ if(!payload||typeof payload!=='object')throw new Error('Please complete the PDI request form.');
+ required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
+ const email=String(payload["Requestor's Email"]).trim();
+ if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))throw new Error('Please enter a valid requestor email address.');
+ const date=String(payload['Date of PDI']).trim(),time=String(payload.Time).trim();
+ if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date))throw new Error('Please select a valid Date of PDI.');
+ if(!/^\\d{2}:\\d{2}$/.test(time))throw new Error('Please select a valid inspection time.');
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ try{
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
+  if(!sh)throw new Error('PDI Monitoring database is not prepared. Please contact QA/QC.');
+  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
+  const record=Object.assign({},payload,{'QC in Charge':'',Status:'Pending',Remarks:''});
+  sh.appendRow(headers.map(h=>record[h]===undefined?'':record[h]));
+  try{CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');}catch(e){}
+  return {ok:true,message:'Your PDI request has been submitted successfully.'};
+ }finally{lock.releaseLock();}
 }
 function getPdiRecords_(searchText){
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
