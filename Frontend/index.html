@@ -2151,6 +2151,7 @@ function continueAsGuest(){
 }
 function openGuestComplaintForm(){
  const app=el('qaqcApp'),page=el('publicComplaintPage'),main=document.querySelector('#qaqcApp main');if(!app||!page||!main)return;
+ const pdiWorkspace=el('guestPdiWorkspace');if(pdiWorkspace)pdiWorkspace.style.display='none';
  app.style.display='grid';document.querySelectorAll('.nav button[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page==='Complain'));
  currentPage='Complain';el('pageHeading').textContent='Complain Monitoring';el('pageDescription').textContent='Submit a complaint and review your complaint history.';
  el('status').style.display='none';el('monitoringPanel').style.display='none';let workspace=el('guestComplainWorkspace');
@@ -2179,6 +2180,7 @@ function renderGuestPdiHistory(){
 }
 function openGuestPdiRequest(){
  const app=el('qaqcApp'),page=el('publicPdiPage'),main=document.querySelector('#qaqcApp main');if(!app||!page||!main)return;
+ const complaintWorkspace=el('guestComplainWorkspace');if(complaintWorkspace)complaintWorkspace.style.display='none';
  app.style.display='grid';document.querySelectorAll('.nav button[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page==='PDI Request'));
  currentPage='PDI Request';el('pageHeading').textContent='PDI Request';el('pageDescription').textContent='Submit a PDI request and review requests submitted during this guest session.';
  el('status').style.display='none';el('monitoringPanel').style.display='none';let workspace=el('guestPdiWorkspace');
