@@ -1719,6 +1719,38 @@ function submitRework(ev){
 }
 
 
+// Login click recovery: route pointer clicks by the visible login-button bounds if an
+// overlapping layer becomes the event target. Normal button clicks remain unchanged.
+(function installLoginClickRecovery(){
+ if(window.__qaqcLoginClickRecoveryInstalled)return;
+ window.__qaqcLoginClickRecoveryInstalled=true;
+ document.addEventListener('click',function(event){
+  const landing=document.getElementById('loginLanding');
+  if(!landing||getComputedStyle(landing).display==='none')return;
+  const target=event.target;
+  if(target&&target.closest&&target.closest('#loginLanding button'))return;
+  const candidates=[
+   {selector:'.access-login-btn',run:function(){
+    const form=document.querySelector('#loginLanding .access-login form');
+    if(form&&!form.reportValidity())return;
+    submitLogin();
+   }},
+   {selector:'.access-register-toggle',run:toggleRegistration},
+   {selector:'.access-guest-btn',run:continueAsGuest}
+  ];
+  for(const item of candidates){
+   const button=landing.querySelector(item.selector);
+   if(!button||button.disabled)continue;
+   const rect=button.getBoundingClientRect();
+   if(event.clientX>=rect.left&&event.clientX<=rect.right&&event.clientY>=rect.top&&event.clientY<=rect.bottom){
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    item.run();
+    return;
+   }
+  }
+ },true);
+})();
 function toggleRegistration(){
  const card=document.getElementById('accessCard');
  if(!card)return;
