@@ -2158,7 +2158,7 @@ function openGuestComplaintForm(){
  if(!workspace){
   workspace=document.createElement('section');workspace.id='guestComplainWorkspace';workspace.className='panel';workspace.style.cssText='display:flex;flex-direction:column;gap:16px;min-height:180px';
   const action=document.createElement('div');action.style.cssText='display:flex;justify-content:flex-start;align-items:center';
-  const create=document.createElement('button');create.id='createGuestComplainButton';create.type='button';create.className='primary';create.textContent='＋ Create Complain';create.onclick=()=>{const form=el('guestComplainFormArea');if(form)form.style.display='block';create.style.display='none';const exit=workspace.querySelector('.guest-workspace-exit');if(exit)exit.style.display='';const today=new Date(),localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);const dateInput=el('pubDate');if(dateInput&&!dateInput.value)dateInput.value=localDate;if(!el('publicComplaintItems').children.length)addPublicComplaintItem();form?.scrollIntoView({behavior:'smooth',block:'start'})};
+  const create=document.createElement('button');create.id='createGuestComplainButton';create.type='button';create.className='primary';create.textContent='＋ Create Complain';create.onclick=()=>{const form=el('guestComplainFormArea');if(form)form.style.display='block';const history=el('complaintHistorySection');if(history)history.style.display='none';create.style.display='none';const exit=workspace.querySelector('.guest-workspace-exit');if(exit)exit.style.display='';const today=new Date(),localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);const dateInput=el('pubDate');if(dateInput&&!dateInput.value)dateInput.value=localDate;if(!el('publicComplaintItems').children.length)addPublicComplaintItem();form?.scrollIntoView({behavior:'smooth',block:'start'})};
   action.append(create);workspace.append(action);
   const notice=document.createElement('div');notice.id='guestComplaintNotice';notice.className='public-complaint-message success';notice.style.display='none';workspace.append(notice);
   const formArea=document.createElement('div');formArea.id='guestComplainFormArea';formArea.style.display='none';formArea.append(page.querySelector('.public-complaint-card'));workspace.append(formArea);
@@ -2166,7 +2166,7 @@ function openGuestComplaintForm(){
   const back=document.createElement('button');back.type='button';back.className='guest-workspace-exit';back.textContent='Exit';back.onclick=()=>returnGuestToWorkspace('complaint');back.style.cssText='align-self:flex-start;display:none';workspace.append(back);
   const intro=main.querySelector('.intro');intro?.insertAdjacentElement('afterend',workspace);
  }
- workspace.style.display='flex';if(el('guestComplainFormArea'))el('guestComplainFormArea').style.display='none';if(el('createGuestComplainButton'))el('createGuestComplainButton').style.display='';
+ workspace.style.display='flex';if(el('guestComplainFormArea'))el('guestComplainFormArea').style.display='none';if(el('complaintHistorySection'))el('complaintHistorySection').style.display='flex';if(el('createGuestComplainButton'))el('createGuestComplainButton').style.display='';
  loadComplaintHistory();window.scrollTo(0,0);
 }
 function renderGuestPdiHistory(){
@@ -2187,14 +2187,14 @@ function openGuestPdiRequest(){
  if(!workspace){
   workspace=document.createElement('section');workspace.id='guestPdiWorkspace';workspace.className='panel';workspace.style.cssText='display:flex;flex-direction:column;gap:16px;min-height:180px';
   const action=document.createElement('div');action.style.cssText='display:flex;justify-content:flex-start;align-items:center';
-  const create=document.createElement('button');create.id='createGuestPdiButton';create.type='button';create.className='primary';create.textContent='＋ Create PDI Request';create.onclick=()=>{const form=el('guestPdiFormArea');if(form)form.style.display='block';create.style.display='none';const exit=workspace.querySelector('.guest-workspace-exit');if(exit)exit.style.display='';form?.scrollIntoView({behavior:'smooth',block:'start'})};action.append(create);workspace.append(action);
+  const create=document.createElement('button');create.id='createGuestPdiButton';create.type='button';create.className='primary';create.textContent='＋ Create PDI Request';create.onclick=()=>{const form=el('guestPdiFormArea');if(form)form.style.display='block';const history=el('pdiRequestHistorySection');if(history)history.style.display='none';create.style.display='none';const exit=workspace.querySelector('.guest-workspace-exit');if(exit)exit.style.display='';form?.scrollIntoView({behavior:'smooth',block:'start'})};action.append(create);workspace.append(action);
   const notice=document.createElement('div');notice.id='guestPdiNotice';notice.className='public-complaint-message success';notice.style.display='none';workspace.append(notice);
   const formArea=document.createElement('div');formArea.id='guestPdiFormArea';formArea.style.display='none';formArea.append(page.querySelector('.pdi-request-card'));workspace.append(formArea);
-  const history=document.createElement('section');history.style.cssText='display:flex;flex-direction:column;gap:10px';const title=document.createElement('h3');title.textContent='PDI Request History';title.style.cssText='margin:0;color:#18365d';const wrap=document.createElement('div');wrap.id='pdiRequestHistoryBody';wrap.style.cssText='width:100%;overflow-x:auto';history.append(title,wrap);workspace.append(history);
+  const history=document.createElement('section');history.id='pdiRequestHistorySection';history.style.cssText='display:flex;flex-direction:column;gap:10px';const title=document.createElement('h3');title.textContent='PDI Request History';title.style.cssText='margin:0;color:#18365d';const wrap=document.createElement('div');wrap.id='pdiRequestHistoryBody';wrap.style.cssText='width:100%;overflow-x:auto';history.append(title,wrap);workspace.append(history);
   const back=document.createElement('button');back.type='button';back.className='guest-workspace-exit';back.textContent='Exit';back.onclick=()=>returnGuestToWorkspace('pdi');back.style.cssText='align-self:flex-start;display:none';workspace.append(back);
   const intro=main.querySelector('.intro');intro?.insertAdjacentElement('afterend',workspace);
  }
- workspace.style.display='flex';if(el('guestPdiFormArea'))el('guestPdiFormArea').style.display='none';if(el('createGuestPdiButton'))el('createGuestPdiButton').style.display='';
+ workspace.style.display='flex';if(el('guestPdiFormArea'))el('guestPdiFormArea').style.display='none';if(el('pdiRequestHistorySection'))el('pdiRequestHistorySection').style.display='flex';if(el('createGuestPdiButton'))el('createGuestPdiButton').style.display='';
  renderGuestPdiHistory();window.scrollTo(0,0);
 }
 function returnGuestToWorkspace(type){
@@ -2204,6 +2204,7 @@ function returnGuestToWorkspace(type){
  if(workspace)workspace.style.display='flex';
  if(form)form.style.display='none';
  if(create)create.style.display='';
+ const history=el(isPdi?'pdiRequestHistorySection':'complaintHistorySection');if(history)history.style.display='flex';
  const exit=workspace?.querySelector('.guest-workspace-exit');if(exit)exit.style.display='none';
  if(isPdi)renderGuestPdiHistory();else loadComplaintHistory();
  el('monitoringPanel').style.display='none';el('status').style.display='none';
