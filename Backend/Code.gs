@@ -20,7 +20,9 @@ const REWORK_SHEET = 'Rework Monitoring';
 const PUNCHLIST_SHEET = 'Punchlist Monitoring';
 const NCR_SHEET = 'NCR Monitoring';
 const COMPLAINT_SHEET = 'Complaint Monitoring';
+const PDI_SHEET = 'PDI Monitoring';
 const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','Person Responsible','Investigation','Status','Created At','Updated At','Items JSON','Attachment URL','Submitted By Username'];
+const PDI_HEADERS = ["Requestor's Email","Requestor's Name",'J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request','QC in Charge','Status','Remarks'];
 const NCR_HEADERS = ['Reference','Date','Prepared by','Section','Person In Charge','Description of Issue','Corrective Action','Status','Date Closed'];
 const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
 const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
@@ -133,14 +135,14 @@ function getSystemStatus() {
   try {
     const ss = SpreadsheetApp.openById(DATABASE_ID);
     return {ok:true,databaseName:ss.getName(),existingSheets:ss.getSheets().map(s=>s.getName()),
-      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,REWORK_SHEET,REWORK_MAIN_SHEET,REWORK_DETAILS_SHEET,REWORK_ASSIGNMENTS_SHEET,PUNCHLIST_SHEET,NCR_SHEET,COMPLAINT_SHEET]};
+      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,REWORK_SHEET,REWORK_MAIN_SHEET,REWORK_DETAILS_SHEET,REWORK_ASSIGNMENTS_SHEET,PUNCHLIST_SHEET,NCR_SHEET,COMPLAINT_SHEET,PDI_SHEET]};
   } catch (e) { return {ok:false,message:String(e.message||e)}; }
 }
 
 function setupDatabase() {
   const ss = SpreadsheetApp.openById(DATABASE_ID);
   const created = [];
-  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_SHEET,REWORK_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS],[PUNCHLIST_SHEET,PUNCHLIST_HEADERS],[NCR_SHEET,NCR_HEADERS],[COMPLAINT_SHEET,COMPLAINT_HEADERS]].forEach(pair=>{
+  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_SHEET,REWORK_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS],[PUNCHLIST_SHEET,PUNCHLIST_HEADERS],[NCR_SHEET,NCR_HEADERS],[COMPLAINT_SHEET,COMPLAINT_HEADERS],[PDI_SHEET,PDI_HEADERS]].forEach(pair=>{
     let sh=ss.getSheetByName(pair[0]);
     if (!sh) { sh=ss.insertSheet(pair[0]); created.push(pair[0]); }
     if (sh.getLastRow()===0) {
@@ -157,7 +159,7 @@ function setupDatabase() {
 }
 
 function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) {
-  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring','Punchlist Monitoring','NCR Monitoring','Complaint Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
+  if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring','Punchlist Monitoring','NCR Monitoring','Complaint Monitoring','PDI Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const query=String(searchText||'').trim();
   // v3 stores the records already sorted, avoiding a full-array sort on the
   // immediate follow-up request used by the first-50 loading flow.
@@ -174,6 +176,7 @@ function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) 
     else if(moduleName==='Punchlist Monitoring')result=getPunchlistRecords_(query);
     else if(moduleName==='NCR Monitoring')result=getNcrRecords_(query);
     else if(moduleName==='Complaint Monitoring')result=getComplaintRecords_(query);
+    else if(moduleName==='PDI Monitoring')result=getPdiRecords_(query);
     else result=getFGTSMonitoringRecords_(query);
   }
   if(!result||!result.ok)return result;
@@ -273,7 +276,7 @@ function getReworkRecords_(searchText) {
 }
 
 function sortModuleRecordsNewestFirst_(moduleName, records) {
-  const dateField=moduleName==='J.O Register'?'Received':moduleName==='Rework Monitoring'?'Date Issue':moduleName==='NCR Monitoring'?'Date':moduleName==='Complaint Monitoring'?'Date':'Date Received';
+  const dateField=moduleName==='J.O Register'?'Received':moduleName==='Rework Monitoring'?'Date Issue':moduleName==='NCR Monitoring'?'Date':moduleName==='Complaint Monitoring'?'Date':moduleName==='PDI Monitoring'?'Date of PDI':'Date Received';
   return (records||[]).map((record,index)=>({record:record,index:index,date:joParseDate_(record&&record[dateField])}))
     .sort((a,b)=>{
       const at=a.date?a.date.getTime():-Infinity,bt=b.date?b.date.getTime():-Infinity;
@@ -402,6 +405,14 @@ function submitPublicComplaint(payload,sessionToken){
 function getMyComplaintHistory(sessionToken){
   const username=getComplaintSessionUsername_(sessionToken);if(!username)throw new Error('Your account session expired. Please log in again to view complaint history.');
   const result=getComplaintRecords_('');return {ok:true,records:(result.records||[]).filter(r=>String(r['Submitted By Username']||'').toLowerCase()===username.toLowerCase())};
+}
+function getPdiRecords_(searchText){
+ const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
+ if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:PDI_HEADERS};
+ const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
+ const records=sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues().map(row=>{const rec={};headers.forEach((name,i)=>rec[name]=name==='Time'?formatTimeCell_(row[i]):formatCell_(row[i]));if(!rec.Status)rec.Status='Pending';return rec;});
+ const q=String(searchText||'').trim().toLowerCase();
+ return {ok:true,records:q?records.filter(rec=>Object.values(rec).some(v=>String(v||'').toLowerCase().includes(q))):records,fields:PDI_HEADERS};
 }
 function getComplaintRecords_(searchText){
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
