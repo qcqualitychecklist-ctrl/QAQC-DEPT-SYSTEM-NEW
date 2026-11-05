@@ -20,7 +20,7 @@ const REWORK_SHEET = 'Rework Monitoring';
 const PUNCHLIST_SHEET = 'Punchlist Monitoring';
 const NCR_SHEET = 'NCR Monitoring';
 const COMPLAINT_SHEET = 'Complaint Monitoring';
-const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','Person Responsible','Investigation','Status','Created At','Updated At','Items JSON','Attachment URL'];
+const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','Person Responsible','Investigation','Status','Created At','Updated At','Items JSON','Attachment URL','Submitted By Username'];
 const NCR_HEADERS = ['Reference','Date','Prepared by','Section','Person In Charge','Description of Issue','Corrective Action','Status','Date Closed'];
 const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
 const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
@@ -70,13 +70,18 @@ function createAccount(fullName,department,position,username,password) {
     return {ok:true,message:'Account created successfully. You can now log in.'};
   } finally {lock.releaseLock();}
 }
+function issueComplaintSessionToken_(username){
+  const token=Utilities.getUuid().replace(/-/g,'')+Utilities.getUuid().replace(/-/g,'');
+  CacheService.getScriptCache().put('qaqc_complaint_session_'+token,String(username||'').trim(),21600);return token;
+}
+function getComplaintSessionUsername_(token){const key=String(token||'').trim();return key?String(CacheService.getScriptCache().get('qaqc_complaint_session_'+key)||'').trim():'';}
+function revokeComplaintSession(token){const key=String(token||'').trim();if(key)CacheService.getScriptCache().remove('qaqc_complaint_session_'+key);return {ok:true};}
 function loginAccount(username,password) {
   username=String(username||'').trim();password=String(password||'');
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ACCOUNT_SHEET);
   if(!sh||sh.getLastRow()<2)return {ok:false,message:'Invalid username or password.'};
   const rows=sh.getDataRange().getValues(),hash=accountHash_(password);
-  for(let i=1;i<rows.length;i++)if(String(rows[i][3]||'').toLowerCase()===username.toLowerCase()&&String(rows[i][4]||'')===hash)
-    return {ok:true,fullName:String(rows[i][0]||''),department:String(rows[i][1]||''),position:String(rows[i][2]||''),username:String(rows[i][3]||''),role:String(rows[i][5]||'User')};
+  for(let i=1;i<rows.length;i++)if(String(rows[i][3]||'').toLowerCase()===username.toLowerCase()&&String(rows[i][4]||'')===hash){const accountUsername=String(rows[i][3]||'');return {ok:true,fullName:String(rows[i][0]||''),department:String(rows[i][1]||''),position:String(rows[i][2]||''),username:accountUsername,role:String(rows[i][5]||'User'),authToken:issueComplaintSessionToken_(accountUsername)};}
   return {ok:false,message:'Invalid username or password.'};
 }
 function updateAccountCredentials(currentUsername,currentPassword,newUsername,newPassword) {
@@ -330,7 +335,7 @@ function ensureComplaintSchema_(sh){
  if(!sh||!sh.getLastColumn())throw new Error('Complaint Monitoring database is not prepared yet.');
  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
  [['QC In-Charge','Person Responsible'],['Cause','Investigation']].forEach(([oldName,newName])=>{const oldIndex=headers.indexOf(oldName),newIndex=headers.indexOf(newName);if(oldIndex>=0&&newIndex<0){sh.getRange(1,oldIndex+1).setValue(newName);headers[oldIndex]=newName;}});
- ['Person Responsible','Investigation'].forEach(name=>{if(!headers.includes(name)){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers.push(name);}});
+ ['Person Responsible','Investigation','Submitted By Username'].forEach(name=>{if(!headers.includes(name)){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers.push(name);}});
  return headers;
 }
 function saveComplaint_(input){
@@ -355,8 +360,10 @@ function saveComplaint_(input){
  return {ok:true,recordId:id,message:row>0?'Complaint updated.':'Complaint saved.'};
 }
 
-function submitPublicComplaint(payload){
+function submitPublicComplaint(payload,sessionToken){
   if(!payload||!payload.header||!Array.isArray(payload.items)||!payload.items.length)throw new Error('Complete the complaint details and add at least one item.');
+  const accountUsername=sessionToken?getComplaintSessionUsername_(sessionToken):'';
+  if(sessionToken&&!accountUsername)throw new Error('Your account session expired. Please log in again before submitting.');
   const h=payload.header,required=['Date','Company','Client','Name of Complainant','Complaint Description'];
   required.forEach(k=>{if(!String(h[k]||'').trim())throw new Error(k+' is required.')});
   const company=String(h.Company||'').trim().toUpperCase();
@@ -385,13 +392,17 @@ function submitPublicComplaint(payload){
       attachmentUrl=file.getUrl();
     }
     const items=payload.items.map(x=>({Item:String(x.Item||'').trim(), 'Panel Name':String(x['Panel Name']||'').trim(),Qty:String(x.Qty||'').trim()}));
-    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':String(h['Complaint Description']).trim(),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl};
+    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':String(h['Complaint Description']).trim(),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl,'Submitted By Username':accountUsername};
     sh.appendRow(headers.map(k=>rec[k]===undefined?'':rec[k]));
     invalidateComplaintCache_();
-    return {ok:true,recordId:id,message:'Your complaint has been submitted successfully.'};
+    return {ok:true,recordId:id,attachmentUrl:attachmentUrl,message:'Your complaint has been submitted successfully.'};
   }finally{lock.releaseLock();}
 }
 
+function getMyComplaintHistory(sessionToken){
+  const username=getComplaintSessionUsername_(sessionToken);if(!username)throw new Error('Your account session expired. Please log in again to view complaint history.');
+  const result=getComplaintRecords_('');return {ok:true,records:(result.records||[]).filter(r=>String(r['Submitted By Username']||'').toLowerCase()===username.toLowerCase())};
+}
 function getComplaintRecords_(searchText){
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
  if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:COMPLAINT_HEADERS};
