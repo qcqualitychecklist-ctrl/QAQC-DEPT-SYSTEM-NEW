@@ -717,28 +717,12 @@ table.ncr-table td.ncr-description{min-width:260px;}
 }
 
 
-/* Complaint Monitoring: fit all columns to the available screen width. */
-table.complaint-table{table-layout:fixed!important;width:100%!important;min-width:0!important;max-width:100%!important}
-table.complaint-table th,table.complaint-table td{box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:6px 5px!important;font-size:9px!important}
-table.complaint-table th:nth-child(1),table.complaint-table td:nth-child(1){width:7%}
-table.complaint-table th:nth-child(2),table.complaint-table td:nth-child(2){width:6%}
-table.complaint-table th:nth-child(3),table.complaint-table td:nth-child(3){width:8%}
-table.complaint-table th:nth-child(4),table.complaint-table td:nth-child(4){width:9%}
-table.complaint-table th:nth-child(5),table.complaint-table td:nth-child(5),
-table.complaint-table th:nth-child(6),table.complaint-table td:nth-child(6){width:5%}
-table.complaint-table th:nth-child(7),table.complaint-table td:nth-child(7){width:5%}
-table.complaint-table th:nth-child(8),table.complaint-table td:nth-child(8){width:8%}
-table.complaint-table th:nth-child(9),table.complaint-table td:nth-child(9){width:4%}
-table.complaint-table th:nth-child(10),table.complaint-table td:nth-child(10){width:13%}
-table.complaint-table th:nth-child(11),table.complaint-table td:nth-child(11){width:8%}
-table.complaint-table th:nth-child(12),table.complaint-table td:nth-child(12){width:12%}
-table.complaint-table th:nth-child(13),table.complaint-table td:nth-child(13){width:5%}
-table.complaint-table th:nth-child(14),table.complaint-table td:nth-child(14){width:5%;overflow:visible;text-overflow:clip}
-table.complaint-table td.actioncell{white-space:nowrap;overflow:visible;text-align:center;padding:4px 2px!important}
-table.complaint-table td.actioncell button.complaint-icon-btn{width:22px!important;height:22px!important;min-width:22px!important;padding:0!important;margin:0 1px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:5px!important;font-size:13px!important;line-height:1!important}
+/* Complaint Monitoring: preserve the standard monitoring table typography and spacing. */
+table.complaint-table{table-layout:auto;width:100%;min-width:1450px;max-width:none}
+table.complaint-table th,table.complaint-table td{white-space:nowrap}
+table.complaint-table td.actioncell{white-space:nowrap;min-width:210px}
 #dashboardCards.complaint-dashboard{grid-template-columns:repeat(4,minmax(0,1fr))!important;width:100%;gap:6px!important}
 #dashboardCards.complaint-dashboard .dash-card{min-width:0!important;padding:8px 9px!important}
-@media(max-width:700px){table.complaint-table th,table.complaint-table td{font-size:8px!important;padding:4px 2px!important}table.complaint-table td.actioncell button.complaint-icon-btn{width:19px!important;height:19px!important;min-width:19px!important;font-size:11px!important}}
  
 /* NCR table: keep the three long-text columns on one line with ellipsis.
    The cell() renderer sets title to the full cell text for the hover tooltip. */
@@ -1414,7 +1398,7 @@ function renderComplaintTable(){
  el('dashboardCards').classList.add('complaint-dashboard');el('dashboardCards').innerHTML='';[['Total Complaint',shown.length,'ncr-total'],['Qty',totalQty,'ncr-total'],['GPI',gpiCount,'ncr-open'],['GEMCOR',gemcorCount,'ncr-closed']].forEach(v=>{const card=document.createElement('div');card.className='dash-card '+v[2];const l=document.createElement('div');l.className='dash-label';l.textContent=v[0];const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];card.append(l,n);el('dashboardCards').append(card)});
  const heads=['Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','Person Resp.','Investigation','Attachment','Action'];const pages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));if(tablePage>pages)tablePage=pages;const start=(tablePage-1)*PAGE_SIZE,rows=shown.slice(start,start+PAGE_SIZE);
  el('thead').innerHTML='';el('tbody').innerHTML='';const hr=document.createElement('tr');heads.forEach(h=>{const th=document.createElement('th');th.textContent=h;hr.append(th)});el('thead').append(hr);
- rows.forEach(rec=>{const tr=document.createElement('tr');heads.forEach(h=>{const td=document.createElement('td');if(h==='Attachment'){if(rec['Attachment URL']){const view=document.createElement('button');view.className='small';view.textContent='See Attachment';view.onclick=()=>window.open(rec['Attachment URL'],'_blank','noopener');td.append(view)}else td.textContent='—'}else if(h==='Action'){td.className='actioncell';const full=document.createElement('button');full.type='button';full.className='small complaint-icon-btn';full.textContent='◉';full.title='Full View';full.setAttribute('aria-label','Full View');full.onclick=()=>showComplaintHistoryDetails(rec);const edit=document.createElement('button');edit.type='button';edit.className='small complaint-icon-btn';edit.textContent='✎';edit.title='Edit';edit.setAttribute('aria-label','Edit');edit.onclick=()=>openComplaintForm(rec);const del=document.createElement('button');del.type='button';del.className='small danger complaint-icon-btn';del.textContent='⌫';del.title='Delete';del.setAttribute('aria-label','Delete');del.onclick=()=>{if(!confirm('Delete complaint '+(rec['Complaint ID']||'')+'?'))return;callServer('deleteComplaint',[rec['Complaint ID']],()=>loadRecords(false),e=>showStatus(false,'Delete failed',e.message||String(e)))};td.append(full,edit,del)}else{const key=h==='Person Resp.'?'Person Responsible':h;td.textContent=rec[key]||rec[h]||(h==='Investigation'?rec.Cause:'')||'';td.title=String(td.textContent||'')}tr.append(td)});el('tbody').append(tr)});
+ rows.forEach(rec=>{const tr=document.createElement('tr');heads.forEach(h=>{const td=document.createElement('td');if(h==='Attachment'){if(rec['Attachment URL']){const view=document.createElement('button');view.className='small';view.textContent='See Attachment';view.onclick=()=>window.open(rec['Attachment URL'],'_blank','noopener');td.append(view)}else td.textContent='—'}else if(h==='Action'){td.className='actioncell ncr-action-cell';td.append(button('Full View','small',()=>showComplaintHistoryDetails(rec)),document.createTextNode(' '),button('Edit','small primary',()=>openComplaintForm(rec)),document.createTextNode(' '),button('Delete','small danger',()=>{if(!confirm('Delete complaint '+(rec['Complaint ID']||'')+'?'))return;callServer('deleteComplaint',[rec['Complaint ID']],()=>loadRecords(false),e=>showStatus(false,'Delete failed',e.message||String(e)))}))else{const key=h==='Person Resp.'?'Person Responsible':h;td.textContent=rec[key]||rec[h]||(h==='Investigation'?rec.Cause:'')||'';td.title=String(td.textContent||'')}tr.append(td)});el('tbody').append(tr)});
  el('count').textContent=shown.length?(start+1)+'–'+Math.min(start+PAGE_SIZE,shown.length)+' of '+shown.length+' complaints':'0 complaints';renderPagination(shown.length);
 }
 function renderNcrTable(){
