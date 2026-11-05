@@ -413,10 +413,10 @@ function submitPdiRequest(payload){
  if(!payload||typeof payload!=='object')throw new Error('Please complete the PDI request form.');
  required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
  const email=String(payload["Requestor's Email"]).trim();
- if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))throw new Error('Please enter a valid requestor email address.');
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('Please enter a valid requestor email address.');
  const date=String(payload['Date of PDI']).trim(),time=String(payload.Time).trim();
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date))throw new Error('Please select a valid Date of PDI.');
- if(!/^\\d{2}:\\d{2}$/.test(time))throw new Error('Please select a valid inspection time.');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('Please select a valid Date of PDI.');
+ if(!/^\d{2}:\d{2}$/.test(time))throw new Error('Please select a valid inspection time.');
  const lock=LockService.getScriptLock();lock.waitLock(20000);
  try{
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
