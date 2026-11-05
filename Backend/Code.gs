@@ -395,7 +395,7 @@ function submitPublicComplaint(payload,sessionToken){
     const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':String(h['Complaint Description']).trim(),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl,'Submitted By Username':accountUsername};
     sh.appendRow(headers.map(k=>rec[k]===undefined?'':rec[k]));
     invalidateComplaintCache_();
-    return {ok:true,recordId:id,message:'Your complaint has been submitted successfully.'};
+    return {ok:true,recordId:id,attachmentUrl:attachmentUrl,message:'Your complaint has been submitted successfully.'};
   }finally{lock.releaseLock();}
 }
 
