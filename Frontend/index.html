@@ -795,9 +795,9 @@ table.ncr-table td.ncr-action-cell button{display:inline-block!important;visibil
 .access-brand{grid-column:1/-1;display:flex;align-items:center;gap:14px}.access-logo{width:54px;height:54px;border-radius:14px;background:#e8f1ff;color:#174c91;display:grid;place-items:center;font-size:22px;font-weight:800}.access-brand h1{margin:0;color:#142b4a;font-size:23px}.access-brand p{margin:4px 0 0;color:#68778c;font-size:12px}.access-divider{grid-column:1/-1;height:3px;background:linear-gradient(90deg,#2459a9 0 30%,#dce8f8 30%);margin-top:-8px}
 .access-login{padding:8px 4px}.access-section-title{background:#142b4a;color:white;border-radius:9px;padding:13px 15px;font-size:17px;font-weight:700}.access-note{margin:8px 0 18px;color:#68778c;font-size:12px}.access-login label{display:block;font-weight:700;font-size:12px;margin:13px 0 6px;color:#34445c}.access-login input{height:42px}.access-login-btn,.access-guest-btn{width:100%;height:44px;margin-top:17px;font-weight:700;border-radius:8px}.access-login-btn{background:#174f99;color:white;border-color:#174f99}.access-or{display:flex;align-items:center;gap:12px;margin:16px 0;color:#718096;font-weight:700}.access-or span{height:1px;background:#dce4ef;flex:1}.access-guest-btn{margin-top:0;background:#e7f1ff;border:1px solid #80b4ff;color:#123b70}.access-login small{display:block;text-align:center;color:#68778c;margin-top:8px}
 .access-side{display:grid;gap:12px}.guest-panel{border:1px solid #dce6f3;border-radius:12px;padding:15px;background:#fff}.guest-panel-head{padding:14px;border-radius:8px;background:#e9f7ef;color:#137344;display:flex;justify-content:space-between;gap:10px;align-items:center}.guest-panel-head strong{font-size:18px}.guest-panel-head span{font-size:11px}.guest-panel h3{font-size:15px;margin:18px 0 12px;color:#142b4a}.guest-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.guest-options>div{border:1px solid #dce4ef;border-radius:9px;padding:13px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:132px}.guest-options b{font-size:26px;color:#2459a9}.guest-options>div:last-child b{color:#c43b32}.guest-options strong{font-size:12px;color:#142b4a}.guest-options span{font-size:11px;color:#68778c;line-height:1.35}.guest-info{background:#eef5ff;border:1px solid #c8dcfa;border-radius:8px;padding:11px;margin:13px 0 0;font-size:11px;line-height:1.5;color:#174c91}.internal-panel{background:#142b4a;color:white;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}.internal-panel span{font-size:11px;color:#d7e4f5}
-body.guest-mode .nav button[data-page]:not([data-page="Transfer Monitoring"]):not([data-page="J.O Register"]):not([data-page="Complain"]){display:none!important}
+body.guest-mode .nav button[data-page]:not([data-page="Transfer Monitoring"]):not([data-page="J.O Register"]):not([data-page="Complain"]):not([data-page="PDI Request"]){display:none!important}
 /* Complaint creation is for guest/public users only; hide its navigation tab for signed-in QAQC/admin accounts. */
-body:not(.guest-mode) .nav button[data-page="Complain"]{display:none!important}
+body:not(.guest-mode) .nav button[data-page="Complain"],body:not(.guest-mode) .nav button[data-page="PDI Request"]{display:none!important}
 body.guest-mode #setupBtn,body.guest-mode #addBtn,body.guest-mode #additionalTransferBtn,body.guest-mode #addReworkBtn,body.guest-mode #addPunchlistBtn,body.guest-mode #addNcrBtn,body.guest-mode td.actioncell,body.guest-mode th:last-child{display:none!important}
 body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
 @media(max-width:760px){.login-landing{overflow:auto;align-items:flex-start;padding:12px}.access-card{grid-template-columns:1fr;padding:17px;gap:12px}.access-brand h1{font-size:18px}.access-divider{grid-column:1}.guest-options{grid-template-columns:1fr}.guest-options>div{min-height:0}}
@@ -1095,7 +1095,7 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
    <button class="access-register-toggle" type="button" onclick="toggleRegistration()">REGISTER NEW ACCOUNT</button>
    <div class="access-or"><span></span>OR<span></span></div>
    <button class="access-guest-btn" type="button" onclick="continueAsGuest()">CONTINUE AS GUEST</button>
-   <a href="?page=pdi" class="access-register-toggle" style="display:block;text-align:center;text-decoration:none;margin-top:12px">SUBMIT PDI REQUEST</a>
+   
    <small class="access-note">Guest access is limited to viewing permitted records.</small>
    <div class="access-error" id="loginNotice"></div>
   </section>
@@ -1162,7 +1162,7 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
  </form>
 </dialog>
 <aside class="sidebar"><div class="brand"><div class="logo">QC</div><div><h1>QAQC Department System</h1><div class="subtitle">Quality Assurance &amp; Quality Control</div></div></div><div class="navlabel">Main Menu</div>
-<nav class="nav"><button class="active" data-page="Transfer Monitoring" onclick="switchPage('Transfer Monitoring')"><span>⇄</span>Transfer Monitoring</button><button data-page="J.O Register" onclick="switchPage('J.O Register')"><span>▦</span>J.O Register</button><button data-page="FGTS Monitoring" onclick="switchPage('FGTS Monitoring')"><span>▤</span>FGTS Monitoring</button><button data-page="Rework Monitoring" onclick="switchPage('Rework Monitoring')"><span>↺</span>Rework Monitoring</button><button data-page="Punchlist Monitoring" onclick="switchPage('Punchlist Monitoring')"><span>☷</span>Punchlist Monitoring</button><button data-page="NCR Monitoring" onclick="switchPage('NCR Monitoring')"><span>▣</span>NCR Monitoring</button><button data-page="Complaint Monitoring" onclick="switchPage('Complaint Monitoring')"><span>◉</span>Complaint Monitoring</button><button data-page="PDI Monitoring" onclick="switchPage('PDI Monitoring')"><span>▣</span>PDI Monitoring</button><button data-page="Complain" onclick="openGuestComplaintForm()"><span>✉</span>Complain</button></nav>
+<nav class="nav"><button class="active" data-page="Transfer Monitoring" onclick="switchPage('Transfer Monitoring')"><span>⇄</span>Transfer Monitoring</button><button data-page="J.O Register" onclick="switchPage('J.O Register')"><span>▦</span>J.O Register</button><button data-page="FGTS Monitoring" onclick="switchPage('FGTS Monitoring')"><span>▤</span>FGTS Monitoring</button><button data-page="Rework Monitoring" onclick="switchPage('Rework Monitoring')"><span>↺</span>Rework Monitoring</button><button data-page="Punchlist Monitoring" onclick="switchPage('Punchlist Monitoring')"><span>☷</span>Punchlist Monitoring</button><button data-page="NCR Monitoring" onclick="switchPage('NCR Monitoring')"><span>▣</span>NCR Monitoring</button><button data-page="Complaint Monitoring" onclick="switchPage('Complaint Monitoring')"><span>◉</span>Complaint Monitoring</button><button data-page="PDI Monitoring" onclick="switchPage('PDI Monitoring')"><span>▣</span>PDI Monitoring</button><button data-page="Complain" onclick="openGuestComplaintForm()"><span>✉</span>Complain</button><button data-page="PDI Request" onclick="openGuestPdiRequest()"><span>▣</span>PDI Request</button></nav>
 <button id="menuToggle" class="menu-toggle" type="button" aria-label="Hide main menu" aria-expanded="true" title="Hide main menu" onclick="toggleMainMenu()"><span></span><span></span><span></span></button></aside>
 <main>
 
@@ -1967,6 +1967,7 @@ function showGuestComplaintToast(message){
  window.guestComplaintToastTimer=setTimeout(()=>toast.classList.remove('show'),4200);
 }
 let guestComplaintHistory=[];
+ let guestPdiHistory=[];
 
 function showPublicPdiMessage(message,success){const box=el('publicPdiMessage');box.textContent=message;box.className='pdi-request-message '+(success?'success':'error');box.scrollIntoView({behavior:'smooth',block:'center'});}
 function submitPublicPdiForm(event){
@@ -1984,7 +1985,15 @@ function submitPublicPdiForm(event){
  google.script.run.withSuccessHandler(result=>{
   btn.disabled=false;btn.textContent='Submit PDI Request';
   if(!result||result.ok===false){showPublicPdiMessage(result&&result.message||'Unable to submit your PDI request.',false);return;}
-  el('publicPdiForm').reset();showPublicPdiMessage(result.message||'Your PDI request has been submitted successfully.',true);
+  el('publicPdiForm').reset();
+  const saved={...payload,Status:'Pending',Remarks:'Submitted'};guestPdiHistory.unshift(saved);
+  const workspace=el('guestPdiWorkspace');
+  if(workspace&&workspace.style.display!=='none'){
+   const formArea=el('guestPdiFormArea'),create=el('createGuestPdiButton'),notice=el('guestPdiNotice');
+   if(formArea)formArea.style.display='none';if(create)create.style.display='';
+   if(notice){notice.textContent=result.message||'Your PDI request has been submitted successfully.';notice.className='public-complaint-message success';notice.style.display='block';}
+   renderGuestPdiHistory();
+  }else showPublicPdiMessage(result.message||'Your PDI request has been submitted successfully.',true);
  }).withFailureHandler(err=>{
   btn.disabled=false;btn.textContent='Submit PDI Request';showPublicPdiMessage(err&&err.message||String(err),false);
  }).submitPdiRequest(payload);
@@ -2159,9 +2168,36 @@ function openGuestComplaintForm(){
  workspace.style.display='flex';if(el('guestComplainFormArea'))el('guestComplainFormArea').style.display='none';if(el('createGuestComplainButton'))el('createGuestComplainButton').style.display='';
  loadComplaintHistory();window.scrollTo(0,0);
 }
+function renderGuestPdiHistory(){
+ const host=el('pdiRequestHistoryBody');if(!host)return;host.innerHTML='';
+ if(!guestPdiHistory.length){const p=document.createElement('p');p.className='muted';p.textContent='No PDI requests submitted in this guest session yet.';host.append(p);return}
+ const table=document.createElement('table');table.style.cssText='width:100%;min-width:650px;border-collapse:collapse;table-layout:fixed';
+ const thead=document.createElement('thead'),hr=document.createElement('tr'),body=document.createElement('tbody');
+ ['Requestor Name','J.O','S.O','Client','Date of PDI','Status'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.cssText='padding:10px;text-align:left;background:#edf2f8;color:#233b5d;font-size:11px';hr.append(th)});thead.append(hr);table.append(thead);
+ guestPdiHistory.forEach(rec=>{const tr=document.createElement('tr');[rec["Requestor's Name"],rec['J.O'],rec['S.O'],rec.Client,rec['Date of PDI'],rec.Status||'Pending'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value||'—');td.title=td.textContent;td.style.cssText='padding:10px;border-bottom:1px solid #e4eaf2;font-size:11px;overflow-wrap:anywhere';tr.append(td)});body.append(tr)});
+ table.append(body);host.append(table);
+}
+function openGuestPdiRequest(){
+ const app=el('qaqcApp'),page=el('publicPdiPage'),main=document.querySelector('#qaqcApp main');if(!app||!page||!main)return;
+ app.style.display='grid';document.querySelectorAll('.nav button[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page==='PDI Request'));
+ currentPage='PDI Request';el('pageHeading').textContent='PDI Request';el('pageDescription').textContent='Submit a PDI request and review requests submitted during this guest session.';
+ el('status').style.display='none';el('monitoringPanel').style.display='none';let workspace=el('guestPdiWorkspace');
+ if(!workspace){
+  workspace=document.createElement('section');workspace.id='guestPdiWorkspace';workspace.className='panel';workspace.style.cssText='display:flex;flex-direction:column;gap:16px;min-height:180px';
+  const action=document.createElement('div');action.style.cssText='display:flex;justify-content:flex-start;align-items:center';
+  const create=document.createElement('button');create.id='createGuestPdiButton';create.type='button';create.className='primary';create.textContent='＋ Create PDI Request';create.onclick=()=>{const form=el('guestPdiFormArea');if(form)form.style.display='block';create.style.display='none';form?.scrollIntoView({behavior:'smooth',block:'start'})};action.append(create);workspace.append(action);
+  const notice=document.createElement('div');notice.id='guestPdiNotice';notice.className='public-complaint-message success';notice.style.display='none';workspace.append(notice);
+  const formArea=document.createElement('div');formArea.id='guestPdiFormArea';formArea.style.display='none';formArea.append(page.querySelector('.pdi-request-card'));workspace.append(formArea);
+  const history=document.createElement('section');history.style.cssText='display:flex;flex-direction:column;gap:10px';const title=document.createElement('h3');title.textContent='PDI Request History';title.style.cssText='margin:0;color:#18365d';const wrap=document.createElement('div');wrap.id='pdiRequestHistoryBody';wrap.style.cssText='width:100%;overflow-x:auto';history.append(title,wrap);workspace.append(history);
+  const back=document.createElement('button');back.type='button';back.textContent='← Back to Dashboard';back.onclick=closeGuestComplaintForm;back.style.cssText='align-self:flex-start';workspace.append(back);
+  const intro=main.querySelector('.intro');intro?.insertAdjacentElement('afterend',workspace);
+ }
+ workspace.style.display='flex';if(el('guestPdiFormArea'))el('guestPdiFormArea').style.display='none';if(el('createGuestPdiButton'))el('createGuestPdiButton').style.display='';
+ renderGuestPdiHistory();window.scrollTo(0,0);
+}
 function closeGuestComplaintForm(){
- const app=el('qaqcApp'),workspace=el('guestComplainWorkspace');
- if(workspace)workspace.style.display='none';
+ const app=el('qaqcApp'),workspace=el('guestComplainWorkspace'),pdiWorkspace=el('guestPdiWorkspace');
+ if(workspace)workspace.style.display='none';if(pdiWorkspace)pdiWorkspace.style.display='none';
  if(app)app.style.display='grid';
  el('status').style.display='';
  el('monitoringPanel').style.display='';
