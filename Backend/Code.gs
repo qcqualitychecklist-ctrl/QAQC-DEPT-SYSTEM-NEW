@@ -20,7 +20,7 @@ const REWORK_SHEET = 'Rework Monitoring';
 const PUNCHLIST_SHEET = 'Punchlist Monitoring';
 const NCR_SHEET = 'NCR Monitoring';
 const COMPLAINT_SHEET = 'Complaint Monitoring';
-const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','QC In-Charge','Cause','Status','Created At','Updated At','Items JSON','Attachment URL'];
+const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','Person Responsible','Investigation','Status','Created At','Updated At','Items JSON','Attachment URL'];
 const NCR_HEADERS = ['Reference','Date','Prepared by','Section','Person In Charge','Description of Issue','Corrective Action','Status','Date Closed'];
 const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
 const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
@@ -326,11 +326,18 @@ function deleteNcr(reference){
 }
 
 function invalidateComplaintCache_(){try{CacheService.getScriptCache().remove('qaqc_module_v3_Complaint_Monitoring');}catch(e){}}
+function ensureComplaintSchema_(sh){
+ if(!sh||!sh.getLastColumn())throw new Error('Complaint Monitoring database is not prepared yet.');
+ const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
+ [['QC In-Charge','Person Responsible'],['Cause','Investigation']].forEach(([oldName,newName])=>{const oldIndex=headers.indexOf(oldName),newIndex=headers.indexOf(newName);if(oldIndex>=0&&newIndex<0){sh.getRange(1,oldIndex+1).setValue(newName);headers[oldIndex]=newName;}});
+ ['Person Responsible','Investigation'].forEach(name=>{if(!headers.includes(name)){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers.push(name);}});
+ return headers;
+}
 function saveComplaint_(input){
  if(!input)throw new Error('No complaint data received.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
  if(!sh)throw new Error('Click Prepare Database first to create the Complaint Monitoring tab.');
- const data=sh.getDataRange().getValues(),headers=data[0].map(String),now=new Date();
+ const headers=ensureComplaintSchema_(sh),data=sh.getDataRange().getValues(),now=new Date();
  const required=['Date','Company','Client','Name of Complainant','Complaint Description'];
  required.forEach(h=>{if(!String(input[h]||'').trim())throw new Error(h+' is required.')});
  if(!['GEMCOR','GPI'].includes(String(input.Company||'').trim().toUpperCase()))throw new Error('Company must be GEMCOR or GPI.');
@@ -364,6 +371,7 @@ function submitPublicComplaint(payload){
     const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
     if(!sh)throw new Error('Complaint Monitoring database is not prepared yet. Please contact QA/QC.');
     const id='CMP-'+Utilities.getUuid().slice(0,8).toUpperCase(),now=new Date();
+    const headers=ensureComplaintSchema_(sh);
     let attachmentUrl='';
     if(payload.attachment&&payload.attachment.data){
       const a=payload.attachment, mime=String(a.mimeType||'');
@@ -377,8 +385,7 @@ function submitPublicComplaint(payload){
       attachmentUrl=file.getUrl();
     }
     const items=payload.items.map(x=>({Item:String(x.Item||'').trim(), 'Panel Name':String(x['Panel Name']||'').trim(),Qty:String(x.Qty||'').trim()}));
-    const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String);
-    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':String(h['Complaint Description']).trim(),'QC In-Charge':'',Cause:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl};
+    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':String(h['Complaint Description']).trim(),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl};
     sh.appendRow(headers.map(k=>rec[k]===undefined?'':rec[k]));
     invalidateComplaintCache_();
     return {ok:true,recordId:id,message:'Your complaint has been submitted successfully.'};
@@ -388,21 +395,21 @@ function submitPublicComplaint(payload){
 function getComplaintRecords_(searchText){
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
  if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:COMPLAINT_HEADERS};
- const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String);
+ const headers=ensureComplaintSchema_(sh);
  const records=sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues().map(row=>{const rec={};headers.forEach((h,i)=>rec[h]=formatCell_(row[i]));if(!rec.Status)rec.Status='Open';return rec;});
  const q=String(searchText||'').trim().toLowerCase();
  return {ok:true,records:q?records.filter(rec=>Object.values(rec).some(v=>String(v||'').toLowerCase().includes(q))):records,fields:COMPLAINT_HEADERS};
 }
-function updateComplaintStatus(id,status,qcInCharge,cause){
+function updateComplaintStatus(id,status,personResponsible,investigation){
  const key=String(id||'').trim(),next=String(status||'').trim();
  if(!key)throw new Error('Missing Complaint ID.');
  if(!['Open','In Progress','Closed'].includes(next))throw new Error('Invalid complaint status.');
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
  if(!sh||sh.getLastRow()<2)throw new Error('Complaint record was not found.');
- const data=sh.getDataRange().getValues(),headers=data[0].map(String),idCol=headers.indexOf('Complaint ID');
+ const headers=ensureComplaintSchema_(sh),data=sh.getDataRange().getValues(),idCol=headers.indexOf('Complaint ID');
  let row=-1;for(let i=1;i<data.length;i++)if(String(data[i][idCol]).trim()===key){row=i+1;break;}
  if(row<0)throw new Error('Complaint record was not found. Refresh and try again.');
- [['Status',next],['QC In-Charge',String(qcInCharge||'').trim()],['Cause',String(cause||'').trim()],['Updated At',new Date()]].forEach(([name,value])=>{const col=headers.indexOf(name);if(col>=0)sh.getRange(row,col+1).setValue(value);});
+ [['Status',next],['Person Responsible',String(personResponsible||'').trim()],['Investigation',String(investigation||'').trim()],['Updated At',new Date()]].forEach(([name,value])=>{const col=headers.indexOf(name);if(col>=0)sh.getRange(row,col+1).setValue(value);});
  invalidateModuleCache_('Complaint Monitoring');
  return {ok:true,recordId:key,message:'Complaint updated.'};
 }
