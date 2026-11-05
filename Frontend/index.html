@@ -1027,7 +1027,58 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
 #complaintHistoryDetailsModal .complaint-details-actions{padding:12px 24px 20px!important;background:#f8fafc!important;border-top:1px solid #dfe8f2!important}
 @media(max-width:760px){#complaintModal .dialog.complaint-edit-dialog .dialoghead,#complaintHistoryDetailsModal .complaint-history-dialog .dialoghead{padding:16px!important}#complaintModal .dialog.complaint-edit-dialog #complaintForm,#complaintHistoryDetailsModal .complaint-history-details-body{padding:14px!important}}
 
+
+/* Standalone PDI request page; isolated from monitoring layouts. */
+.pdi-request-page{min-height:100vh;background:#f3f6fb;padding:28px 16px;box-sizing:border-box;font-family:inherit;color:#1c2d45}
+.pdi-request-card{max-width:920px;margin:0 auto;background:#fff;border:1px solid #e1e8f0;border-radius:16px;box-shadow:0 12px 34px rgba(20,43,74,.08);overflow:hidden}
+.pdi-request-head{padding:25px 30px;background:#142b4a;color:#fff}
+.pdi-request-head h1{margin:0 0 7px;font-size:23px}.pdi-request-head p{margin:0;color:#d8e3f1;font-size:13px;line-height:1.5}
+.pdi-request-body{padding:25px 30px;display:flex;flex-direction:column;gap:20px}
+.pdi-request-section{border:1px solid #e5ebf2;border-radius:11px;padding:17px}
+.pdi-request-section h2{margin:0 0 14px;color:#18365d;font-size:14px}
+.pdi-request-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 16px}
+.pdi-request-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pdi-request-field.full{grid-column:1/-1}
+.pdi-request-field label{font-size:12px;font-weight:650;color:#34445c}
+.pdi-request-field input,.pdi-request-field textarea{width:100%;box-sizing:border-box;border:1px solid #d4deea;border-radius:7px;padding:10px 11px;font:inherit;font-size:13px;background:#fff;color:#1c2d45}
+.pdi-request-field textarea{min-height:100px;resize:vertical}
+.pdi-request-actions{display:flex;justify-content:flex-end;align-items:center;gap:12px}
+.pdi-request-submit{border:0;border-radius:8px;padding:11px 22px;background:#1d5fa7;color:#fff;font-weight:700;cursor:pointer}
+.pdi-request-submit:disabled{opacity:.6;cursor:wait}
+.pdi-request-message{display:none;padding:11px 13px;border-radius:8px;font-size:13px}
+.pdi-request-message.success{display:block;background:#eaf7ef;color:#17633a}.pdi-request-message.error{display:block;background:#fff0ef;color:#a52a22}
+.pdi-request-back{display:inline-block;margin-top:12px;color:#fff;font-size:12px;text-decoration:underline}
+@media(max-width:650px){.pdi-request-page{padding:12px}.pdi-request-head,.pdi-request-body{padding:19px}.pdi-request-grid{grid-template-columns:1fr}.pdi-request-field.full{grid-column:auto}.pdi-request-actions{flex-direction:column-reverse;align-items:stretch}.pdi-request-submit{width:100%}}
+
 </style></head><body>
+
+<section id="publicPdiPage" class="pdi-request-page" style="display:none">
+ <div class="pdi-request-card">
+  <header class="pdi-request-head"><h1>PDI Request Form</h1><p>Submit your Pre-Delivery Inspection request to the QA/QC Department. Please provide complete and accurate details.</p><a class="pdi-request-back" href="./">← Back to QAQC System</a></header>
+  <form id="publicPdiForm" class="pdi-request-body" onsubmit="submitPublicPdiForm(event)">
+   <div id="publicPdiMessage" class="pdi-request-message" role="status" aria-live="polite"></div>
+   <section class="pdi-request-section"><h2>Requestor Information</h2><div class="pdi-request-grid">
+    <div class="pdi-request-field"><label for="pdiRequestEmail">Requestor's Email *</label><input id="pdiRequestEmail" type="email" required maxlength="160" placeholder="name@company.com"></div>
+    <div class="pdi-request-field"><label for="pdiRequestName">Requestor's Name *</label><input id="pdiRequestName" required maxlength="120" placeholder="Enter your full name"></div>
+    <div class="pdi-request-field"><label for="pdiRequestJO">J.O *</label><input id="pdiRequestJO" required maxlength="80" placeholder="Enter J.O number"></div>
+    <div class="pdi-request-field"><label for="pdiRequestSO">S.O *</label><input id="pdiRequestSO" required maxlength="80" placeholder="Enter S.O number"></div>
+    <div class="pdi-request-field full"><label for="pdiRequestClient">Client *</label><input id="pdiRequestClient" required maxlength="160" placeholder="Enter client name"></div>
+   </div></section>
+   <section class="pdi-request-section"><h2>Inspection Schedule</h2><div class="pdi-request-grid">
+    <div class="pdi-request-field"><label for="pdiRequestDate">Date of PDI *</label><input id="pdiRequestDate" type="date" required></div>
+    <div class="pdi-request-field"><label for="pdiRequestTime">Time *</label><input id="pdiRequestTime" type="time" required></div>
+    <div class="pdi-request-field"><label for="pdiRequestRep">Representative Name *</label><input id="pdiRequestRep" required maxlength="120" placeholder="Enter representative's name"></div>
+    <div class="pdi-request-field"><label for="pdiRequestContact">Contact Number *</label><input id="pdiRequestContact" type="tel" required maxlength="40" placeholder="Enter contact number"></div>
+   </div></section>
+   <section class="pdi-request-section"><h2>Inspection Details</h2><div class="pdi-request-grid">
+    <div class="pdi-request-field full"><label for="pdiRequestScope">Scope of Inspection *</label><textarea id="pdiRequestScope" required maxlength="3000" placeholder="Describe the items, equipment, or scope to be inspected"></textarea></div>
+    <div class="pdi-request-field full"><label for="pdiRequestComments">Comments or Special Request</label><textarea id="pdiRequestComments" maxlength="3000" placeholder="Enter any additional instructions or special requests (optional)"></textarea></div>
+   </div></section>
+   <div class="pdi-request-actions"><button id="publicPdiSubmit" class="pdi-request-submit" type="submit">Submit PDI Request</button></div>
+  </form>
+ </div>
+</section>
+
 <section id="publicComplaintPage" class="public-complaint-page" style="display:none"><div class="public-complaint-card"><header class="public-complaint-head"><h1>Complaint Form</h1><p>Please provide the details of your complaint. The information submitted will be forwarded to the QA/QC Department for review.</p></header><form id="publicComplaintForm" class="public-complaint-body" onsubmit="submitPublicComplaintForm(event)"><div id="publicComplaintMessage" class="public-complaint-message"></div><section class="public-complaint-section"><h2>Complainant Information</h2><div class="public-complaint-grid"><div class="public-complaint-field"><label for="pubDate">Date *</label><input id="pubDate" type="date" required></div><div class="public-complaint-field"><label for="pubCompany">Company *</label><select id="pubCompany" required><option value="">Select Company</option><option>GEMCOR</option><option>GPI</option></select></div><div class="public-complaint-field"><label for="pubClient">Client *</label><input id="pubClient" required placeholder="Enter client / company name"></div><div class="public-complaint-field"><label for="pubName">Name of Complainant *</label><input id="pubName" required placeholder="Enter your full name"></div><div class="public-complaint-field"><label for="pubJO">J.O Number</label><input id="pubJO" placeholder="Enter J.O number"></div><div class="public-complaint-field"><label for="pubSO">S.O Number</label><input id="pubSO" placeholder="Enter S.O number"></div></div></section><section class="public-complaint-section"><h2>Items Concerned</h2><div id="publicComplaintItems"></div><button type="button" onclick="addPublicComplaintItem()">＋ Add Item</button><p class="public-complaint-note">You may add multiple items under the same J.O. Number.</p></section><section class="public-complaint-section"><h2>Complaint Details</h2><div class="public-complaint-grid"><div class="public-complaint-field full"><label for="pubDescription">Complaint Description *</label><textarea id="pubDescription" required placeholder="Describe the issue or concern in detail..."></textarea></div><div class="public-complaint-field full"><label for="pubAttachment">Photo / Video Attachment (Optional)</label><input id="pubAttachment" type="file" accept="image/*,video/mp4,video/quicktime,video/webm"><span class="public-complaint-note">Maximum file size: 10 MB. One photo or video may be attached.</span></div></div></section><div class="public-complaint-actions"><span class="public-complaint-note">Fields marked with * are required. Your complaint will be recorded as Open for QA/QC review.</span><button id="publicComplaintSubmit" class="public-complaint-submit" type="submit">Submit Complaint</button></div></form></div></section>
 <section class="login-landing" id="loginLanding">
  <div class="access-card" id="accessCard">
@@ -1044,6 +1095,7 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
    <button class="access-register-toggle" type="button" onclick="toggleRegistration()">REGISTER NEW ACCOUNT</button>
    <div class="access-or"><span></span>OR<span></span></div>
    <button class="access-guest-btn" type="button" onclick="continueAsGuest()">CONTINUE AS GUEST</button>
+   <a href="?page=pdi" class="access-register-toggle" style="display:block;text-align:center;text-decoration:none;margin-top:12px">SUBMIT PDI REQUEST</a>
    <small class="access-note">Guest access is limited to viewing permitted records.</small>
    <div class="access-error" id="loginNotice"></div>
   </section>
@@ -1896,6 +1948,7 @@ function scheduleQaqcIdleCheck(){
 }
 
 const PUBLIC_COMPLAINT_MODE=new URLSearchParams(window.location.search).get('page')==='complaint';
+const PUBLIC_PDI_MODE=new URLSearchParams(window.location.search).get('page')==='pdi';
 function addPublicComplaintItem(item){
  const host=el('publicComplaintItems'),row=document.createElement('div');row.className='public-complaint-item';
  [['Item *','Item','Enter item'],['Panel Name','Panel Name','Enter panel name'],['Qty','Qty','0']].forEach(([label,key,placeholder])=>{const wrap=document.createElement('div');wrap.className='public-complaint-field';const l=document.createElement('label');l.textContent=label;const input=document.createElement('input');input.placeholder=placeholder;input.dataset.key=key;if(key==='Qty'){input.type='number';input.min='0.01';input.step='any'}input.value=item&&item[key]||'';wrap.append(l,input);row.append(wrap)});
@@ -1914,6 +1967,28 @@ function showGuestComplaintToast(message){
  window.guestComplaintToastTimer=setTimeout(()=>toast.classList.remove('show'),4200);
 }
 let guestComplaintHistory=[];
+
+function showPublicPdiMessage(message,success){const box=el('publicPdiMessage');box.textContent=message;box.className='pdi-request-message '+(success?'success':'error');box.scrollIntoView({behavior:'smooth',block:'center'});}
+function submitPublicPdiForm(event){
+ event.preventDefault();const btn=el('publicPdiSubmit');if(btn.disabled)return;
+ const payload={
+  "Requestor's Email":el('pdiRequestEmail').value.trim(),
+  "Requestor's Name":el('pdiRequestName').value.trim(),
+  "J.O":el('pdiRequestJO').value.trim(),"S.O":el('pdiRequestSO').value.trim(),
+  "Client":el('pdiRequestClient').value.trim(),"Date of PDI":el('pdiRequestDate').value,
+  "Time":el('pdiRequestTime').value,"Representative Name":el('pdiRequestRep').value.trim(),
+  "Contact Number":el('pdiRequestContact').value.trim(),"Scope of Inspection":el('pdiRequestScope').value.trim(),
+  "Comments or Special Request":el('pdiRequestComments').value.trim()
+ };
+ btn.disabled=true;btn.textContent='Submitting…';
+ google.script.run.withSuccessHandler(result=>{
+  btn.disabled=false;btn.textContent='Submit PDI Request';
+  if(!result||result.ok===false){showPublicPdiMessage(result&&result.message||'Unable to submit your PDI request.',false);return;}
+  el('publicPdiForm').reset();showPublicPdiMessage(result.message||'Your PDI request has been submitted successfully.',true);
+ }).withFailureHandler(err=>{
+  btn.disabled=false;btn.textContent='Submit PDI Request';showPublicPdiMessage(err&&err.message||String(err),false);
+ }).submitPdiRequest(payload);
+}
 function submitPublicComplaintForm(event){
  event.preventDefault();const btn=el('publicComplaintSubmit'),file=el('pubAttachment').files[0];
  if(file&&file.size>10*1024*1024){showPublicComplaintMessage('Attachment must not exceed 10 MB.',false);return}
@@ -2092,7 +2167,11 @@ function closeGuestComplaintForm(){
  el('monitoringPanel').style.display='';
  switchPage('Transfer Monitoring');window.scrollTo(0,0);
 }
-if(PUBLIC_COMPLAINT_MODE){
+if(PUBLIC_PDI_MODE){
+ document.getElementById('loginLanding')?.style.setProperty('display','none');
+ document.getElementById('qaqcApp')?.style.setProperty('display','none');
+ document.getElementById('publicPdiPage')?.style.setProperty('display','block');
+}else if(PUBLIC_COMPLAINT_MODE){
  document.getElementById('loginLanding')?.style.setProperty('display','none');
  document.getElementById('qaqcApp')?.style.setProperty('display','none');
  document.getElementById('publicComplaintPage')?.style.setProperty('display','block');
