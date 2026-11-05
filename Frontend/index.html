@@ -716,6 +716,27 @@ table.ncr-table td.ncr-description{min-width:260px;}
 }
 
 
+/* Complaint Monitoring table: compact widths, independent from NCR column sizing. */
+table.complaint-table{table-layout:fixed;width:100%;min-width:1660px}
+table.complaint-table th,table.complaint-table td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+table.complaint-table th:nth-child(1),table.complaint-table td:nth-child(1){width:100px;min-width:100px}
+table.complaint-table th:nth-child(2),table.complaint-table td:nth-child(2){width:100px;min-width:100px}
+table.complaint-table th:nth-child(3),table.complaint-table td:nth-child(3){width:130px;min-width:130px}
+table.complaint-table th:nth-child(4),table.complaint-table td:nth-child(4){width:155px;min-width:155px}
+table.complaint-table th:nth-child(5),table.complaint-table td:nth-child(5),
+table.complaint-table th:nth-child(6),table.complaint-table td:nth-child(6){width:75px;min-width:75px}
+table.complaint-table th:nth-child(7),table.complaint-table td:nth-child(7){width:65px;min-width:65px}
+table.complaint-table th:nth-child(8),table.complaint-table td:nth-child(8){width:110px;min-width:110px}
+table.complaint-table th:nth-child(9),table.complaint-table td:nth-child(9){width:55px;min-width:55px}
+table.complaint-table th:nth-child(10),table.complaint-table td:nth-child(10){width:220px;min-width:220px}
+table.complaint-table th:nth-child(11),table.complaint-table td:nth-child(11){width:135px;min-width:135px}
+table.complaint-table th:nth-child(12),table.complaint-table td:nth-child(12){width:200px;min-width:200px}
+table.complaint-table th:nth-child(13),table.complaint-table td:nth-child(13){width:90px;min-width:90px}
+table.complaint-table th:nth-child(14),table.complaint-table td:nth-child(14){width:110px;min-width:110px}
+table.complaint-table th:nth-child(15),table.complaint-table td:nth-child(15){width:140px;min-width:140px;overflow:visible;text-overflow:clip}
+table.complaint-table td.actioncell{white-space:nowrap;overflow:visible}
+table.complaint-table td.actioncell button{margin:1px!important}
+ 
 /* NCR table: keep the three long-text columns on one line with ellipsis.
    The cell() renderer sets title to the full cell text for the hover tooltip. */
 table.ncr-table{table-layout:fixed;width:100%;min-width:1450px}
@@ -1331,7 +1352,7 @@ function submitComplaint(event){
  el('complaintSave').disabled=true;callServer('saveRecord',['Complaint Monitoring',input],r=>{el('complaintSave').disabled=false;if(!r||r.ok===false){showStatus(false,'Save failed',r&&r.message||'Unable to save complaint.');return}closeModal('complaintModal');delete recordCache['Complaint Monitoring::'];showStatus(true,'Complaint saved',r.message);loadRecords(false)},err=>{el('complaintSave').disabled=false;showStatus(false,'Save failed',err&&err.message||String(err))});
 }
 function renderComplaintTable(){
- const table=el('thead').closest('table');table.classList.remove('ncr-table','punchlist-table','rework-table','rework-merged-table');table.classList.add('ncr-table');
+ const table=el('thead').closest('table');table.classList.remove('ncr-table','punchlist-table','rework-table','rework-merged-table');table.classList.add('complaint-table');
  const from=el('cmpMonthFrom')?.value||'',to=el('cmpMonthTo')?.value||'',status=el('cmpStatusFilter')?.value||'',company=el('cmpCompanyFilter')?.value||'',q=String(el('search')?.value||'').trim().toLowerCase();
  const shown=records.filter(r=>{const d=String(r.Date||'').slice(0,7);if(from&&(!d||d<from))return false;if(to&&(!d||d>to))return false;if(status&&String(r.Status||'Open')!==status)return false;if(company&&String(r.Company||'')!==company)return false;if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;return true});
  const open=shown.filter(r=>String(r.Status||'Open')==='Open').length,progress=shown.filter(r=>String(r.Status||'Open')==='In Progress').length,closed=shown.filter(r=>String(r.Status||'Open')==='Closed').length;
