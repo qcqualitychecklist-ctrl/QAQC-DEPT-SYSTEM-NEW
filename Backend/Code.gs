@@ -917,25 +917,36 @@ function getTransferRecords(searchText) {
 
 
 function getTransferJOOptions(joNumber) {
- const jo=String(joNumber||'').trim().toUpperCase();if(!jo)return {ok:true,matches:[]};
- const ss=SpreadsheetApp.openById(JO_SOURCE_ID),sheet=ss.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);if(!sheet)throw new Error('Could not find the J.O Register source sheet.');
- const last=sheet.getLastRow();if(last<JO_SOURCE_START_ROW)return {ok:true,matches:[]};
- const rows=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,14).getDisplayValues(),seen={};
- rows.forEach(r=>{if(String(r[0]||'').trim().toUpperCase()!==jo)return;const key=JSON.stringify([String(r[1]||'').trim(),String(r[7]||'').trim()]);if(!seen[key])seen[key]={so:String(r[1]||'').trim(),client:String(r[7]||'').trim()};});
+ const jo=String(joNumber||'').trim().toUpperCase();
+ if(!jo)return {ok:true,matches:[]};
+ // Use the exact assembled J.O Register records, including saved overrides.
+ const result=getExternalJORecords_('');
+ const seen={};
+ (result.records||[]).forEach(r=>{
+  if(String(r['J.O']||'').trim().toUpperCase()!==jo)return;
+  const so=String(r['S.O']||'').trim(),client=String(r.Client||'').trim();
+  const key=JSON.stringify([so,client]);
+  if(!seen[key])seen[key]={so:so,client:client};
+ });
  return {ok:true,matches:Object.keys(seen).map(k=>seen[k])};
 }
 function getTransferItemDetails(joNumber,soNumber,itemNumber) {
- const jo=String(joNumber||'').trim().toUpperCase(),so=String(soNumber||'').trim().toUpperCase(),item=String(itemNumber||'').trim().toUpperCase();if(!so||!item)return {ok:true,matches:[]};
- const ss=SpreadsheetApp.openById(JO_SOURCE_ID),sheet=ss.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);if(!sheet)throw new Error('Could not find the J.O Register source sheet.');
- const last=sheet.getLastRow();if(last<JO_SOURCE_START_ROW)return {ok:true,matches:[]};
- const rows=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,14).getDisplayValues(),matches=[];
- rows.forEach(r=>{if(String(r[1]||'').trim().toUpperCase()!==so||String(r[8]||'').trim().toUpperCase()!==item)return;if(jo&&String(r[0]||'').trim().toUpperCase()!==jo)return;matches.push({panelName:String(r[9]||'').trim(),qty:Number(String(r[3]||'').replace(/,/g,''))||0});});
+ const jo=String(joNumber||'').trim().toUpperCase(),so=String(soNumber||'').trim().toUpperCase(),item=String(itemNumber||'').trim().toUpperCase();
+ if(!so||!item)return {ok:true,matches:[]};
+ // Panel Name and original Qty are taken from the displayed J.O Register dataset.
+ const result=getExternalJORecords_('');
+ const matches=[];
+ (result.records||[]).forEach(r=>{
+  if(String(r['S.O']||'').trim().toUpperCase()!==so||String(r['Item No.']||'').trim().toUpperCase()!==item)return;
+  if(jo&&String(r['J.O']||'').trim().toUpperCase()!==jo)return;
+  matches.push({panelName:String(r['Panel Name']||'').trim(),qty:Number(r.Qty)||0});
+ });
  return {ok:true,matches:matches};
 }
 function validateTransferBatchQuantities_(common,items,sh) {
  const ss=SpreadsheetApp.openById(JO_SOURCE_ID),source=ss.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);if(!source)throw new Error('Could not find the J.O Register source sheet.');
- const last=source.getLastRow(),rows=last>=JO_SOURCE_START_ROW?source.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,14).getDisplayValues():[],original={};
- rows.forEach(r=>{const key=fgtsJobKey_(r[1],r[8]);if(String(r[1]||'').trim()&&String(r[8]||'').trim())original[key]=(original[key]||0)+(Number(String(r[3]||'').replace(/,/g,''))||0);});
+ const joResult=getExternalJORecords_(''),original={};
+ (joResult.records||[]).forEach(r=>{const key=fgtsJobKey_(r['S.O'],r['Item No.']);if(String(r['S.O']||'').trim()&&String(r['Item No.']||'').trim())original[key]=(original[key]||0)+(Number(r.Qty)||0);});
  const prior={},soIdx=TRANSFER_HEADERS.indexOf('S.O'),itemIdx=TRANSFER_HEADERS.indexOf('Item No.'),qtyIdx=TRANSFER_HEADERS.indexOf('Qty');
  if(sh.getLastRow()>1)sh.getRange(2,1,sh.getLastRow()-1,TRANSFER_HEADERS.length).getDisplayValues().forEach(r=>{const key=fgtsJobKey_(r[soIdx],r[itemIdx]);if(key)prior[key]=(prior[key]||0)+(Number(String(r[qtyIdx]||'').replace(/,/g,''))||0);});
  const pending={};
