@@ -940,7 +940,10 @@ function getTransferJOOptions(joNumber) {
     const key=JSON.stringify([normalize(so),normalize(client)]);
     if(!seen[key])seen[key]={so:so,client:client};
   });
-  return {ok:true,matches:Object.keys(seen).map(key=>seen[key])};
+  // A J.O can have multiple item rows. Use the first valid S.O./Client pair
+  // from the J.O Register so Add Transfer can always auto-fill the header.
+  const pairs=Object.keys(seen).map(key=>seen[key]);
+  return {ok:true,matches:pairs.length?[pairs[0]]:[]};
 }
 function getTransferItemDetails(joNumber,soNumber,itemNumber) {
  const jo=String(joNumber||'').trim().toUpperCase(),item=String(itemNumber||'').trim().toUpperCase();
