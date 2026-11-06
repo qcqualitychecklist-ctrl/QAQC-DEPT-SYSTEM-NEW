@@ -996,6 +996,23 @@ function validateTransferBatchQuantities_(common,items,sh) {
  });
 }
 
+function reserveTransferIds_(count,sh) {
+ const lock=LockService.getScriptLock();lock.waitLock(10000);
+ try {
+  const year='2027',propertyKey='QAQC_TRANSFER_ID_SEQ_'+year,props=PropertiesService.getScriptProperties();
+  let max=Number(props.getProperty(propertyKey)||0)||0;
+  if(sh&&sh.getLastRow()>1){
+   const idx=TRANSFER_HEADERS.indexOf('Transfer ID')+1;
+   sh.getRange(2,idx,sh.getLastRow()-1,1).getDisplayValues().forEach(row=>{
+    const parts=String(row[0]||'').trim().split('-');
+    if(parts.length===3&&parts[0]==='TID'&&parts[1]===year){const seq=Number(parts[2]);if(Number.isFinite(seq))max=Math.max(max,seq);}
+   });
+  }
+  const first=max+1;props.setProperty(propertyKey,String(max+count));
+  return Array.from({length:count},(_,i)=>'TID-'+year+'-'+String(first+i).padStart(2,'0'));
+ } finally {lock.releaseLock();}
+}
+
 function saveTransfer(input) {
   if(!input)throw new Error('No transfer details received.');
   const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
@@ -1004,12 +1021,12 @@ function saveTransfer(input) {
   if(!isFinite(qty)||qty<=0)throw new Error('Qty must be greater than zero.');
   const id=String(input['Record ID']||''), now=new Date(); let row=-1,old=null;
   if(id){const lastRow=sh.getLastRow();if(lastRow>1){const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(id).matchEntireCell(true).findNext();if(match){row=match.getRow();old=sh.getRange(row,1,1,TRANSFER_HEADERS.length).getValues()[0];}}if(row<0)throw new Error('Transfer record not found. Refresh and try again.');}
-  const recordId=id||Utilities.getUuid(),transferId=old?String(old[3]):('TR-'+Utilities.getUuid().toUpperCase());
+  const recordId=id||Utilities.getUuid(),transferId=old?String(old[3]):reserveTransferIds_(1,sh)[0];
   const linkedAllocations=old?getAllocationRows_(transferId):[];
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
   if(String(input.Status||'')==='Passed'&&alreadyAllocated<qty)throw new Error('Status cannot be Passed until Done Qty meets the required Qty.');
-  const inputObj=Object.assign({},input,{'Transfer ID':transferId,'Done Qty':alreadyAllocated,'Remaining Qty':qty-alreadyAllocated,'QC In Charge':[...new Set(linkedAllocations.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', '),'FGTS No.':[...new Set(linkedAllocations.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', '),'Date Finished':latestFinishedDate_(linkedAllocations),'Reminders':''});
+  const inputObj=Object.assign({},input,{'Transfer ID':transferId,'Done Qty':alreadyAllocated,'Remaining Qty':qty-alreadyAllocated,'QC In Charge':[...new Set(linkedAllocations.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', '),'FGTS No.':[...new Set(linkedAllocations.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', '),'Date Finished':latestFinishedDate_(linkedAllocations),'Status Remark':Object.prototype.hasOwnProperty.call(input,'Status Remark')?input['Status Remark']:(old?old[21]:''),'Reminders':''});
   if(old && !String(input['Time Received']||'').trim()) inputObj['Time Received']=formatTimeCell_(old[5]);
   const out=TRANSFER_HEADERS.map((h,j)=>h==='Record ID'?recordId:h==='Created At'?(old?old[1]:now):h==='Updated At'?now:(inputObj[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
@@ -1025,13 +1042,12 @@ function saveTransfersBatch(common, items) {
  if(!sh)throw new Error('Click Prepare Database first.');
  items.forEach((item,i)=>{if(!isFinite(Number(item.Qty))||Number(item.Qty)<=0)throw new Error('Item '+(i+1)+' Qty must be greater than zero.');});
  validateTransferBatchQuantities_(common,items,sh);
- const now=new Date(),rows=[],transferIds=[];
+ const now=new Date(),rows=[],transferIds=reserveTransferIds_(items.length,sh);
  const status=String(common.Status||'Ongoing')==='Passed'?'Ongoing':(common.Status||'Ongoing');
- items.forEach(item=>{
-  const recordId=Utilities.getUuid(),transferId='TR-'+Utilities.getUuid().toUpperCase();
+ items.forEach((item,index)=>{
+  const recordId=Utilities.getUuid(),transferId=transferIds[index];
   const input=Object.assign({},common,item,{'Record ID':recordId,'Created At':now,'Updated At':now,'Transfer ID':transferId,'Status':status,'Done Qty':0,'Remaining Qty':Number(item.Qty)||0,'QC In Charge':'','FGTS No.':'','Date Finished':'','Reminders':''});
   rows.push(TRANSFER_HEADERS.map(header=>input[header]??''));
-  transferIds.push(transferId);
  });
  const firstRow=sh.getLastRow()+1;
  sh.getRange(firstRow,1,rows.length,TRANSFER_HEADERS.length).setValues(rows);
@@ -1043,9 +1059,9 @@ function saveAdditionalTransfersBatch(common, items) {
   if(!common||!Array.isArray(items)||items.length<1)throw new Error('Add at least one additional item.');
   const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
   if(!sh)throw new Error('Click Prepare Database first.');
-  const now=new Date(),saved=[];
-  items.forEach(item=>{
-    const transferId='TR-'+Utilities.getUuid().toUpperCase(),recordId=Utilities.getUuid();
+  const now=new Date(),saved=[],reservedIds=reserveTransferIds_(items.length,sh);
+  items.forEach((item,index)=>{
+    const transferId=reservedIds[index],recordId=Utilities.getUuid();
     const inputObj=Object.assign({},common,item,{'Record ID':recordId,'Created At':now,'Updated At':now,'Transfer ID':transferId,'Done Qty':0,'Remaining Qty':Number(item.Qty)||0,'QC In Charge':'','FGTS No.':'','Date Finished':'','Reminders':'','Status':String(common.Status||'Ongoing')});
     const out=TRANSFER_HEADERS.map(h=>h==='Record ID'?recordId:h==='Created At'||h==='Updated At'?now:(inputObj[h]??''));
     sh.appendRow(out);saved.push(transferId);
