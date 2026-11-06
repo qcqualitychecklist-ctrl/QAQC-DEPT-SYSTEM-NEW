@@ -1472,9 +1472,33 @@ function renderPagination(filteredCount){
 
 
 function bindTransferAutofill(){
- const ji=activeTransferFields.findIndex(d=>d[0]==='J.O'),si=activeTransferFields.findIndex(d=>d[0]==='S.O'),ci=activeTransferFields.findIndex(d=>d[0]==='Client');if(ji<0||si<0||ci<0)return;
+ const ji=activeTransferFields.findIndex(d=>d[0]==='J.O'),si=activeTransferFields.findIndex(d=>d[0]==='S.O'),ci=activeTransferFields.findIndex(d=>d[0]==='Client');
+ if(ji<0||si<0||ci<0)return;
  const jo=el('transferFields_'+ji),so=el('transferFields_'+si),client=el('transferFields_'+ci);
- jo.addEventListener('change',()=>{if(!jo.value.trim())return;callServer('getTransferJOOptions',[jo.value.trim()],r=>{const m=r.matches||[];if(m.length===1){so.value=m[0].so;client.value=m[0].client;refreshTransferItemLookups();}else if(m.length>1)showStatus(false,'Multiple J.O. matches','This J.O. has multiple S.O./Client pairs. Please select the correct S.O. manually.');},()=>{});});
+ let lastLookup='';
+ const lookupJO=()=>{
+  const value=jo.value.trim();
+  if(!value){so.value='';client.value='';lastLookup='';return;}
+  const key=value.toUpperCase().replace(/\\s+/g,' ');
+  if(key===lastLookup)return;
+  lastLookup=key;
+  so.value='';client.value='';
+  callServer('getTransferJOOptions',[value],r=>{
+   const matches=r&&Array.isArray(r.matches)?r.matches:[];
+   if(matches.length===1){
+    so.value=matches[0].so||'';
+    client.value=matches[0].client||'';
+    refreshTransferItemLookups();
+   }else if(matches.length>1){
+    lastLookup='';
+    showStatus(false,'J.O. has multiple S.O./Client pairs','The J.O. Register contains more than one distinct S.O./Client pair for this J.O. Please verify the J.O. Register entry.');
+   }else{
+    showStatus(false,'J.O. not found','No matching J.O. Number was found in the J.O. Register.');
+   }
+  },()=>{lastLookup='';});
+ };
+ jo.addEventListener('change',lookupJO);
+ jo.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lookupJO();}});
  so.addEventListener('change',refreshTransferItemLookups);
 }
 function refreshTransferItemLookups(){
