@@ -1126,6 +1126,17 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
  }
 }
 
+#monitoringPanel input.transfer-auto-field[readonly]{
+ background:#f1f4f8!important;
+ border:1px solid #cbd5e1!important;
+ color:#475569!important;
+ cursor:not-allowed!important;
+ box-shadow:inset 0 1px 2px #0f172a0a!important;
+}
+#monitoringPanel input.transfer-auto-field[readonly]::placeholder{
+ color:#64748b!important;
+ opacity:1;
+}
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
@@ -1475,31 +1486,42 @@ function bindTransferAutofill(){
  const ji=activeTransferFields.findIndex(d=>d[0]==='J.O'),si=activeTransferFields.findIndex(d=>d[0]==='S.O'),ci=activeTransferFields.findIndex(d=>d[0]==='Client');
  if(ji<0||si<0||ci<0)return;
  const jo=el('transferFields_'+ji),so=el('transferFields_'+si),client=el('transferFields_'+ci);
- let lastLookup='';
+ let lastLookup='',lookupTimer=null,requestToken=0;
+ // S.O. and Client are sourced from the J.O. Register; keep them visibly read-only.
+ [so,client].forEach(input=>{
+  input.readOnly=true;
+  input.classList.add('transfer-auto-field');
+  input.setAttribute('aria-readonly','true');
+  input.placeholder='Auto-filled from J.O. Register';
+ });
  const lookupJO=()=>{
   const value=jo.value.trim();
-  if(!value){so.value='';client.value='';lastLookup='';return;}
+  if(!value){requestToken++;so.value='';client.value='';lastLookup='';return;}
   const key=value.toUpperCase().replace(/\s+/g,' ');
   if(key===lastLookup)return;
   lastLookup=key;
+  const token=++requestToken;
   so.value='';client.value='';
   callServer('getTransferJOOptions',[value],r=>{
+   if(token!==requestToken||jo.value.trim().toUpperCase().replace(/\s+/g,' ')!==key)return;
    const matches=r&&Array.isArray(r.matches)?r.matches:[];
-   if(matches.length===1){
+   if(matches.length){
     so.value=matches[0].so||'';
     client.value=matches[0].client||'';
     refreshTransferItemLookups();
-   }else if(matches.length>1){
-    lastLookup='';
-    showStatus(false,'J.O. has multiple S.O./Client pairs','The J.O. Register contains more than one distinct S.O./Client pair for this J.O. Please verify the J.O. Register entry.');
    }else{
+    lastLookup='';
     showStatus(false,'J.O. not found','No matching J.O. Number was found in the J.O. Register.');
    }
-  },()=>{lastLookup='';});
+  },()=>{if(token===requestToken)lastLookup='';});
  };
- jo.addEventListener('change',lookupJO);
- jo.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lookupJO();}});
- so.addEventListener('change',refreshTransferItemLookups);
+ const scheduleLookup=()=>{
+  if(lookupTimer)clearTimeout(lookupTimer);
+  lookupTimer=setTimeout(lookupJO,180);
+ };
+ jo.addEventListener('input',scheduleLookup);
+ jo.addEventListener('change',()=>{if(lookupTimer)clearTimeout(lookupTimer);lookupJO();});
+ jo.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(lookupTimer)clearTimeout(lookupTimer);lookupJO();}});
 }
 function refreshTransferItemLookups(){
  if(freeFormTransfer)return;const ji=activeTransferFields.findIndex(d=>d[0]==='J.O'),si=activeTransferFields.findIndex(d=>d[0]==='S.O'),jo=ji>=0?el('transferFields_'+ji).value.trim():'',so=si>=0?el('transferFields_'+si).value.trim():'';
