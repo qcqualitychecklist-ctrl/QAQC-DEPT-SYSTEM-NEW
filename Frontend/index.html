@@ -11,7 +11,7 @@
 <style>
 :root{--system-header-height:65px;--navy:#142b4a;--blue:#2459a9;--bg:#f3f6fb;--text:#17253a;--muted:#68778c;--line:#dfe6ef;--green:#16834a;--amber:#a86100;--red:#b42318}
 *{box-sizing:border-box}body{margin:0;font:13px Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}button,input,select,textarea{font:inherit}button{border:1px solid var(--line);border-radius:8px;padding:8px 11px;background:#fff;color:var(--text);cursor:pointer}button:disabled{opacity:.55;cursor:wait}button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}button.danger{color:#b42318;border-color:#f1c5c1}button.small{padding:5px 7px;font-size:11px}
-.app{min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);row-gap:0!important}.app.sidebar-collapsed{grid-template-columns:70px minmax(0,1fr)}.app.sidebar-collapsed>.sidebar{grid-row:2;display:flex;position:sticky;left:auto;bottom:auto;top:0;width:auto;height:calc(100vh - 70px);min-height:calc(100vh - 83px);margin:0!important;padding:14px 7px;background:var(--navy);z-index:30;box-shadow:none}.app.sidebar-collapsed>.sidebar .brand,.app.sidebar-collapsed>.sidebar .navlabel{display:none}.app.sidebar-collapsed>.sidebar .nav{gap:8px}.app.sidebar-collapsed>.sidebar .nav button{justify-content:center;padding:11px 4px;min-height:46px;font-size:0;gap:0}.app.sidebar-collapsed>.sidebar .nav button span{font-size:23px;line-height:1}.app.sidebar-collapsed>.sidebar .menu-toggle{order:-1;margin:0 0 14px;width:46px;height:40px;background:#ffffff12;color:#fff;border-color:#ffffff50}.menu-toggle{order:-1;width:38px;height:30px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px;margin:0 0 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);box-shadow:0 1px 3px #142b4a12}.menu-toggle span{display:block;width:17px;height:2px;border-radius:2px;background:currentColor}.menu-toggle:hover{background:#edf4ff;border-color:#b8cbed}.menu-toggle:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}.sidebar{grid-row:2;margin:0!important;background:var(--navy);color:white;padding:14px 12px;min-height:calc(100vh - 83px);position:sticky;top:83px;height:calc(100vh - 83px);display:flex;flex-direction:column}
+.app{min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);row-gap:0!important}.app.sidebar-collapsed{grid-template-columns:70px minmax(0,1fr)}.app.sidebar-collapsed>.sidebar{grid-row:2;display:flex;position:sticky;left:auto;bottom:auto;top:0;width:auto;height:calc(100vh - 70px);min-height:calc(100vh - var(--system-header-height));margin:0!important;padding:14px 7px;background:var(--navy);z-index:30;box-shadow:none}.app.sidebar-collapsed>.sidebar .brand,.app.sidebar-collapsed>.sidebar .navlabel{display:none}.app.sidebar-collapsed>.sidebar .nav{gap:8px}.app.sidebar-collapsed>.sidebar .nav button{justify-content:center;padding:11px 4px;min-height:46px;font-size:0;gap:0}.app.sidebar-collapsed>.sidebar .nav button span{font-size:23px;line-height:1}.app.sidebar-collapsed>.sidebar .menu-toggle{order:-1;margin:0 0 14px;width:46px;height:40px;background:#ffffff12;color:#fff;border-color:#ffffff50}.menu-toggle{order:-1;width:38px;height:30px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px;margin:0 0 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);box-shadow:0 1px 3px #142b4a12}.menu-toggle span{display:block;width:17px;height:2px;border-radius:2px;background:currentColor}.menu-toggle:hover{background:#edf4ff;border-color:#b8cbed}.menu-toggle:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}.sidebar{grid-row:2;margin:0!important;background:var(--navy);color:white;padding:14px 12px;min-height:calc(100vh - 83px);position:sticky;top:83px;height:calc(100vh - 83px);display:flex;flex-direction:column}
 /* New system shell header: global identity bar above the unchanged vertical navigation and monitoring workspace. */
 .system-topbar{grid-column:1/-1;grid-row:1;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0;padding:6px 22px;background:#fff;border-bottom:3px solid #16834a;box-shadow:0 3px 12px #16834a12}
 .system-topbar-brand{display:flex;align-items:center;gap:12px;min-width:0}
@@ -49,7 +49,7 @@
 .system-account-menu-label{display:block;margin-bottom:5px;color:#7b8798;font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
 .system-account-menu-name{display:block;color:#1c2f49;font-size:12px;font-weight:700;overflow-wrap:anywhere}
 .system-account-menu-role{display:block;margin-top:4px;color:#68778c;font-size:10px}
-.app>.sidebar{grid-column:1;grid-row:2;min-height:calc(100vh - 83px);height:calc(100vh - 83px);top:0}
+.app>.sidebar{grid-column:1;grid-row:2;min-height:calc(100vh - var(--system-header-height));height:calc(100vh - var(--system-header-height));top:0}
 .app>main{grid-column:2;grid-row:2;min-width:0}
 .app.sidebar-collapsed>main{grid-column:2}
 .app .sidebar>.brand{display:none}
@@ -62,15 +62,15 @@
  .system-topbar-title h1{font-size:12px}
  .system-topbar-title p{font-size:8px}
  .app>.sidebar{top:0;height:calc(100vh - 54px);min-height:calc(100vh - 59px)}
- .app.sidebar-collapsed>.sidebar{top:0;height:calc(100vh - 59px);min-height:calc(100vh - 59px)}.sidebar{top:0;height:calc(100vh - 59px);min-height:calc(100vh - 59px)}
- .intro{top:59px}
+ .app.sidebar-collapsed>.sidebar{top:0!important;height:calc(100vh - var(--system-header-height));min-height:calc(100vh - var(--system-header-height))}.sidebar{top:0!important;height:calc(100vh - var(--system-header-height));min-height:calc(100vh - var(--system-header-height))}
+  .intro{top:calc(var(--system-header-height) + 2px)!important}
  .system-topbar-title h1{font-size:13px}
  .system-topbar-title p{font-size:9px}
  .system-account-trigger{width:36px;height:36px;min-width:36px;max-width:36px;flex-basis:36px;padding:0}
  .system-account-copy{max-width:104px}
  .system-account-avatar{width:36px;height:36px;flex-basis:36px}
  .system-account-chevron{display:none}
- .app>.sidebar{top:59px;height:calc(100vh - 59px);min-height:calc(100vh - 59px)}
+ .app>.sidebar{top:0!important;height:calc(100vh - var(--system-header-height));min-height:calc(100vh - var(--system-header-height))}
  .app>main{padding:8px}
 }
 .brand{display:flex;align-items:center;gap:10px;padding:0 5px 20px;border-bottom:1px solid #ffffff26}.logo{width:38px;height:38px;flex:0 0 38px;border-radius:10px;background:#ffffff20;display:grid;place-items:center;font-weight:800}.brand h1{font-size:13px;margin:0}.subtitle{font-size:10px;color:#d4dfed;margin-top:4px}.navlabel{font-size:10px;color:#aebed2;text-transform:uppercase;letter-spacing:1px;margin:20px 8px 8px}.nav{display:flex;flex-direction:column;gap:6px}.nav button{background:transparent;color:#dbe5f1;border-color:transparent;text-align:left;width:100%;padding:11px 10px;display:flex;gap:10px;align-items:center}.nav button.active{background:var(--blue);color:white;border-color:#5d86c5}
@@ -883,7 +883,7 @@ body.guest-mode .sidebar .navlabel:after{content:" · GUEST VIEW";color:#9fc2f2}
 }
 
 /* Unified monitoring page headers: match the clean global system header. */
-.intro{top:calc(var(--system-header-height) + 8px)!important;background:#fff!important;color:#142b4a!important;border:1px solid #dce5f0!important;border-radius:10px!important;clip-path:none!important;box-shadow:0 -8px 0 0 var(--bg),0 3px 12px #142b4a0b!important;padding:12px 16px!important;}
+.intro{top:calc(var(--system-header-height) + 2px)!important;background:#fff!important;color:#142b4a!important;border:1px solid #dce5f0!important;border-radius:10px!important;clip-path:none!important;box-shadow:0 -8px 0 0 var(--bg),0 3px 12px #142b4a0b!important;padding:12px 16px!important;}
 .intro h2{margin:0!important;color:#142b4a!important;font-size:17px!important;font-weight:800!important;letter-spacing:.15px!important;line-height:1.2!important;}
 .intro #pageDescription{display:block!important;margin-top:4px!important;color:#68778c!important;font-size:10px!important;line-height:1.35!important;}
 .intro .muted{color:#68778c!important;}
