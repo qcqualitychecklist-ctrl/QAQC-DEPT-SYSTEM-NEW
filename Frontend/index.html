@@ -9,21 +9,21 @@
 })();
 </script>
 <style>
-:root{--system-header-height:77px;--navy:#142b4a;--blue:#2459a9;--bg:#f3f6fb;--text:#17253a;--muted:#68778c;--line:#dfe6ef;--green:#16834a;--amber:#a86100;--red:#b42318}
+:root{--system-header-height:65px;--navy:#142b4a;--blue:#2459a9;--bg:#f3f6fb;--text:#17253a;--muted:#68778c;--line:#dfe6ef;--green:#16834a;--amber:#a86100;--red:#b42318}
 *{box-sizing:border-box}body{margin:0;font:13px Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}button,input,select,textarea{font:inherit}button{border:1px solid var(--line);border-radius:8px;padding:8px 11px;background:#fff;color:var(--text);cursor:pointer}button:disabled{opacity:.55;cursor:wait}button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}button.danger{color:#b42318;border-color:#f1c5c1}button.small{padding:5px 7px;font-size:11px}
-.app{min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);row-gap:0!important}.app.sidebar-collapsed{grid-template-columns:70px minmax(0,1fr)}.app.sidebar-collapsed>.sidebar{grid-row:2;display:flex;position:sticky;left:auto;bottom:auto;top:0;width:auto;height:calc(100vh - 83px);min-height:calc(100vh - 83px);margin:0!important;padding:14px 7px;background:var(--navy);z-index:30;box-shadow:none}.app.sidebar-collapsed>.sidebar .brand,.app.sidebar-collapsed>.sidebar .navlabel{display:none}.app.sidebar-collapsed>.sidebar .nav{gap:8px}.app.sidebar-collapsed>.sidebar .nav button{justify-content:center;padding:11px 4px;min-height:46px;font-size:0;gap:0}.app.sidebar-collapsed>.sidebar .nav button span{font-size:23px;line-height:1}.app.sidebar-collapsed>.sidebar .menu-toggle{order:-1;margin:0 0 14px;width:46px;height:40px;background:#ffffff12;color:#fff;border-color:#ffffff50}.menu-toggle{order:-1;width:38px;height:30px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px;margin:0 0 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);box-shadow:0 1px 3px #142b4a12}.menu-toggle span{display:block;width:17px;height:2px;border-radius:2px;background:currentColor}.menu-toggle:hover{background:#edf4ff;border-color:#b8cbed}.menu-toggle:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}.sidebar{grid-row:2;margin:0!important;background:var(--navy);color:white;padding:14px 12px;min-height:calc(100vh - 83px);position:sticky;top:83px;height:calc(100vh - 83px);display:flex;flex-direction:column}
+.app{min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);row-gap:0!important}.app.sidebar-collapsed{grid-template-columns:70px minmax(0,1fr)}.app.sidebar-collapsed>.sidebar{grid-row:2;display:flex;position:sticky;left:auto;bottom:auto;top:0;width:auto;height:calc(100vh - 70px);min-height:calc(100vh - 83px);margin:0!important;padding:14px 7px;background:var(--navy);z-index:30;box-shadow:none}.app.sidebar-collapsed>.sidebar .brand,.app.sidebar-collapsed>.sidebar .navlabel{display:none}.app.sidebar-collapsed>.sidebar .nav{gap:8px}.app.sidebar-collapsed>.sidebar .nav button{justify-content:center;padding:11px 4px;min-height:46px;font-size:0;gap:0}.app.sidebar-collapsed>.sidebar .nav button span{font-size:23px;line-height:1}.app.sidebar-collapsed>.sidebar .menu-toggle{order:-1;margin:0 0 14px;width:46px;height:40px;background:#ffffff12;color:#fff;border-color:#ffffff50}.menu-toggle{order:-1;width:38px;height:30px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px;margin:0 0 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);box-shadow:0 1px 3px #142b4a12}.menu-toggle span{display:block;width:17px;height:2px;border-radius:2px;background:currentColor}.menu-toggle:hover{background:#edf4ff;border-color:#b8cbed}.menu-toggle:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}.sidebar{grid-row:2;margin:0!important;background:var(--navy);color:white;padding:14px 12px;min-height:calc(100vh - 83px);position:sticky;top:83px;height:calc(100vh - 83px);display:flex;flex-direction:column}
 /* New system shell header: global identity bar above the unchanged vertical navigation and monitoring workspace. */
-.system-topbar{grid-column:1/-1;grid-row:1;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0;padding:9px 22px;background:#fff;border-bottom:3px solid #16834a;box-shadow:0 3px 12px #16834a12}
+.system-topbar{grid-column:1/-1;grid-row:1;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0;padding:6px 22px;background:#fff;border-bottom:3px solid #16834a;box-shadow:0 3px 12px #16834a12}
 .system-topbar-brand{display:flex;align-items:center;gap:12px;min-width:0}
-.system-topbar-logo{width:196px;height:56px;max-height:56px;object-fit:contain;flex:0 0 auto;display:block}
-.system-brand-divider{height:46px;width:1px;background:#2459a9;opacity:.65}
+.system-topbar-logo{width:184px;height:48px;max-height:48px;object-fit:contain;flex:0 0 auto;display:block}
+.system-brand-divider{height:40px;width:1px;background:#2459a9;opacity:.65}
 .system-topbar-right{display:flex;align-items:center;gap:18px;min-width:0;margin-left:auto}
-.system-global-search{display:flex;align-items:center;gap:9px;width:clamp(230px,24vw,320px);height:38px;padding:0 13px;border:1px solid #cbd8e8;border-radius:22px;background:#fff;color:#2459a9;box-shadow:0 2px 8px #2459a90d}
+.system-global-search{display:flex;align-items:center;gap:9px;width:clamp(230px,24vw,320px);height:34px;padding:0 13px;border:1px solid #cbd8e8;border-radius:22px;background:#fff;color:#2459a9;box-shadow:0 2px 8px #2459a90d}
 .system-global-search>span{font-size:25px;line-height:1}
 .system-global-search input{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:6px 0!important;min-width:0;font-size:13px!important}
 .system-global-search input::placeholder{color:#718096}
 .system-notification{position:relative;flex:0 0 auto}
-.system-notification-button{width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:9px;background:transparent;color:#142b4a;line-height:1;transition:background .15s ease}.system-notification-button svg{width:26px;height:26px;display:block;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.system-notification-button{width:38px;height:38px;display:grid;place-items:center;padding:0;border:0;border-radius:9px;background:transparent;color:#142b4a;line-height:1;transition:background .15s ease}.system-notification-button svg{width:26px;height:26px;display:block;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .system-notification-button:hover{background:#e9eef5}
 .system-notification-button:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
 .system-notification-panel{position:absolute;right:0;top:calc(100% + 10px);z-index:130;width:270px;padding:14px;border:1px solid #dce5f0;border-radius:11px;background:#fff;box-shadow:0 12px 30px #142b4a20}
@@ -37,9 +37,9 @@
 .system-topbar-title h1{margin:0;color:#142b4a;font-size:16px;line-height:1.2;font-weight:800;letter-spacing:.15px}
 .system-topbar-title p{margin:4px 0 0;color:#68778c;font-size:10px;line-height:1.2}
 .system-account{position:relative;flex:0 0 auto}
-.system-account-trigger{display:flex;align-items:center;justify-content:center;width:44px;height:44px;min-width:44px;max-width:44px;flex:0 0 44px;overflow:hidden;padding:0;border:1px solid #d7dee8;border-radius:50%;background:#142b4a;text-align:center;color:#fff;box-shadow:0 2px 7px #142b4a20}
+.system-account-trigger{display:flex;align-items:center;justify-content:center;width:38px;height:38px;min-width:38px;max-width:38px;flex:0 0 38px;overflow:hidden;padding:0;border:1px solid #d7dee8;border-radius:50%;background:#142b4a;text-align:center;color:#fff;box-shadow:0 2px 7px #142b4a20}
 .system-account-trigger:hover{background:#243e60;border-color:#243e60}
-.system-account-avatar{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:50%;background:transparent;color:#fff;font-size:15px;font-weight:800}.system-account-copy,.system-account-chevron{display:none!important}
+.system-account-avatar{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:50%;background:transparent;color:#fff}.system-account-avatar svg{width:22px;height:22px;display:block}.system-account-copy,.system-account-chevron{display:none!important}
 .system-account-copy{display:flex;flex:1;flex-direction:column;min-width:0;gap:3px}
 .system-account-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700;color:#1c2f49}
 .system-account-role{font-size:9px;color:#718096}
@@ -54,21 +54,21 @@
 .app.sidebar-collapsed>main{grid-column:2}
 .app .sidebar>.brand{display:none}
 @media(max-width:700px){
- .system-topbar{padding:7px 10px;gap:8px}
- .system-topbar-logo{width:150px;max-height:42px}
+ .system-topbar{padding:5px 10px;gap:8px}
+ .system-topbar-logo{width:140px;max-height:40px}
  .system-topbar-right{gap:7px}
- .system-global-search{width:clamp(145px,30vw,245px);height:38px}
+ .system-global-search{width:clamp(145px,30vw,245px);height:34px}
  .system-brand-divider{height:34px}
  .system-topbar-title h1{font-size:12px}
  .system-topbar-title p{font-size:8px}
- .app>.sidebar{top:0;height:calc(100vh - 59px);min-height:calc(100vh - 59px)}
+ .app>.sidebar{top:0;height:calc(100vh - 54px);min-height:calc(100vh - 59px)}
  .app.sidebar-collapsed>.sidebar{top:0;height:calc(100vh - 59px);min-height:calc(100vh - 59px)}.sidebar{top:0;height:calc(100vh - 59px);min-height:calc(100vh - 59px)}
  .intro{top:59px}
  .system-topbar-title h1{font-size:13px}
  .system-topbar-title p{font-size:9px}
- .system-account-trigger{width:40px;height:40px;min-width:40px;max-width:40px;flex-basis:40px;padding:0}
+ .system-account-trigger{width:36px;height:36px;min-width:36px;max-width:36px;flex-basis:36px;padding:0}
  .system-account-copy{max-width:104px}
- .system-account-avatar{width:40px;height:40px;flex-basis:40px}
+ .system-account-avatar{width:36px;height:36px;flex-basis:36px}
  .system-account-chevron{display:none}
  .app>.sidebar{top:59px;height:calc(100vh - 59px);min-height:calc(100vh - 59px)}
  .app>main{padding:8px}
@@ -1175,7 +1175,7 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
   </div>
   <div class="system-account">
   <button class="system-account-trigger" id="systemAccountTrigger" type="button" aria-haspopup="true" aria-expanded="false" onclick="toggleAccountMenu(event)">
-   <span class="system-account-avatar" id="systemAccountAvatar">A</span>
+   <span class="system-account-avatar" id="systemAccountAvatar" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="7.5" r="4" fill="currentColor"/><path d="M4.5 21c.35-4.2 3.3-6.5 7.5-6.5s7.15 2.3 7.5 6.5" fill="currentColor"/></svg></span>
   </button>
   <div class="system-account-menu" id="systemAccountMenu" role="menu" hidden>
    <div class="system-account-menu-summary">
@@ -1907,7 +1907,7 @@ function updateSystemAccountHeader(){
  const initial=(name.replace(/^Guest User$/,'G').match(/[A-Za-z0-9]/)||['Q'])[0].toUpperCase();
  const nameEl=document.getElementById('systemAccountName'),roleEl=document.getElementById('systemAccountRole');
  const avatar=document.getElementById('systemAccountAvatar'),menuName=document.getElementById('systemAccountMenuName'),menuRole=document.getElementById('systemAccountMenuRole');
- if(nameEl)nameEl.textContent=name;if(roleEl)roleEl.textContent=role;if(avatar)avatar.textContent=initial;
+ if(nameEl)nameEl.textContent=name;if(roleEl)roleEl.textContent=role;
  if(menuName)menuName.textContent=name;if(menuRole)menuRole.textContent=role;
  const profileName=document.getElementById('accountProfileName'),profileRole=document.getElementById('accountProfileRole'),profileAvatar=document.getElementById('accountProfileAvatar');
  if(profileName)profileName.textContent=name;if(profileRole)profileRole.textContent=role;if(profileAvatar)profileAvatar.textContent=initial;
