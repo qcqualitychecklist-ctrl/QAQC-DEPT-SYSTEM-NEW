@@ -917,15 +917,19 @@ function getTransferRecords(searchText) {
 
 
 function getTransferJOOptions(joNumber) {
- const jo=String(joNumber||'').trim().toUpperCase();
+ const normalize=value=>String(value==null?'':value).trim().replace(/\\s+/g,' ').toUpperCase();
+ const jo=normalize(joNumber);
  if(!jo)return {ok:true,matches:[]};
- // Use the exact assembled J.O Register records, including saved overrides.
+ // Read the same assembled source used by J.O Register; each J.O may span
+ // several item rows, so collapse those rows to their unique S.O./Client pair.
  const result=getExternalJORecords_('');
  const seen={};
  (result.records||[]).forEach(r=>{
-  if(String(r['J.O']||'').trim().toUpperCase()!==jo)return;
-  const so=String(r['S.O']||'').trim(),client=String(r.Client||'').trim();
-  const key=JSON.stringify([so,client]);
+  if(normalize(r['J.O'])!==jo)return;
+  const so=String(r['S.O']||'').trim().replace(/\\s+/g,' ');
+  const client=String(r.Client||'').trim().replace(/\\s+/g,' ');
+  if(!so&&!client)return;
+  const key=JSON.stringify([normalize(so),normalize(client)]);
   if(!seen[key])seen[key]={so:so,client:client};
  });
  return {ok:true,matches:Object.keys(seen).map(k=>seen[k])};
