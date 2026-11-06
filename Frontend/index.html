@@ -1538,7 +1538,39 @@ function openAdd(){freeFormTransfer=false;el('transferForm').reset();el('transfe
 function viewTransferDetails(rec){activeTransfer=rec;const host=el('transferDetailsBody');host.innerHTML='';el('transferDetailsTitle').textContent='Transfer Details — '+String(rec['Transfer ID']||rec['Transfer No.']||rec['Record ID']||'Record');const preferred=['Transfer ID','Date Received','Time Received','Section','Transfer No.','J.O','S.O','Client','Item No.','Panel Name','Qty','Location','Status','Done Qty','Remaining Qty','QC In Charge','FGTS No.','Date Finished','Status Remark','Remarks','Reminders','Record ID'];const keys=[...preferred.filter(k=>Object.prototype.hasOwnProperty.call(rec,k)),...Object.keys(rec).filter(k=>!preferred.includes(k))];keys.forEach(key=>{const card=document.createElement('div');card.className='transfer-detail-field'+(['Status Remark','Remarks','Allocation Remarks'].includes(key)?' full':'');const label=document.createElement('span');label.className='transfer-detail-label';label.textContent=key;const value=document.createElement('span');value.className='transfer-detail-value';const raw=rec[key];value.textContent=raw===null||raw===undefined||String(raw)===''?'—':String(raw);card.append(label,value);host.appendChild(card)});el('transferDetailsEdit').onclick=()=>{closeModal('transferDetailsModal');openEdit(rec)};openModal('transferDetailsModal')}
 function openEdit(rec){freeFormTransfer=false;activeTransferFields=TRANSFER_FIELDS;el('transferRecordId').value=rec['Record ID'];el('transferTitle').textContent='Edit Transfer — '+(rec['Transfer ID']||'');el('transferSave').textContent='Save Changes';makeFields('transferFields',TRANSFER_FIELDS,rec);el('additionalItemsSection').style.display='none';el('additionalItems').innerHTML='';openModal('transferModal')}
 function submitTransfer(ev){ev.preventDefault();const data=readFields('transferFields',activeTransferFields);data['Record ID']=el('transferRecordId').value;const btn=el('transferSave');btn.disabled=true;if(!data['Record ID']&&currentPage==='Transfer Monitoring'){const items=[...el('additionalItems').querySelectorAll('.item-entry')].map(row=>({'Item No.':row.querySelector('.item-no').value.trim(),'Panel Name':row.querySelector('.panel-name').value.trim(),Qty:row.querySelector('.item-qty').value}));if(!items.length){btn.disabled=false;showStatus(false,'Add an item','Add at least one item row.');return}if(freeFormTransfer){callServer('saveAdditionalTransfersBatch',[data,items],r=>{btn.disabled=false;showStatus(true,'Additional transfer saved',r.message);closeModal('transferModal');loadRecords()},()=>btn.disabled=false);return}if(items.some(x=>!x.Qty||Number(x.Qty)<=0)){btn.disabled=false;showStatus(false,'Check item quantities','Add at least one item and enter a Qty greater than zero for every item.');return}callServer('saveTransfersBatch',[data,items],r=>{btn.disabled=false;showStatus(true,r.message,'Created '+r.count+' separate item rows.');closeModal('transferModal');loadRecords()},()=>btn.disabled=false);return}callServer('saveRecord',[currentPage==='J.O Register'?'J.O Register':'Transfer Monitoring',data],r=>{btn.disabled=false;showStatus(true,'Record saved',r.message||'Saved successfully.');closeModal('transferModal');loadRecords()},()=>btn.disabled=false)}
-function addTransferItem(values){const row=document.createElement('div');row.className='item-entry';[['Item No.','item-no','text'],['Panel Name','panel-name','text'],['Qty','item-qty','number']].forEach(([label,cls,type])=>{const box=document.createElement('div');box.className='field';const l=document.createElement('label');l.textContent=label+(label==='Qty'?' *':'');const inp=document.createElement('input');inp.type=type;inp.className=cls;inp.placeholder=label;if(type==='number'){inp.step='any';inp.required=!freeFormTransfer;if(!freeFormTransfer)inp.min='0.01'}inp.value=values&&values[label]!=null?values[label]:'';box.append(l,inp);row.appendChild(box)});row.appendChild(button('Remove','small danger',()=>row.remove()));el('additionalItems').appendChild(row);row.querySelector('.item-no').addEventListener('change',()=>{if(freeFormTransfer)return;const ji=activeTransferFields.findIndex(d=>d[0]==='J.O'),si=activeTransferFields.findIndex(d=>d[0]==='S.O'),jo=ji>=0?el('transferFields_'+ji).value.trim():'',so=si>=0?el('transferFields_'+si).value.trim():'';const item=row.querySelector('.item-no').value.trim();if(!jo||!item)return;callServer('getTransferItemDetails',[jo,so,item],r=>{const m=r.matches||[];if(m.length===1)row.querySelector('.panel-name').value=m[0].panelName;else if(m.length>1)showStatus(false,'Multiple item matches','More than one matching Item No. was found. Verify the Panel Name.');},()=>{});});}
+function addTransferItem(values){
+ const row=document.createElement('div');row.className='item-entry';
+ [['Item No.','item-no','text'],['Panel Name','panel-name','text'],['Qty','item-qty','number']].forEach(([label,cls,type])=>{
+  const box=document.createElement('div');box.className='field';
+  const l=document.createElement('label');l.textContent=label+(label==='Qty'?' *':'');
+  const inp=document.createElement('input');inp.type=type;inp.className=cls;inp.placeholder=label;
+  if(type==='number'){inp.step='any';inp.required=!freeFormTransfer;if(!freeFormTransfer)inp.min='0.01'}
+  if(cls==='panel-name'&&!freeFormTransfer){inp.readOnly=true;inp.classList.add('transfer-auto-field');inp.placeholder='Auto-filled after Item No.';inp.setAttribute('aria-readonly','true')}
+  inp.value=values&&values[label]!=null?values[label]:'';
+  box.append(l,inp);row.appendChild(box);
+ });
+ row.appendChild(button('Remove','small danger',()=>row.remove()));el('additionalItems').appendChild(row);
+ const itemInput=row.querySelector('.item-no'),panelInput=row.querySelector('.panel-name');
+ let itemTimer=null,itemToken=0,lastItemKey='';
+ const lookupItem=()=>{
+  if(freeFormTransfer)return;
+  const ji=activeTransferFields.findIndex(d=>d[0]==='J.O'),jo=ji>=0?el('transferFields_'+ji).value.trim():'';
+  const item=itemInput.value.trim(),key=(jo+'|'+item).toUpperCase().replace(/\s+/g,' ');
+  if(!jo||!item){panelInput.value='';lastItemKey='';itemToken++;return}
+  if(key===lastItemKey)return;
+  lastItemKey=key;const token=++itemToken;panelInput.value='';
+  callServer('getTransferItemDetails',[jo,'',item],r=>{
+   if(token!==itemToken||itemInput.value.trim().toUpperCase()!==item.toUpperCase())return;
+   const m=r&&Array.isArray(r.matches)?r.matches:[];
+   if(m.length===1)panelInput.value=m[0].panelName||'';
+   else if(m.length>1){lastItemKey='';showStatus(false,'Multiple item matches','More than one matching Item No. was found. Verify the Item No. in the J.O. Register.')}
+   else{lastItemKey='';showStatus(false,'Item not found','No matching Item No. was found under this J.O. in the J.O. Register.')}
+  },()=>{if(token===itemToken)lastItemKey=''});
+ };
+ const scheduleItemLookup=()=>{if(itemTimer)clearTimeout(itemTimer);itemTimer=setTimeout(lookupItem,180)};
+ itemInput.addEventListener('input',scheduleItemLookup);
+ itemInput.addEventListener('change',()=>{if(itemTimer)clearTimeout(itemTimer);lookupItem()});
+}
 function quickStatus(rec,status){const data={};TRANSFER_FIELDS.forEach(d=>data[d[0]]=rec[d[0]]??'');data.Status=status;data['Record ID']=rec['Record ID'];callServer('saveRecord',['Transfer Monitoring',data],r=>{showStatus(true,'Status updated',rec['Transfer ID']+' — '+status);loadRecords()},()=>loadRecords())}
 function removeTransfer(rec){if(!confirm('Delete this entire transfer and all QC allocations linked to it? Transfer ID: '+rec['Transfer ID']))return;callServer('deleteTransfer',[rec['Record ID']],r=>{showStatus(true,r.message,rec['Transfer ID']+' deleted.');loadRecords()})}
 function openAllocations(rec){activeTransfer=rec;el('allocationTitle').textContent='FGTS / QC Allocation';el('allocationSubtitle').textContent='Transfer ID: '+rec['Transfer ID']+' | Transfer Qty: '+rec.Qty;resetAllocationForm();openModal('allocationModal');loadAllocations()}
