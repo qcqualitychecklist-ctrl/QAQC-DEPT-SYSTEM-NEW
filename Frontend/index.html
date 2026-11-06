@@ -1475,7 +1475,7 @@ function bindTransferAutofill(){
  const ji=activeTransferFields.findIndex(d=>d[0]==='J.O'),si=activeTransferFields.findIndex(d=>d[0]==='S.O'),ci=activeTransferFields.findIndex(d=>d[0]==='Client');
  if(ji<0||si<0||ci<0)return;
  const jo=el('transferFields_'+ji),so=el('transferFields_'+si),client=el('transferFields_'+ci);
- let lastLookup='';
+ let lastLookup='',lookupTimer=null;
  const lookupJO=()=>{
   const value=jo.value.trim();
   if(!value){so.value='';client.value='';lastLookup='';return;}
@@ -1497,8 +1497,10 @@ function bindTransferAutofill(){
    }
   },()=>{lastLookup='';});
  };
+ // Start lookup while typing after a short pause; keep change/Enter as immediate fallbacks.
+ jo.addEventListener('input',()=>{if(lookupTimer)clearTimeout(lookupTimer);lookupTimer=setTimeout(lookupJO,450);});
  jo.addEventListener('change',lookupJO);
- jo.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lookupJO();}});
+ jo.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(lookupTimer)clearTimeout(lookupTimer);lookupJO();}});
  so.addEventListener('change',refreshTransferItemLookups);
 }
 function refreshTransferItemLookups(){
