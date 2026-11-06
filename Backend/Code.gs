@@ -943,18 +943,28 @@ function getTransferJOOptions(joNumber) {
   return {ok:true,matches:pairs.length?[pairs[0]]:[]};
 }
 function getTransferItemDetails(joNumber,soNumber,itemNumber) {
- const jo=String(joNumber||'').trim().toUpperCase(),item=String(itemNumber||'').trim().toUpperCase();
+ const normalize=value=>String(value==null?'':value).replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ').toUpperCase();
+ const jo=normalize(joNumber),item=normalize(itemNumber);
  if(!jo||!item)return {ok:true,matches:[]};
- // Match the entered J.O. and Item No. together; S.O. is not the lookup key.
- const result=getExternalJORecords_('');
- const matches=[];
- (result.records||[]).forEach(r=>{
-  if(String(r['J.O']||'').trim().toUpperCase()!==jo||String(r['Item No.']||'').trim().toUpperCase()!==item)return;
-  matches.push({panelName:String(r['Panel Name']||'').trim(),qty:Number(r.Qty)||0});
+ // Read only the matching J.O. rows and their Item No./Panel Name columns.
+ // Avoid rebuilding the complete J.O. Register plus FGTS/allocation summaries.
+ const source=SpreadsheetApp.openById(JO_SOURCE_ID);
+ const sheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
+ if(!sheet)throw new Error('Could not find J.O Register source sheet tab gid '+JO_SOURCE_GID+'.');
+ const last=sheet.getLastRow();
+ if(last<JO_SOURCE_START_ROW)return {ok:true,matches:[]};
+ const found=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,1)
+   .createTextFinder(String(joNumber).trim()).matchCase(false).matchEntireCell(true).findAll();
+ const seen={};
+ found.forEach(cell=>{
+  const row=sheet.getRange(cell.getRow(),1,1,10).getDisplayValues()[0];
+  if(normalize(row[0])!==jo||normalize(row[8])!==item)return;
+  const panelName=String(row[9]||'').trim();
+  if(panelName)seen[normalize(panelName)]=panelName;
  });
+ const matches=Object.keys(seen).map(key=>({panelName:seen[key]}));
  return {ok:true,matches:matches};
 }
-
 function validateTransferBatchQuantities_(common,items,sh) {
  const joResult=getExternalJORecords_(''),original={};
  const keyFor=(jo,item)=>fgtsJobKey_(String(jo||'').trim(),String(item||'').trim());
