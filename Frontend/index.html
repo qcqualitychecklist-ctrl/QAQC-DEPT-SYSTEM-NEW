@@ -22,6 +22,17 @@
 .system-global-search>span{font-size:23px;line-height:1}
 .system-global-search input{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:6px 0!important;min-width:0;font-size:12px!important}
 .system-global-search input::placeholder{color:#718096}
+.system-notification{position:relative;flex:0 0 auto}
+.system-notification-button{width:40px;height:40px;display:grid;place-items:center;padding:0;border:1px solid #dce5f0;border-radius:50%;background:#fff;color:#2459a9;font-size:21px;line-height:1}
+.system-notification-button:hover{background:#f2f7ff;border-color:#bfd0e5}
+.system-notification-button:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.system-notification-panel{position:absolute;right:0;top:calc(100% + 10px);z-index:130;width:270px;padding:14px;border:1px solid #dce5f0;border-radius:11px;background:#fff;box-shadow:0 12px 30px #142b4a20}
+.system-notification-panel[hidden]{display:none!important}
+.system-notification-title{margin:0 0 10px;color:#142b4a;font-size:13px;font-weight:800}
+.system-notification-empty{padding:15px 8px;text-align:center;color:#68778c;font-size:11px}
+.nav button span[aria-hidden="true"]{display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;width:22px;font-size:21px;line-height:1}
+.app.sidebar-collapsed>.sidebar .nav button span[aria-hidden="true"]{font-size:21px}
+.app>main{padding-top:0!important}
 .system-topbar-title{min-width:0}
 .system-topbar-title h1{margin:0;color:#142b4a;font-size:16px;line-height:1.2;font-weight:800;letter-spacing:.15px}
 .system-topbar-title p{margin:4px 0 0;color:#68778c;font-size:10px;line-height:1.2}
@@ -1138,6 +1149,13 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
  </div>
  <div class="system-topbar-right">
   <label class="system-global-search" aria-label="Search records"><span aria-hidden="true">⌕</span><input id="search" placeholder="Search records..." oninput="scheduleLoadRecords()"></label>
+  <div class="system-notification">
+   <button class="system-notification-button" id="systemNotificationButton" type="button" aria-label="Notifications" aria-haspopup="true" aria-expanded="false" title="Notifications" onclick="toggleSystemNotifications(event)">♧</button>
+   <div class="system-notification-panel" id="systemNotificationPanel" role="dialog" aria-label="Notifications" hidden>
+    <h3 class="system-notification-title">Notifications</h3>
+    <div class="system-notification-empty">No new notifications.</div>
+   </div>
+  </div>
   <div class="system-account">
   <button class="system-account-trigger" id="systemAccountTrigger" type="button" aria-haspopup="true" aria-expanded="false" onclick="toggleAccountMenu(event)">
    <span class="system-account-avatar" id="systemAccountAvatar">QC</span>
@@ -1923,6 +1941,19 @@ function saveAccountSettings(event){
   document.getElementById('accountCurrentPassword').value='';document.getElementById('accountNewPassword').value='';document.getElementById('accountConfirmPassword').value='';
  },()=>{if(button)button.disabled=false;showMessage('Unable to contact the server. Please try again.',false);});
 }
+function toggleSystemNotifications(event){
+ if(event)event.stopPropagation();
+ const panel=document.getElementById('systemNotificationPanel'),button=document.getElementById('systemNotificationButton');
+ if(!panel||!button)return;
+ const opening=panel.hidden;
+ const accountMenu=document.getElementById('systemAccountMenu'),accountButton=document.getElementById('systemAccountTrigger');
+ if(accountMenu)accountMenu.hidden=true;if(accountButton)accountButton.setAttribute('aria-expanded','false');
+ panel.hidden=!opening;button.setAttribute('aria-expanded',String(opening));
+}
+document.addEventListener('click',event=>{
+ const wrap=document.querySelector('.system-notification');
+ if(wrap&&!wrap.contains(event.target)){const panel=document.getElementById('systemNotificationPanel'),button=document.getElementById('systemNotificationButton');if(panel)panel.hidden=true;if(button)button.setAttribute('aria-expanded','false');}
+});
 function toggleAccountMenu(event){
  if(event)event.stopPropagation();
  const menu=document.getElementById('systemAccountMenu'),trigger=document.getElementById('systemAccountTrigger');
