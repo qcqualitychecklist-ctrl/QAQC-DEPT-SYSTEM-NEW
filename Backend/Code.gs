@@ -1004,7 +1004,8 @@ function reserveTransferIds_(count,sh) {
   if(sh&&sh.getLastRow()>1){
    const idx=TRANSFER_HEADERS.indexOf('Transfer ID')+1;
    sh.getRange(2,idx,sh.getLastRow()-1,1).getDisplayValues().forEach(row=>{
-    const m=String(row[0]||'').trim().match(new RegExp('^TID-'+year+'-(\\d+)
+    const idParts=String(row[0]||'').trim().split('-');
+    if(idParts.length===3&&idParts[0]==='TID'&&idParts[1]===year){const seq=Number(idParts[2]);if(Number.isFinite(seq))max=Math.max(max,seq);}
   if(!input)throw new Error('No transfer details received.');
   const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
   if(!sh)throw new Error('Click Prepare Database first.');
@@ -1039,7 +1040,6 @@ function saveTransfersBatch(common, items) {
   const recordId=Utilities.getUuid(),transferId=transferIds[index];
   const input=Object.assign({},common,item,{'Record ID':recordId,'Created At':now,'Updated At':now,'Transfer ID':transferId,'Status':status,'Done Qty':0,'Remaining Qty':Number(item.Qty)||0,'QC In Charge':'','FGTS No.':'','Date Finished':'','Reminders':''});
   rows.push(TRANSFER_HEADERS.map(header=>input[header]??''));
-  transferIds.push(transferId);
  });
  const firstRow=sh.getLastRow()+1;
  sh.getRange(firstRow,1,rows.length,TRANSFER_HEADERS.length).setValues(rows);
