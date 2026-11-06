@@ -849,7 +849,7 @@ function updateReworkFinishedDate(reworkId, concernSection, dateValue) {
   const value=String(dateValue||'').trim();
   if(value&&!/^\d{4}-\d{2}-\d{2}$/.test(value))throw new Error('Enter a valid Date Finished.');
   let header=details.getLastColumn()?details.getRange(1,1,1,details.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()):[];
-  const findHeader=name=>header.findIndex(v=>v.toLowerCase().replace(/\\s+/g,' ')===name.toLowerCase());
+  const findHeader=name=>header.findIndex(v=>v.toLowerCase().replace(/\s+/g,' ')===name.toLowerCase());
   ['Concern Section','Date Finished','Status','Lead Time'].forEach(name=>{if(findHeader(name)<0){const col=details.getLastColumn()+1;details.getRange(1,col).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');header[col-1]=name;}});
   const sectionCol=findHeader('Concern Section')+1,finishedCol=findHeader('Date Finished')+1,statusCol=findHeader('Status')+1,leadCol=findHeader('Lead Time')+1;
   const rows=details.getDataRange().getValues(),sectionRows=[];
@@ -917,15 +917,19 @@ function getTransferRecords(searchText) {
 
 
 function getTransferJOOptions(joNumber) {
- const jo=String(joNumber||'').trim().toUpperCase();
+ const normalize=value=>String(value==null?'':value).trim().replace(/\s+/g,' ').toUpperCase();
+ const jo=normalize(joNumber);
  if(!jo)return {ok:true,matches:[]};
- // Use the exact assembled J.O Register records, including saved overrides.
+ // Read the same assembled source used by J.O Register; each J.O may span
+ // several item rows, so collapse those rows to their unique S.O./Client pair.
  const result=getExternalJORecords_('');
  const seen={};
  (result.records||[]).forEach(r=>{
-  if(String(r['J.O']||'').trim().toUpperCase()!==jo)return;
-  const so=String(r['S.O']||'').trim(),client=String(r.Client||'').trim();
-  const key=JSON.stringify([so,client]);
+  if(normalize(r['J.O'])!==jo)return;
+  const so=String(r['S.O']||'').trim().replace(/\s+/g,' ');
+  const client=String(r.Client||'').trim().replace(/\s+/g,' ');
+  if(!so&&!client)return;
+  const key=JSON.stringify([normalize(so),normalize(client)]);
   if(!seen[key])seen[key]={so:so,client:client};
  });
  return {ok:true,matches:Object.keys(seen).map(k=>seen[k])};
