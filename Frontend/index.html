@@ -1093,7 +1093,11 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
  }
 }
 
-/* QAQC visual consistency: separate the monitoring title bar from the global header. */
+/* QAQC visual consistency: create real space before the monitoring title bar. */
+#qaqcApp > main > .intro{
+ margin-top:30px!important;
+}
+/* Keep the monitoring title bar sticky below the global header while scrolling. */
 #monitoringPanel .intro{
  top:calc(var(--system-header-height) + 30px)!important;
 }
