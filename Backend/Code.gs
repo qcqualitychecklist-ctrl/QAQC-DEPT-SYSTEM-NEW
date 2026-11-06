@@ -921,27 +921,24 @@ function getTransferJOOptions(joNumber) {
   const jo=normalize(joNumber);
   if(!jo)return {ok:true,matches:[]};
 
-  // Transfer autofill needs only J.O, S.O and Client. Read those columns
-  // directly so it does not wait for or depend on the full J.O Register build,
-  // FGTS aggregation, Transfer allocations, or the visible table loading.
+  // Search only matching J.O. cells instead of loading every source row.
   const source=SpreadsheetApp.openById(JO_SOURCE_ID);
   const sheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
   if(!sheet)throw new Error('Could not find J.O Register source sheet tab gid '+JO_SOURCE_GID+'.');
-
   const last=sheet.getLastRow();
   if(last<JO_SOURCE_START_ROW)return {ok:true,matches:[]};
-  const rows=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,8).getDisplayValues();
+  const searchRange=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,1);
+  const found=searchRange.createTextFinder(String(joNumber).trim()).matchCase(false).matchEntireCell(true).findAll();
   const seen={};
-  rows.forEach(row=>{
-    if(normalize(row[0])!==jo)return; // Column A: J.O
-    const so=String(row[1]||'').replace(/\u00a0/g,' ').trim().replace(/\s+/g,' '); // Column B
-    const client=String(row[7]||'').replace(/\u00a0/g,' ').trim().replace(/\s+/g,' '); // Column H
+  found.forEach(cell=>{
+    const row=sheet.getRange(cell.getRow(),1,1,8).getDisplayValues()[0];
+    if(normalize(row[0])!==jo)return;
+    const so=String(row[1]||'').replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ');
+    const client=String(row[7]||'').replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ');
     if(!so&&!client)return;
     const key=JSON.stringify([normalize(so),normalize(client)]);
     if(!seen[key])seen[key]={so:so,client:client};
   });
-  // A J.O can have multiple item rows. Use the first valid S.O./Client pair
-  // from the J.O Register so Add Transfer can always auto-fill the header.
   const pairs=Object.keys(seen).map(key=>seen[key]);
   return {ok:true,matches:pairs.length?[pairs[0]]:[]};
 }
