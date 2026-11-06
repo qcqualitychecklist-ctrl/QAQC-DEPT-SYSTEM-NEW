@@ -915,6 +915,34 @@ function getTransferRecords(searchText) {
   records.reverse(); return {ok:true,records:records,fields:TRANSFER_HEADERS};
 }
 
+
+function getTransferJOOptions(joNumber) {
+ const jo=String(joNumber||'').trim().toUpperCase();if(!jo)return {ok:true,matches:[]};
+ const ss=SpreadsheetApp.openById(JO_SOURCE_ID),sheet=ss.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);if(!sheet)throw new Error('Could not find the J.O Register source sheet.');
+ const last=sheet.getLastRow();if(last<JO_SOURCE_START_ROW)return {ok:true,matches:[]};
+ const rows=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,14).getDisplayValues(),seen={};
+ rows.forEach(r=>{if(String(r[0]||'').trim().toUpperCase()!==jo)return;const key=JSON.stringify([String(r[1]||'').trim(),String(r[7]||'').trim()]);if(!seen[key])seen[key]={so:String(r[1]||'').trim(),client:String(r[7]||'').trim()};});
+ return {ok:true,matches:Object.keys(seen).map(k=>seen[k])};
+}
+function getTransferItemDetails(joNumber,soNumber,itemNumber) {
+ const jo=String(joNumber||'').trim().toUpperCase(),so=String(soNumber||'').trim().toUpperCase(),item=String(itemNumber||'').trim().toUpperCase();if(!so||!item)return {ok:true,matches:[]};
+ const ss=SpreadsheetApp.openById(JO_SOURCE_ID),sheet=ss.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);if(!sheet)throw new Error('Could not find the J.O Register source sheet.');
+ const last=sheet.getLastRow();if(last<JO_SOURCE_START_ROW)return {ok:true,matches:[]};
+ const rows=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,14).getDisplayValues(),matches=[];
+ rows.forEach(r=>{if(String(r[1]||'').trim().toUpperCase()!==so||String(r[8]||'').trim().toUpperCase()!==item)return;if(jo&&String(r[0]||'').trim().toUpperCase()!==jo)return;matches.push({panelName:String(r[9]||'').trim(),qty:Number(String(r[3]||'').replace(/,/g,''))||0});});
+ return {ok:true,matches:matches};
+}
+function validateTransferBatchQuantities_(common,items,sh) {
+ const ss=SpreadsheetApp.openById(JO_SOURCE_ID),source=ss.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);if(!source)throw new Error('Could not find the J.O Register source sheet.');
+ const last=source.getLastRow(),rows=last>=JO_SOURCE_START_ROW?source.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,14).getDisplayValues():[],original={};
+ rows.forEach(r=>{const key=fgtsJobKey_(r[1],r[8]);if(String(r[1]||'').trim()&&String(r[8]||'').trim())original[key]=(original[key]||0)+(Number(String(r[3]||'').replace(/,/g,''))||0);});
+ const prior={},soIdx=TRANSFER_HEADERS.indexOf('S.O'),itemIdx=TRANSFER_HEADERS.indexOf('Item No.'),qtyIdx=TRANSFER_HEADERS.indexOf('Qty');
+ if(sh.getLastRow()>1)sh.getRange(2,1,sh.getLastRow()-1,TRANSFER_HEADERS.length).getDisplayValues().forEach(r=>{const key=fgtsJobKey_(r[soIdx],r[itemIdx]);if(key)prior[key]=(prior[key]||0)+(Number(String(r[qtyIdx]||'').replace(/,/g,''))||0);});
+ const pending={};
+ items.forEach((it,i)=>{const key=fgtsJobKey_(common['S.O'],it['Item No.']),qty=Number(it.Qty)||0;if(!String(common['S.O']||'').trim()||!String(it['Item No.']||'').trim())throw new Error('Complete the S.O. and Item No. for item '+(i+1)+'.');pending[key]=(pending[key]||0)+qty;});
+ Object.keys(pending).forEach(key=>{const limit=original[key];if(!limit)throw new Error('Item '+key+' was not found in the J.O Register. Check the S.O. and Item No.');const total=(prior[key]||0)+pending[key];if(total>limit)throw new Error('Cannot save: total transfer Qty ('+total+') exceeds the original J.O Register Qty ('+limit+') for this S.O. and Item No.');});
+}
+
 function saveTransfer(input) {
   if(!input)throw new Error('No transfer details received.');
   const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
