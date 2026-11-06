@@ -39,7 +39,7 @@
 .system-account{position:relative;flex:0 0 auto}
 .system-account-trigger{display:flex;align-items:center;justify-content:center;width:40px;height:40px;min-width:40px;padding:0;border:1px solid #d7dee8;border-radius:50%;background:#142b4a;text-align:center;color:#fff;box-shadow:0 2px 7px #142b4a20}
 .system-account-trigger:hover{background:#243e60;border-color:#243e60}
-.system-account-avatar{width:100%;height:100%;flex:0 0 100%;display:grid;place-items:center;border-radius:50%;background:transparent;color:#fff;font-size:15px;font-weight:800}
+.system-account-avatar{width:100%;height:100%;flex:0 0 100%;display:grid;place-items:center;border-radius:50%;background:transparent;color:#fff;font-size:15px;font-weight:800}.system-account-copy,.system-account-chevron{display:none!important}
 .system-account-copy{display:flex;flex:1;flex-direction:column;min-width:0;gap:3px}
 .system-account-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700;color:#1c2f49}
 .system-account-role{font-size:9px;color:#718096}
@@ -1892,7 +1892,7 @@ function updateSystemAccountHeader(){
  const initial=(name.replace(/^Guest User$/,'G').match(/[A-Za-z0-9]/)||['Q'])[0].toUpperCase();
  const nameEl=document.getElementById('systemAccountName'),roleEl=document.getElementById('systemAccountRole');
  const avatar=document.getElementById('systemAccountAvatar'),menuName=document.getElementById('systemAccountMenuName'),menuRole=document.getElementById('systemAccountMenuRole');
- if(nameEl)nameEl.textContent=name;if(roleEl)roleEl.textContent=role;if(avatar)avatar.textContent=initial;
+ if(nameEl)nameEl.textContent=name;if(roleEl)roleEl.textContent=role;if(avatar)avatar.textContent='A';
  if(menuName)menuName.textContent=name;if(menuRole)menuRole.textContent=role;
  const profileName=document.getElementById('accountProfileName'),profileRole=document.getElementById('accountProfileRole'),profileAvatar=document.getElementById('accountProfileAvatar');
  if(profileName)profileName.textContent=name;if(profileRole)profileRole.textContent=role;if(profileAvatar)profileAvatar.textContent=initial;
