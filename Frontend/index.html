@@ -1479,7 +1479,7 @@ function bindTransferAutofill(){
  const lookupJO=()=>{
   const value=jo.value.trim();
   if(!value){so.value='';client.value='';lastLookup='';return;}
-  const key=value.toUpperCase().replace(/\\s+/g,' ');
+  const key=value.toUpperCase().replace(/\s+/g,' ');
   if(key===lastLookup)return;
   lastLookup=key;
   so.value='';client.value='';
