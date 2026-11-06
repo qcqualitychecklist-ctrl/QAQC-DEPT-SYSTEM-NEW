@@ -2209,6 +2209,11 @@ function submitLogin(){
   qaqcAuthToken=String(r.authToken||'');
   startQaqcSession();
   updateSystemAccountHeader();
+  // Clear any guest-only workspace left mounted before showing the authenticated monitoring view.
+  ['guestComplainWorkspace','guestPdiWorkspace'].forEach(id=>{const workspace=document.getElementById(id);if(workspace)workspace.style.display='none';});
+  const monitoringPanel=document.getElementById('monitoringPanel'),statusPanel=document.getElementById('status');
+  if(monitoringPanel)monitoringPanel.style.display='';
+  if(statusPanel)statusPanel.style.display='';
   document.body.classList.toggle('guest-mode',false);
   document.getElementById('loginLanding').style.display='none';
   document.getElementById('qaqcApp').style.display='grid';
