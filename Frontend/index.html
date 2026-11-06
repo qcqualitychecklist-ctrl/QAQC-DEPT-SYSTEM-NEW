@@ -1075,6 +1075,22 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
 .pdi-request-back{display:inline-block;margin-top:12px;color:#fff;font-size:12px;text-decoration:underline}
 @media(max-width:650px){.pdi-request-page{padding:12px}.pdi-request-head,.pdi-request-body{padding:19px}.pdi-request-grid{grid-template-columns:1fr}.pdi-request-field.full{grid-column:auto}.pdi-request-actions{flex-direction:column-reverse;align-items:stretch}.pdi-request-submit{width:100%}}
 
+
+/* Keep the vertical tab menu visible while the monitoring workspace scrolls. */
+.app>.sidebar,.app.sidebar-collapsed>.sidebar{
+ position:sticky!important;
+ top:83px!important;
+ align-self:start!important;
+ height:calc(100vh - 83px)!important;
+ min-height:calc(100vh - 83px)!important;
+}
+@media(max-width:700px){
+ .app>.sidebar,.app.sidebar-collapsed>.sidebar{
+  top:59px!important;
+  height:calc(100vh - 59px)!important;
+  min-height:calc(100vh - 59px)!important;
+ }
+}
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
