@@ -917,22 +917,30 @@ function getTransferRecords(searchText) {
 
 
 function getTransferJOOptions(joNumber) {
- const normalize=value=>String(value==null?'':value).trim().replace(/\s+/g,' ').toUpperCase();
- const jo=normalize(joNumber);
- if(!jo)return {ok:true,matches:[]};
- // Read the same assembled source used by J.O Register; each J.O may span
- // several item rows, so collapse those rows to their unique S.O./Client pair.
- const result=getExternalJORecords_('');
- const seen={};
- (result.records||[]).forEach(r=>{
-  if(normalize(r['J.O'])!==jo)return;
-  const so=String(r['S.O']||'').trim().replace(/\s+/g,' ');
-  const client=String(r.Client||'').trim().replace(/\s+/g,' ');
-  if(!so&&!client)return;
-  const key=JSON.stringify([normalize(so),normalize(client)]);
-  if(!seen[key])seen[key]={so:so,client:client};
- });
- return {ok:true,matches:Object.keys(seen).map(k=>seen[k])};
+  const normalize=value=>String(value==null?'':value).replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ').toUpperCase();
+  const jo=normalize(joNumber);
+  if(!jo)return {ok:true,matches:[]};
+
+  // Transfer autofill needs only J.O, S.O and Client. Read those columns
+  // directly so it does not wait for or depend on the full J.O Register build,
+  // FGTS aggregation, Transfer allocations, or the visible table loading.
+  const source=SpreadsheetApp.openById(JO_SOURCE_ID);
+  const sheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
+  if(!sheet)throw new Error('Could not find J.O Register source sheet tab gid '+JO_SOURCE_GID+'.');
+
+  const last=sheet.getLastRow();
+  if(last<JO_SOURCE_START_ROW)return {ok:true,matches:[]};
+  const rows=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,8).getDisplayValues();
+  const seen={};
+  rows.forEach(row=>{
+    if(normalize(row[0])!==jo)return; // Column A: J.O
+    const so=String(row[1]||'').replace(/\u00a0/g,' ').trim().replace(/\s+/g,' '); // Column B
+    const client=String(row[7]||'').replace(/\u00a0/g,' ').trim().replace(/\s+/g,' '); // Column H
+    if(!so&&!client)return;
+    const key=JSON.stringify([normalize(so),normalize(client)]);
+    if(!seen[key])seen[key]={so:so,client:client};
+  });
+  return {ok:true,matches:Object.keys(seen).map(key=>seen[key])};
 }
 function getTransferItemDetails(joNumber,soNumber,itemNumber) {
  const jo=String(joNumber||'').trim().toUpperCase(),item=String(itemNumber||'').trim().toUpperCase();
