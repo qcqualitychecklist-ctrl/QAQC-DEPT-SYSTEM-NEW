@@ -1109,7 +1109,7 @@ function saveTransfer(input) {
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
   if(String(input.Status||'')==='Passed'&&alreadyAllocated<qty)throw new Error('Status cannot be Passed until Done Qty meets the required Qty.');
-  const inputObj=Object.assign({},input,{'Transfer ID':transferId,'Done Qty':alreadyAllocated,'Remaining Qty':qty-alreadyAllocated,'QC In Charge':[...new Set(linkedAllocations.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', '),'FGTS No.':[...new Set(linkedAllocations.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', '),'Date Finished':latestFinishedDate_(linkedAllocations),'Status Remark':Object.prototype.hasOwnProperty.call(input,'Status Remark')?input['Status Remark']:(old?old[21]:''),'Remarks':Object.prototype.hasOwnProperty.call(input,'Remarks')?input['Remarks']:(old?old[22]:''),'Reminders':''});
+  const inputObj=Object.assign({},input,{'Transfer ID':transferId,'Done Qty':alreadyAllocated,'Remaining Qty':qty-alreadyAllocated,'QC In Charge':[...new Set(linkedAllocations.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', '),'FGTS No.':[...new Set(linkedAllocations.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', '),'Date Finished':latestFinishedDate_(linkedAllocations),'Status Remark':Object.prototype.hasOwnProperty.call(input,'Status Remark')?input['Status Remark']:(old?old[21]:''),'Remarks':Object.prototype.hasOwnProperty.call(input,'Remarks')?input['Remarks']:(old?old[22]:''),'Reminders':'','Allocation Pool Qty':qty,'Remaining For Record ID':old?String(old[TRANSFER_HEADERS.indexOf('Remaining For Record ID')]||''):''});
   if(old && !String(input['Time Received']||'').trim()) inputObj['Time Received']=formatTimeCell_(old[5]);
   const out=TRANSFER_HEADERS.map((h,j)=>h==='Record ID'?recordId:h==='Created At'?(old?old[1]:now):h==='Updated At'?now:(inputObj[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
@@ -1130,7 +1130,7 @@ function saveTransfersBatch(common, items) {
  const status=String(common.Status||'Ongoing')==='Passed'?'Ongoing':(common.Status||'Ongoing');
  items.forEach((item,index)=>{
   const recordId=Utilities.getUuid(),transferId=transferIds[index];
-  const input=Object.assign({},common,item,{'Record ID':recordId,'Created At':now,'Updated At':now,'Transfer ID':transferId,'Status':status,'Done Qty':0,'Remaining Qty':Number(item.Qty)||0,'QC In Charge':'','FGTS No.':'','Date Finished':'','Reminders':''});
+  const input=Object.assign({},common,item,{'Record ID':recordId,'Created At':now,'Updated At':now,'Transfer ID':transferId,'Status':status,'Done Qty':0,'Remaining Qty':Number(item.Qty)||0,'QC In Charge':'','FGTS No.':'','Date Finished':'','Reminders':'','Allocation Pool Qty':Number(item.Qty)||0,'Remaining For Record ID':''});
   rows.push(TRANSFER_HEADERS.map(header=>input[header]??''));
  });
  const firstRow=sh.getLastRow()+1;
@@ -1146,7 +1146,7 @@ function saveAdditionalTransfersBatch(common, items) {
   const now=new Date(),saved=[],reservedIds=reserveTransferIds_(items.length,sh);
   items.forEach((item,index)=>{
     const transferId=reservedIds[index],recordId=Utilities.getUuid();
-    const inputObj=Object.assign({},common,item,{'Record ID':recordId,'Created At':now,'Updated At':now,'Transfer ID':transferId,'Done Qty':0,'Remaining Qty':Number(item.Qty)||0,'QC In Charge':'','FGTS No.':'','Date Finished':'','Reminders':'','Status':String(common.Status||'Ongoing')});
+    const inputObj=Object.assign({},common,item,{'Record ID':recordId,'Created At':now,'Updated At':now,'Transfer ID':transferId,'Done Qty':0,'Remaining Qty':Number(item.Qty)||0,'QC In Charge':'','FGTS No.':'','Date Finished':'','Reminders':'','Status':String(common.Status||'Ongoing'),'Allocation Pool Qty':Number(item.Qty)||0,'Remaining For Record ID':''});
     const out=TRANSFER_HEADERS.map(h=>h==='Record ID'?recordId:h==='Created At'||h==='Updated At'?now:(inputObj[h]??''));
     sh.appendRow(out);saved.push(transferId);
   });
@@ -1277,7 +1277,7 @@ function saveAllocation(recordId,input) {
   if(existingTotal+qty>Number(tr[13]))throw new Error('Total allocated quantity ('+(existingTotal+qty)+') cannot exceed transfer Qty ('+tr[13]+').');
   const now=new Date(),aid=id||Utilities.getUuid(),out=headers.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?tr[3]:h==='Transfer Record ID'?recordId:h==='QC In Charge'?qc:h==='FGTS No.'?fgts:h==='Qty'?qty:h==='Date Finished'?(input['Date Finished']||''):h==='Allocation Remarks'?(input['Allocation Remarks']||''):h==='Created At'?(row>0?rows[row-1][idx('Created At')]:now):h==='Updated At'?now:h==='Category'?(input.Category||''):'');
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
-  syncTransferSummary_(recordId);
+  syncTransferSummary_(recordId);syncRemainingTransferRow_(recordId);
   invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,message:row>0?'QC allocation updated.':'QC allocation saved.'};
 }
