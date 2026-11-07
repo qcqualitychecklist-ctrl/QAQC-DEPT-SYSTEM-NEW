@@ -1121,7 +1121,28 @@ function saveAllocationsBatch(transferId, common, entries) {
   if(!tr)throw new Error('Parent transfer not found.');
   const fgts=String(common['FGTS No.']||'').trim(), category=String(common.Category||'').trim(),allocationRemarks=String(common['Allocation Remarks']||'').trim();
   if(!fgts)throw new Error('FGTS No. is required.');
-  const rows=sh.getDataRange().getValues(), ids=entries.map(e=>String(e['Allocation ID']||'')).filter(Boolean);
+  const rows=sh.getDataRange().getValues();
+  // Allow shared allocation details (especially Allocation Remarks) to be saved
+  // without requiring users to re-enter existing QC/Qty rows.
+  if(!entries.length&&!common['Replace All']){
+    const matches=[];
+    for(let i=1;i<rows.length;i++)if(String(rows[i][1])===String(transferId))matches.push({row:i+1,values:rows[i].slice()});
+    if(!matches.length)throw new Error('Click + Add QC, then enter QC In Charge and Qty for at least one allocation.');
+    const now=new Date();
+    matches.forEach(item=>{
+      const out=item.values.slice(0,ALLOCATION_HEADERS.length);
+      out[3]=fgts;
+      out[5]=common['Date Finished']||'';
+      out[6]=allocationRemarks;
+      out[8]=now;
+      out[9]=category;
+      sh.getRange(item.row,1,1,ALLOCATION_HEADERS.length).setValues([out]);
+    });
+    syncTransferSummary_(transferId);
+    invalidateModuleCache_('Transfer Monitoring','J.O Register');
+    return {ok:true,message:'Allocation details updated.'};
+  }
+  const ids=entries.map(e=>String(e['Allocation ID']||'')).filter(Boolean);
   const cleaned=entries.map(e=>({id:String(e['Allocation ID']||''),qc:String(e['QC In Charge']||'').trim(),qty:Number(e.Qty)}));
   cleaned.forEach(e=>{if(!e.qc)throw new Error('QC In Charge is required for every row.');if(!isFinite(e.qty)||e.qty<=0)throw new Error('Every QC Qty must be greater than zero.');});
   const existingTotal=rows.slice(1).reduce((sum,r)=>sum+(String(r[1])===String(transferId)&&!ids.includes(String(r[0]))?(Number(r[4])||0):0),0);
