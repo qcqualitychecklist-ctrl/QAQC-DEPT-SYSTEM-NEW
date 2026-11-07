@@ -892,6 +892,7 @@ function joParseDate_(v){
 function getTransferRecords(searchText) {
   const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(TRANSFER_SHEET), allocSh=ss.getSheetByName(ALLOCATION_SHEET);
   if(!sh) return {ok:true,records:[],fields:TRANSFER_HEADERS};
+  if(allocSh&&allocSh.getLastRow()>1)migrateAllocationRecordIds_(sh,allocSh);
   const vals=sh.getDataRange().getValues(), allocations=allocSh&&allocSh.getLastRow()>1?allocSh.getDataRange().getValues().slice(1):[];
   const allocationsByRecord=Object.create(null);
   allocations.forEach(a=>{const id=String(a[10]||'');if(id)(allocationsByRecord[id]||(allocationsByRecord[id]=[])).push(a);});
