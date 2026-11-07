@@ -1176,8 +1176,8 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
 #allocationModal .allocation-dialog>.dialoghead>button{display:none!important}
 #allocationModal .allocation-dialog-actions{justify-content:flex-end!important;margin-top:14px!important;padding-top:12px!important;border-top:1px solid #dfe6ef!important}
 #allocationModal .allocation-dialog-actions button{min-width:92px!important;padding:8px 20px!important;border-radius:7px!important}
-body.transfer-monitoring-active #monitoringPanel .tablewrap table{table-layout:fixed!important;width:100%!important}
-body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.actioncell){max-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+body.transfer-monitoring-active #monitoringPanel .tablewrap table{table-layout:auto!important;width:100%!important}
+body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.actioncell){max-width:150px!important;min-width:65px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
 body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.actioncell) .pill,
 body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.actioncell) select{max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important}
 @media(max-width:700px){#transferDetailsModal .transfer-view-dialog{width:96vw!important;max-height:90vh!important}#transferDetailsModal .transfer-view-dialog>.dialoghead,#transferDetailsModal #transferDetailsBody,#transferDetailsModal .transfer-view-actions{padding-left:12px!important;padding-right:12px!important}}
@@ -1476,14 +1476,14 @@ function scheduleLoadRecords(){if(searchLoadTimer)clearTimeout(searchLoadTimer);
 function loadRecords(useCache=false,silent=false){
  if(searchLoadTimer){clearTimeout(searchLoadTimer);searchLoadTimer=null}
  const requestedModule=currentPage,cacheKey=requestedModule+'::',token=++loadRequestToken;const loading=el('loadingOverlay');if(loading&&!silent)loading.classList.add('show');
- if(!useCache&&requestedModule!=='Punchlist Monitoring')delete recordCache[cacheKey];
+ if(!silent&&!useCache&&requestedModule!=='Punchlist Monitoring')delete recordCache[cacheKey];
  const hasCachedFull=(useCache||requestedModule==='Punchlist Monitoring')&&Object.prototype.hasOwnProperty.call(recordCache,cacheKey);
  tablePage=1;
  if(hasCachedFull){records=recordCache[cacheKey];recordsLoadedFully=true;renderTable();if(loading&&!silent)loading.classList.remove('show');return}
- else{records=[];recordsLoadedFully=false;renderTable()}
+ else if(!silent){records=[];recordsLoadedFully=false;renderTable()}
  callServer('getModuleData',[requestedModule,'',1,PAGE_SIZE,false],first=>{
    if(token!==loadRequestToken||currentPage!==requestedModule)return;if(!first||!first.ok){if(loading&&!silent)loading.classList.remove('show');return}
-   if(!hasCachedFull){records=first.records||[];recordsLoadedFully=false;renderTable()}
+   if(!hasCachedFull&&!silent){records=first.records||[];recordsLoadedFully=false;renderTable()}
    // The first response is small. Fetch the complete set in the background so filters,
    // dashboard totals, and subsequent pages continue to work across every record.
    callServer('getModuleData',[requestedModule,'',1,PAGE_SIZE,true],all=>{
@@ -1638,7 +1638,7 @@ function openHoldStatusForm(rec,select){pendingHoldTransfer=rec;pendingHoldSelec
 function cancelHoldStatus(){if(pendingHoldSelect&&pendingHoldTransfer)pendingHoldSelect.value=pendingHoldTransfer.Status||'Ongoing';closeModal('transferHoldModal');pendingHoldTransfer=null;pendingHoldSelect=null}
 function submitHoldStatus(ev){ev.preventDefault();const remark=el('transferHoldRemarks').value.trim();if(!remark){el('transferHoldRemarks').focus();return}const rec=pendingHoldTransfer;if(!rec)return;const btn=el('transferHoldSave');btn.disabled=true;quickStatus(rec,'Hold',remark,()=>{btn.disabled=false;closeModal('transferHoldModal');pendingHoldTransfer=null;pendingHoldSelect=null},()=>{btn.disabled=false})}
 function quickStatus(rec,status,remark,onDone,onFail){const data={};TRANSFER_FIELDS.forEach(d=>data[d[0]]=rec[d[0]]??'');data.Status=status;data['Status Remark']=remark!==undefined?remark:(rec['Status Remark']||'');data['Record ID']=rec['Record ID'];callServer('saveRecord',['Transfer Monitoring',data],r=>{Object.assign(rec,data);const idx=records.findIndex(x=>String(x['Record ID'])===String(rec['Record ID']));if(idx>=0)records[idx]=rec;recordCache['Transfer Monitoring::']=records;renderTable();showStatus(true,'Status updated',rec['Transfer ID']+' — '+status);if(onDone)onDone()},err=>{if(onFail)onFail(err)})}
-function removeTransfer(rec){if(!confirm('Delete this entire transfer and all QC allocations linked to it? Transfer ID: '+rec['Transfer ID']))return;callServer('deleteTransfer',[rec['Record ID']],r=>{showStatus(true,r.message,rec['Transfer ID']+' deleted.');loadRecords(false,true)})}
+function removeTransfer(rec){if(!confirm('Delete this entire transfer and all QC allocations linked to it? Transfer ID: '+rec['Transfer ID']))return;callServer('deleteTransfer',[rec['Record ID']],r=>{records=records.filter(x=>String(x['Record ID'])!==String(rec['Record ID']));recordCache['Transfer Monitoring::']=records;renderTable();showStatus(true,r.message,rec['Transfer ID']+' deleted.')})}
 function openAllocations(rec){activeTransfer=rec;el('allocationTitle').textContent='FGTS / QC Allocation';el('allocationSubtitle').textContent='Transfer ID: '+rec['Transfer ID']+' | Transfer Qty: '+rec.Qty;resetAllocationForm();openModal('allocationModal');loadAllocations()}
 function resetAllocationForm(){el('allocationForm').reset();el('allocationFormTitle').textContent='Add QC Allocation';el('allocationSave').textContent='Save Allocation';el('addQCBtn').style.display='';el('allocationId').value='';makeFields('allocationFields',ALLOCATION_FIELDS);el('qcAllocationRows').innerHTML='';qcRowCounter=0;updateAllocationHint()}
 function addQCRow(values){const id=qcRowCounter++,wrap=document.createElement('div');wrap.className='qc-row fields';wrap.dataset.rowId=id;const qc=document.createElement('div');qc.className='field';const ql=document.createElement('label');ql.textContent='QC In Charge *';qc.appendChild(ql);const qi=document.createElement('input');qi.type='text';qi.required=true;qi.placeholder='Enter QC name';qi.className='qc-name';qi.value=values&&values['QC In Charge']||'';qc.appendChild(qi);const qty=document.createElement('div');qty.className='field';const qtl=document.createElement('label');qtl.textContent='Qty *';qty.appendChild(qtl);const qti=document.createElement('input');qti.type='number';qti.min='0.01';qti.step='any';qti.required=true;qti.placeholder='Qty';qti.className='qc-qty';qti.value=values&&values.Qty!=null?values.Qty:'';qty.appendChild(qti);wrap.append(qc,qty);el('qcAllocationRows').appendChild(wrap)}
