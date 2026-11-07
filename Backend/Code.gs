@@ -40,7 +40,7 @@ const REWORK_CORRECTIVE_OPTIONS = ['To Correct Workmanship','To Complete Missing
 
 const JO_HEADERS = ['Record ID','Created At','Updated At','J.O No','S.O No','Customer','Item No','Description','Quantity','Date Received','Target Date','Status','Remarks'];
 const TRANSFER_HEADERS = ['Record ID','Created At','Updated At','Transfer ID','Date Received','Time Received','Section','Transfer No.','J.O','S.O','Client','Item No.','Panel Name','Qty','Location','Status','Done Qty','Remaining Qty','QC In Charge','FGTS No.','Date Finished','Status Remark','Remarks','Reminders'];
-const ALLOCATION_HEADERS = ['Allocation ID','Transfer ID','QC In Charge','FGTS No.','Qty','Date Finished','Allocation Remarks','Created At','Updated At','Category'];
+const ALLOCATION_HEADERS = ['Allocation ID','Transfer ID','QC In Charge','FGTS No.','Qty','Date Finished','Allocation Remarks','Created At','Updated At','Category','Transfer Record ID'];
 const TRANSFER_FIELDS = ['Date Received','Time Received','Section','Transfer No.','J.O','S.O','Client','Item No.','Panel Name','Qty','Location','Status','Status Remark','Remarks'];
 const JO_FIELDS = ['J.O No','S.O No','Customer','Item No','Description','Quantity','Date Received','Target Date','Status','Remarks'];
 const REMINDER_AFTER_DAYS = 3;
@@ -893,13 +893,14 @@ function getTransferRecords(searchText) {
   const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(TRANSFER_SHEET), allocSh=ss.getSheetByName(ALLOCATION_SHEET);
   if(!sh) return {ok:true,records:[],fields:TRANSFER_HEADERS};
   const vals=sh.getDataRange().getValues(), allocations=allocSh&&allocSh.getLastRow()>1?allocSh.getDataRange().getValues().slice(1):[];
-  const allocationsByTransfer=Object.create(null);
-  allocations.forEach(a=>{const id=String(a[1]||'');if(!id)return;(allocationsByTransfer[id]||(allocationsByTransfer[id]=[])).push(a)});
+  const allocationsByRecord=Object.create(null);
+  allocations.forEach(a=>{const id=String(a[10]||'');if(id)(allocationsByRecord[id]||(allocationsByRecord[id]=[])).push(a);});
   const query=String(searchText||'').trim().toLowerCase(), records=[];
   for(let i=1;i<vals.length;i++){
     if(!vals[i][0])continue;
     const obj={}; TRANSFER_HEADERS.forEach((h,j)=>obj[h]=h==='Time Received'?formatTimeCell_(vals[i][j]):formatCell_(vals[i][j]));
-    const linked=allocationsByTransfer[String(obj['Transfer ID'])]||[];
+    const recordId=String(obj['Record ID']||'');
+    const linked=allocationsByRecord[recordId]||[];
     const done=linked.reduce((sum,a)=>sum+(Number(a[4])||0),0);
     obj['Done Qty']=done;
     obj['Remaining Qty']=Math.max(0,(Number(obj['Qty'])||0)-done);
@@ -916,7 +917,6 @@ function getTransferRecords(searchText) {
   }
   records.reverse(); return {ok:true,records:records,fields:TRANSFER_HEADERS};
 }
-
 
 function getTransferJOOptions(joNumber) {
   const normalize=value=>String(value==null?'':value).replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ').toUpperCase();
@@ -1165,101 +1165,120 @@ function saveAllocationsBatch(transferId, common, entries) {
 
 function ensureAllocationCategoryColumn_(sh) {
   const lastCol=Math.max(sh.getLastColumn(),1);
-  const headers=sh.getRange(1,1,1,lastCol).getDisplayValues()[0];
-  if(headers.indexOf('Category')<0){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue('Category').setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');}
+  const headers=sh.getRange(1,1,1,lastCol).getDisplayValues()[0].map(v=>String(v||'').trim());
+  ['Category','Transfer Record ID'].forEach(name=>{
+    if(headers.indexOf(name)<0){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');}
+  });
+}
+function migrateAllocationRecordIds_(transfer,alloc) {
+  ensureAllocationCategoryColumn_(alloc);
+  const t=transfer.getDataRange().getValues(),a=alloc.getDataRange().getValues();
+  const transferCol=TRANSFER_HEADERS.indexOf('Transfer ID'),recordCol=TRANSFER_HEADERS.indexOf('Record ID');
+  const byTransfer={};
+  for(let i=1;i<t.length;i++){const tid=String(t[i][transferCol]||'');if(tid)(byTransfer[tid]||(byTransfer[tid]=[])).push(String(t[i][recordCol]||''));}
+  const headers=alloc.getRange(1,1,1,alloc.getLastColumn()).getDisplayValues()[0];
+  const recordIdCol=headers.indexOf('Transfer Record ID');
+  let migrated=0,ambiguous=0;
+  for(let i=1;i<a.length;i++){
+    if(String(a[i][recordIdCol]||''))continue;
+    const tid=String(a[i][1]||''),matches=byTransfer[tid]||[];
+    if(matches.length===1&&matches[0]){alloc.getRange(i+1,recordIdCol+1).setValue(matches[0]);migrated++;}
+    else if(matches.length>1)ambiguous++;
+  }
+  return {migrated:migrated,ambiguous:ambiguous};
 }
 
-
-function updateAllocationRemarksOnly(transferId, remarks) {
-  if(!transferId)throw new Error('Transfer ID is required.');
-  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ALLOCATION_SHEET);
+function updateAllocationRemarksOnly(recordId, remarks) {
+  if(!recordId)throw new Error('Transfer Record ID is required.');
+  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(ALLOCATION_SHEET),transfer=ss.getSheetByName(TRANSFER_SHEET);
   if(!sh||sh.getLastRow()<2)throw new Error('No saved QC allocations were found for this transfer.');
+  migrateAllocationRecordIds_(transfer,sh);
   const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0];
-  const transferCol=headers.indexOf('Transfer ID')+1;
-  const remarksCol=headers.indexOf('Allocation Remarks')+1;
-  const updatedCol=headers.indexOf('Updated At')+1;
-  if(!transferCol||!remarksCol)throw new Error('Allocation Remarks column was not found. Please prepare the database.');
-  const values=sh.getDataRange().getValues();
-  const now=new Date();
-  let updated=0;
+  const recordCol=headers.indexOf('Transfer Record ID'),remarksCol=headers.indexOf('Allocation Remarks'),updatedCol=headers.indexOf('Updated At');
+  const values=sh.getDataRange().getValues(),now=new Date();let updated=0;
   for(let i=1;i<values.length;i++){
-    if(String(values[i][transferCol-1])!==String(transferId))continue;
-    sh.getRange(i+1,remarksCol).setValue(String(remarks||'').trim());
-    if(updatedCol)sh.getRange(i+1,updatedCol).setValue(now);
+    if(String(values[i][recordCol])!==String(recordId))continue;
+    sh.getRange(i+1,remarksCol+1).setValue(String(remarks||'').trim());
+    if(updatedCol>=0)sh.getRange(i+1,updatedCol+1).setValue(now);
     updated++;
   }
   if(!updated)throw new Error('No saved QC allocations were found for this transfer.');
-  syncTransferSummary_(transferId);
+  syncTransferSummary_(recordId);
   invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,message:'Allocation Remarks updated successfully.'};
 }
 
-function getAllocations(transferId) {
-  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ALLOCATION_SHEET);
+function getAllocations(recordId) {
+  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(ALLOCATION_SHEET),transfer=ss.getSheetByName(TRANSFER_SHEET);
   if(!sh||sh.getLastRow()<2)return {ok:true,allocations:[]};
-  const rows=sh.getDataRange().getValues().slice(1).filter(r=>String(r[1])===String(transferId));
-  return {ok:true,allocations:rows.map(r=>({'Allocation ID':r[0],'Transfer ID':r[1],'QC In Charge':r[2],'FGTS No.':r[3],'Qty':r[4],'Date Finished':formatCell_(r[5]),'Allocation Remarks':r[6],Category:r[9]||''}))};
+  migrateAllocationRecordIds_(transfer,sh);
+  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0],idx=name=>headers.indexOf(name);
+  const rows=sh.getDataRange().getValues().slice(1).filter(r=>String(r[idx('Transfer Record ID')])===String(recordId));
+  return {ok:true,allocations:rows.map(r=>({'Allocation ID':r[idx('Allocation ID')],'Transfer ID':r[idx('Transfer ID')],'QC In Charge':r[idx('QC In Charge')],'FGTS No.':r[idx('FGTS No.')],'Qty':r[idx('Qty')],'Date Finished':formatCell_(r[idx('Date Finished')]),'Allocation Remarks':r[idx('Allocation Remarks')],Category:r[idx('Category')]||''}))};
 }
 
-function saveAllocation(transferId,input) {
-  if(!transferId||!input)throw new Error('Transfer ID and allocation details are required.');
-  const ss=SpreadsheetApp.openById(DATABASE_ID), transfer=ss.getSheetByName(TRANSFER_SHEET), sh=ss.getSheetByName(ALLOCATION_SHEET);
+function saveAllocation(recordId,input) {
+  if(!recordId||!input)throw new Error('Transfer Record ID and allocation details are required.');
+  const ss=SpreadsheetApp.openById(DATABASE_ID),transfer=ss.getSheetByName(TRANSFER_SHEET),sh=ss.getSheetByName(ALLOCATION_SHEET);
   if(!transfer||!sh)throw new Error('Click Prepare Database first.');
-  const tr=transfer.getDataRange().getValues().find((r,i)=>i>0&&String(r[3])===String(transferId));
-  if(!tr)throw new Error('Parent transfer not found.');
+  migrateAllocationRecordIds_(transfer,sh);
+  const tr=transfer.getDataRange().getValues().find((r,i)=>i>0&&String(r[0])===String(recordId));
+  if(!tr)throw new Error('Parent transfer record not found.');
+  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0],idx=name=>headers.indexOf(name);
   const qc=String(input['QC In Charge']||'').trim(),fgts=String(input['FGTS No.']||'').trim(),qty=Number(input.Qty);
   if(!qc)throw new Error('QC In Charge is required.');
   if(!fgts)throw new Error('FGTS No. is required.');
   if(!isFinite(qty)||qty<=0)throw new Error('Allocation Qty must be greater than zero.');
   const rows=sh.getDataRange().getValues(),id=String(input['Allocation ID']||'');let row=-1;
-  if(id){for(let i=1;i<rows.length;i++)if(String(rows[i][0])===id&&String(rows[i][1])===String(transferId)){row=i+1;break;}if(row<0)throw new Error('Allocation not found. Refresh and try again.');}
-  const existingTotal=rows.slice(1).reduce((sum,r,i)=>sum+(String(r[1])===String(transferId)&&String(r[0])!==id?(Number(r[4])||0):0),0);
+  if(id){for(let i=1;i<rows.length;i++)if(String(rows[i][idx('Allocation ID')])===id&&String(rows[i][idx('Transfer Record ID')])===String(recordId)){row=i+1;break;}if(row<0)throw new Error('Allocation not found. Refresh and try again.');}
+  const existingTotal=rows.slice(1).reduce((sum,r)=>sum+(String(r[idx('Transfer Record ID')])===String(recordId)&&String(r[idx('Allocation ID')])!==id?(Number(r[idx('Qty')])||0):0),0);
   if(existingTotal+qty>Number(tr[13]))throw new Error('Total allocated quantity ('+(existingTotal+qty)+') cannot exceed transfer Qty ('+tr[13]+').');
-  const now=new Date(),aid=id||Utilities.getUuid(),out=ALLOCATION_HEADERS.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?transferId:h==='Created At'?(row>0?rows[row-1][7]:now):h==='Updated At'?now:(input[h]??''));
+  const now=new Date(),aid=id||Utilities.getUuid(),out=headers.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?tr[3]:h==='Transfer Record ID'?recordId:h==='QC In Charge'?qc:h==='FGTS No.'?fgts:h==='Qty'?qty:h==='Date Finished'?(input['Date Finished']||''):h==='Allocation Remarks'?(input['Allocation Remarks']||''):h==='Created At'?(row>0?rows[row-1][idx('Created At')]:now):h==='Updated At'?now:h==='Category'?(input.Category||''):'');
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
-  syncTransferSummary_(transferId);
+  syncTransferSummary_(recordId);
   invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,message:row>0?'QC allocation updated.':'QC allocation saved.'};
 }
 
-function deleteAllocation(transferId,allocationId) {
-  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ALLOCATION_SHEET);
+function deleteAllocation(recordId,allocationId) {
+  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(ALLOCATION_SHEET),transfer=ss.getSheetByName(TRANSFER_SHEET);
   if(!sh)throw new Error('Allocation sheet not found.');
-  const rows=sh.getDataRange().getValues();
-  for(let i=1;i<rows.length;i++)if(String(rows[i][0])===String(allocationId)&&String(rows[i][1])===String(transferId)){sh.deleteRow(i+1);syncTransferSummary_(transferId);invalidateModuleCache_('Transfer Monitoring','J.O Register');return {ok:true,message:'Allocation deleted.'};}
+  migrateAllocationRecordIds_(transfer,sh);
+  const rows=sh.getDataRange().getValues(),headers=rows[0].map(v=>String(v||'').trim()),recordCol=headers.indexOf('Transfer Record ID');
+  for(let i=1;i<rows.length;i++)if(String(rows[i][0])===String(allocationId)&&String(rows[i][recordCol])===String(recordId)){sh.deleteRow(i+1);syncTransferSummary_(recordId);invalidateModuleCache_('Transfer Monitoring','J.O Register');return {ok:true,message:'Allocation deleted.'};}
   throw new Error('Allocation not found.');
 }
 
 function deleteTransfer(recordId) {
-  const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(TRANSFER_SHEET), alloc=ss.getSheetByName(ALLOCATION_SHEET);
+  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET),alloc=ss.getSheetByName(ALLOCATION_SHEET);
   if(!sh)throw new Error('Transfer sheet not found.');
   const rows=sh.getDataRange().getValues();let transferId='',row=-1;
   for(let i=1;i<rows.length;i++)if(String(rows[i][0])===String(recordId)){row=i+1;transferId=String(rows[i][3]);break;}
   if(row<0)throw new Error('Transfer record not found.');
-  if(alloc&&alloc.getLastRow()>1){const a=alloc.getDataRange().getValues();for(let i=a.length-1;i>=1;i--)if(String(a[i][1])===transferId)alloc.deleteRow(i+1);}
+  if(alloc&&alloc.getLastRow()>1){migrateAllocationRecordIds_(sh,alloc);const a=alloc.getDataRange().getValues(),headers=a[0].map(v=>String(v||'').trim()),recordCol=headers.indexOf('Transfer Record ID');for(let i=a.length-1;i>=1;i--)if(String(a[i][recordCol])===String(recordId))alloc.deleteRow(i+1);}
   sh.deleteRow(row);
   invalidateModuleCache_('Transfer Monitoring','J.O Register');
-  return {ok:true,message:'Transfer and its linked QC allocations were deleted.'};
+  return {ok:true,message:'Transfer record and its linked QC allocations were deleted.'};
 }
 
-function getAllocationRows_(transferId) {
-  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ALLOCATION_SHEET);
-  const lastRow=sh?sh.getLastRow():0;if(lastRow<2)return [];
-  const matches=sh.getRange(2,2,lastRow-1,1).createTextFinder(String(transferId)).matchEntireCell(true).findAll();
-  return matches.map(cell=>sh.getRange(cell.getRow(),1,1,ALLOCATION_HEADERS.length).getValues()[0]);
+function getAllocationRows_(recordId) {
+  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(ALLOCATION_SHEET),transfer=ss.getSheetByName(TRANSFER_SHEET);
+  if(!sh||sh.getLastRow()<2)return [];
+  migrateAllocationRecordIds_(transfer,sh);
+  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0],recordCol=headers.indexOf('Transfer Record ID');
+  return sh.getDataRange().getValues().slice(1).filter(r=>String(r[recordCol])===String(recordId));
 }
 
-function syncTransferSummary_(transferId,allocationRows) {
-  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
+function syncTransferSummary_(recordId,allocationRows) {
+  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET),allocSh=ss.getSheetByName(ALLOCATION_SHEET);
   const lastRow=sh?sh.getLastRow():0;if(lastRow<2)return;
-  const match=sh.getRange(2,4,lastRow-1,1).createTextFinder(String(transferId)).matchEntireCell(true).findNext();
+  const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(String(recordId)).matchEntireCell(true).findNext();
   if(!match)return;
-  const rowIndex=match.getRow(),tr=sh.getRange(rowIndex,1,1,TRANSFER_HEADERS.length).getValues()[0],allocs=Array.isArray(allocationRows)?allocationRows:getAllocationRows_(transferId);
+  const rowIndex=match.getRow(),tr=sh.getRange(rowIndex,1,1,TRANSFER_HEADERS.length).getValues()[0],allocs=Array.isArray(allocationRows)?allocationRows:getAllocationRows_(recordId);
   const done=allocs.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   const qc=[...new Set(allocs.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', ');
   const fgts=[...new Set(allocs.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
-  const finished=latestFinishedDate_(allocs);
-  const qty=Number(tr[13])||0;
+  const finished=latestFinishedDate_(allocs),qty=Number(tr[13])||0;
   sh.getRange(rowIndex,17,1,5).setValues([[done,Math.max(0,qty-done),qc,fgts,finished]]);
   const allocationRemarks=[...new Set(allocs.map(a=>String(a[6]||'').trim()).filter(Boolean))].join(' | ');if(allocationRemarks)sh.getRange(rowIndex,23).setValue(allocationRemarks);
   let status=String(tr[15]||''),received=tr[4];
