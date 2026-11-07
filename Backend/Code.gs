@@ -907,6 +907,7 @@ function getTransferRecords(searchText) {
     obj['FGTS No.']=[...new Set(linked.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
     obj['Date Finished']=latestFinishedDate_(linked);
     obj.Category=[...new Set(linked.map(a=>String(a[9]||'').trim()).filter(Boolean))].join(', ');
+    const allocationRemarks=[...new Set(linked.map(a=>String(a[6]||'').trim()).filter(Boolean))].join(' | ');if(allocationRemarks)obj.Remarks=allocationRemarks;
     if(['Ongoing','Hold','For line up'].includes(String(obj.Status)) && obj['Date Received']){
       const received=new Date(obj['Date Received']); const days=Math.floor((new Date().setHours(0,0,0,0)-received.setHours(0,0,0,0))/86400000);
       obj.Reminders=days>=REMINDER_AFTER_DAYS?'DELAYED ('+days+' days)':'';
@@ -1118,7 +1119,7 @@ function saveAllocationsBatch(transferId, common, entries) {
   ensureAllocationCategoryColumn_(sh);
   const tr=transfer.getDataRange().getValues().find((r,i)=>i>0&&String(r[3])===String(transferId));
   if(!tr)throw new Error('Parent transfer not found.');
-  const fgts=String(common['FGTS No.']||'').trim(), category=String(common.Category||'').trim();
+  const fgts=String(common['FGTS No.']||'').trim(), category=String(common.Category||'').trim(),allocationRemarks=String(common['Allocation Remarks']||'').trim();
   if(!fgts)throw new Error('FGTS No. is required.');
   const rows=sh.getDataRange().getValues(), ids=entries.map(e=>String(e['Allocation ID']||'')).filter(Boolean);
   const cleaned=entries.map(e=>({id:String(e['Allocation ID']||''),qc:String(e['QC In Charge']||'').trim(),qty:Number(e.Qty)}));
@@ -1131,7 +1132,7 @@ function saveAllocationsBatch(transferId, common, entries) {
     let row=-1, old=null;
     if(e.id){for(let i=1;i<rows.length;i++)if(String(rows[i][0])===e.id&&String(rows[i][1])===String(transferId)){row=i+1;old=rows[i];break;}if(row<0)throw new Error('Allocation not found. Refresh and try again.');}
     const aid=e.id||Utilities.getUuid();
-    const out=ALLOCATION_HEADERS.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?transferId:h==='QC In Charge'?e.qc:h==='FGTS No.'?fgts:h==='Qty'?e.qty:h==='Date Finished'?(common['Date Finished']||''):h==='Allocation Remarks'?'':h==='Created At'?(old?old[7]:now):h==='Updated At'?now:h==='Category'?category:'');
+    const out=ALLOCATION_HEADERS.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?transferId:h==='QC In Charge'?e.qc:h==='FGTS No.'?fgts:h==='Qty'?e.qty:h==='Date Finished'?(common['Date Finished']||''):h==='Allocation Remarks'?allocationRemarks:h==='Created At'?(old?old[7]:now):h==='Updated At'?now:h==='Category'?category:'');
     if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
   });
   const currentIds=cleaned.map(e=>e.id).filter(Boolean);
@@ -1214,6 +1215,7 @@ function syncTransferSummary_(transferId,allocationRows) {
   const finished=latestFinishedDate_(allocs);
   const qty=Number(tr[13])||0;
   sh.getRange(rowIndex,17,1,5).setValues([[done,Math.max(0,qty-done),qc,fgts,finished]]);
+  const allocationRemarks=[...new Set(allocs.map(a=>String(a[6]||'').trim()).filter(Boolean))].join(' | ');if(allocationRemarks)sh.getRange(rowIndex,23).setValue(allocationRemarks);
   let status=String(tr[15]||''),received=tr[4];
   if(qty>0&&done>=qty){status='Passed';sh.getRange(rowIndex,16).setValue(status);}
   else if(status==='Passed'){status='Ongoing';sh.getRange(rowIndex,16).setValue(status);}
