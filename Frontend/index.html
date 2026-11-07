@@ -1129,6 +1129,33 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
 #monitoringPanel input.transfer-auto-field[readonly]{background:#f1f4f8!important;border:1px solid #cbd5e1!important;color:#475569!important;cursor:not-allowed!important;box-shadow:inset 0 1px 2px #0f172a0a!important}
 #monitoringPanel input.transfer-auto-field[readonly]::placeholder{color:#64748b!important;opacity:1}
 .transfer-form-notice{margin:12px 0 0;padding:10px 12px;border:1px solid #fca5a5;border-radius:8px;background:#fef2f2;color:#991b1b;font-size:12px;line-height:1.45}.transfer-form-notice strong{display:block;margin-bottom:2px}.transfer-form-notice span{display:block}.transfer-form-notice.loading{border-color:#93c5fd;background:#eff6ff;color:#1d4ed8}.transfer-auto-field[readonly]{background:#f1f5f9!important;color:#64748b!important;cursor:not-allowed}#monitoringPanel .transfer-status-pill{min-width:112px;height:29px;padding:4px 24px 4px 12px;border-radius:999px!important;border:1px solid #cbd5e1;font-size:10px;font-weight:700;text-align:center;appearance:none;-webkit-appearance:none;background-position:right 8px center}#transferDetailsModal .transfer-details-dialog{width:min(1200px,96vw);max-width:1200px}#transferDetailsModal .dialoghead{padding:22px 28px!important;background:linear-gradient(115deg,#102b4e 0%,#1d4d80 58%,#2b6aa4 100%);border-bottom:3px solid #78a9dc;color:#fff}#transferDetailsModal .dialoghead h3{font-size:22px!important;color:#fff}#transferDetailsModal .dialoghead .muted{color:#dbeafe}#transferDetailsModal .dialoghead>button{color:#fff;background:#ffffff18;border:1px solid #ffffff55;border-radius:9px}#transferDetailsModal #transferDetailsBody{padding:18px 24px!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}#transferDetailsModal .transfer-detail-field{min-height:76px;padding:14px 15px;border:1px solid #d5e1ef;border-top:3px solid #3976b7;border-radius:10px;background:linear-gradient(180deg,#f8fbff,#eef4fb)}#transferDetailsModal .transfer-detail-label{font-size:11px;letter-spacing:.55px;color:#526782;margin-bottom:8px}#transferDetailsModal .transfer-detail-value{font-size:14px;font-weight:600;color:#172b46}@media(max-width:900px){#transferDetailsModal #transferDetailsBody{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){#transferDetailsModal #transferDetailsBody{grid-template-columns:minmax(0,1fr)}}
+
+/* Transfer Full View Close button and QC Allocation headers — Transfer scope only. */
+#transferDetailsModal .transfer-view-actions button{
+  min-width:96px!important;padding:9px 20px!important;border:1px solid #245ca7!important;
+  border-radius:7px!important;background:linear-gradient(120deg,#12325a,#245ca7)!important;
+  color:#fff!important;font-size:12px!important;font-weight:700!important;
+  box-shadow:0 2px 5px #12325a24!important;cursor:pointer!important
+}
+#transferDetailsModal .transfer-view-actions button:hover{background:#0f2d50!important;box-shadow:0 3px 8px #12325a35!important}
+#allocationModal .allocation-dialog>.dialoghead{
+  background:linear-gradient(120deg,#12325a,#245ca7)!important;color:#fff!important;
+  border-bottom:1px solid #c6d8f0!important;border-radius:10px 10px 0 0!important;
+  margin:-22px -22px 16px!important;padding:16px 22px!important
+}
+#allocationModal .allocation-dialog>.dialoghead h3{color:#fff!important;font-size:16px!important;margin:0 0 4px!important}
+#allocationModal .allocation-dialog>.dialoghead .muted{color:#dbeafe!important;font-size:11px!important}
+#allocationModal .allocation-dialog>.dialoghead>button{color:#fff!important;border-color:#ffffff55!important;background:#ffffff18!important}
+#allocationModal .allocation-form-head,
+#allocationModal .alloc-layout>section:nth-child(2)>h3{
+  min-height:38px!important;display:flex!important;align-items:center!important;
+  padding:9px 12px!important;margin:0 0 12px!important;border-left:4px solid #3976b7!important;
+  border-radius:6px!important;background:#eef4fb!important;color:#17375f!important;
+  font-size:13px!important;font-weight:700!important
+}
+#allocationModal .allocation-form-head h3{font-size:13px!important;color:#17375f!important}
+@media(max-width:600px){#allocationModal .allocation-dialog>.dialoghead{margin:-12px -12px 14px!important;padding:14px 12px!important}}
+
 /* Transfer Details view follows the Rework Full Details presentation; scoped to Transfer only. */
 #transferDetailsModal .transfer-view-dialog{width:min(980px,96vw)!important;max-height:90vh!important;max-width:980px!important;padding:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
 #transferDetailsModal .transfer-view-dialog>.dialoghead{position:sticky!important;top:0!important;z-index:20!important;background:linear-gradient(120deg,#12325a,#245ca7)!important;color:#fff!important;padding:20px 24px!important;border-bottom:1px solid #c6d8f0!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex:0 0 auto!important}
