@@ -1014,6 +1014,33 @@ function reserveTransferIds_(count,sh) {
  } finally {lock.releaseLock();}
 }
 
+function validateTransferEditQuantity_(input,recordId,transferSheet) {
+ const normalize=value=>String(value==null?'':value).replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ').toUpperCase();
+ const jo=normalize(input['J.O']),item=normalize(input['Item No.']),qty=Number(input.Qty)||0;
+ if(!jo||!item)return;
+ const source=SpreadsheetApp.openById(JO_SOURCE_ID);
+ const sourceSheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
+ if(!sourceSheet)throw new Error('Could not find J.O Register source sheet.');
+ const last=sourceSheet.getLastRow();let original=0;
+ if(last>=JO_SOURCE_START_ROW){
+  const matches=sourceSheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,1).createTextFinder(String(input['J.O']).trim()).matchCase(false).matchEntireCell(true).findAll();
+  matches.forEach(cell=>{
+   const row=sourceSheet.getRange(cell.getRow(),1,1,10).getDisplayValues()[0];
+   if(normalize(row[0])===jo&&normalize(row[8])===item)original+=Number(String(row[3]||'').replace(/,/g,''))||0;
+  });
+ }
+ if(!original)throw new Error('J.O. '+input['J.O']+' / Item '+input['Item No.']+' was not found in the J.O Register.');
+ const headers=TRANSFER_HEADERS,joIdx=headers.indexOf('J.O'),itemIdx=headers.indexOf('Item No.'),qtyIdx=headers.indexOf('Qty'),idIdx=headers.indexOf('Record ID');
+ let prior=0;
+ if(transferSheet.getLastRow()>1){
+  transferSheet.getRange(2,1,transferSheet.getLastRow()-1,headers.length).getDisplayValues().forEach(row=>{
+   if(String(row[idIdx])===String(recordId))return;
+   if(normalize(row[joIdx])===jo&&normalize(row[itemIdx])===item)prior+=Number(String(row[qtyIdx]||'').replace(/,/g,''))||0;
+  });
+ }
+ if(prior+qty>original)throw new Error('Cannot save edit: total transfer Qty ('+(prior+qty)+') exceeds the original J.O Register Qty ('+original+') for this J.O. and Item No.');
+}
+
 function saveTransfer(input) {
   if(!input)throw new Error('No transfer details received.');
   const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
@@ -1023,6 +1050,7 @@ function saveTransfer(input) {
   const id=String(input['Record ID']||''), now=new Date(); let row=-1,old=null;
   if(id){const lastRow=sh.getLastRow();if(lastRow>1){const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(id).matchEntireCell(true).findNext();if(match){row=match.getRow();old=sh.getRange(row,1,1,TRANSFER_HEADERS.length).getValues()[0];}}if(row<0)throw new Error('Transfer record not found. Refresh and try again.');}
   const recordId=id||Utilities.getUuid(),transferId=old?String(old[3]):reserveTransferIds_(1,sh)[0];
+  if(old)validateTransferEditQuantity_(input,id,sh);
   const linkedAllocations=old?getAllocationRows_(transferId):[];
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
