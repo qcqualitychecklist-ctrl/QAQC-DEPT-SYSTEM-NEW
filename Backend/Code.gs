@@ -912,7 +912,7 @@ function syncRemainingTransferRow_(recordId) {
   sh.getRange(parentIndex+1,ix('Allocation Pool Qty')+1).setValue(pool);
   sh.getRange(parentIndex+1,ix('Done Qty')+1).setValue(done);
   sh.getRange(parentIndex+1,ix('Remaining Qty')+1).setValue(remaining);
-  sh.getRange(parentIndex+1,ix('Status')+1).setValue(done>0&&done>=Number(parent[ix('Allocation Pool Qty')])?'Passed':'Ongoing');
+  sh.getRange(parentIndex+1,ix('Status')+1).setValue(done>0?'Passed':'Ongoing');
   const childRows=[];
   for(let i=1;i<data.length;i++)if(String(data[i][ix('Remaining For Record ID')])===String(recordId))childRows.push(i);
   let reusable=-1;
