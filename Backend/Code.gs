@@ -1052,7 +1052,7 @@ function saveTransfer(input) {
   if(id){const lastRow=sh.getLastRow();if(lastRow>1){const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(id).matchEntireCell(true).findNext();if(match){row=match.getRow();old=sh.getRange(row,1,1,TRANSFER_HEADERS.length).getValues()[0];}}if(row<0)throw new Error('Transfer record not found. Refresh and try again.');}
   const recordId=id||Utilities.getUuid(),transferId=old?String(old[3]):reserveTransferIds_(1,sh)[0];
   if(old)validateTransferEditQuantity_(input,id,sh);
-  const linkedAllocations=old?getAllocationRows_(transferId):[];
+  const linkedAllocations=old?getAllocationRows_(id):[];
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
   if(String(input.Status||'')==='Passed'&&alreadyAllocated<qty)throw new Error('Status cannot be Passed until Done Qty meets the required Qty.');
@@ -1060,7 +1060,7 @@ function saveTransfer(input) {
   if(old && !String(input['Time Received']||'').trim()) inputObj['Time Received']=formatTimeCell_(old[5]);
   const out=TRANSFER_HEADERS.map((h,j)=>h==='Record ID'?recordId:h==='Created At'?(old?old[1]:now):h==='Updated At'?now:(inputObj[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
-  if(old)syncTransferSummary_(transferId,linkedAllocations);
+  if(old)syncTransferSummary_(recordId,linkedAllocations);
   invalidateModuleCache_('Transfer Monitoring','J.O Register');
   return {ok:true,recordId:recordId,transferId:transferId,message:row>0?'Transfer updated.':'Transfer saved.'};
 }
@@ -1112,55 +1112,43 @@ function latestFinishedDate_(allocations) {
   return formatCell_(dates[0]);
 }
 
-function saveAllocationsBatch(transferId, common, entries) {
-  if(!transferId||!common||!Array.isArray(entries))throw new Error('Transfer and allocation details are required.');
-  const ss=SpreadsheetApp.openById(DATABASE_ID), transfer=ss.getSheetByName(TRANSFER_SHEET), sh=ss.getSheetByName(ALLOCATION_SHEET);
+function saveAllocationsBatch(recordId, common, entries) {
+  if(!recordId||!common||!Array.isArray(entries))throw new Error('Transfer Record ID and allocation details are required.');
+  const ss=SpreadsheetApp.openById(DATABASE_ID),transfer=ss.getSheetByName(TRANSFER_SHEET),sh=ss.getSheetByName(ALLOCATION_SHEET);
   if(!transfer||!sh)throw new Error('Click Prepare Database first.');
-  ensureAllocationCategoryColumn_(sh);
-  const tr=transfer.getDataRange().getValues().find((r,i)=>i>0&&String(r[3])===String(transferId));
-  if(!tr)throw new Error('Parent transfer not found.');
-  const fgts=String(common['FGTS No.']||'').trim(), category=String(common.Category||'').trim(),allocationRemarks=String(common['Allocation Remarks']||'').trim();
+  migrateAllocationRecordIds_(transfer,sh);
+  const tr=transfer.getDataRange().getValues().find((r,i)=>i>0&&String(r[0])===String(recordId));
+  if(!tr)throw new Error('Parent transfer record not found.');
+  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0],idx=name=>headers.indexOf(name);
+  const fgts=String(common['FGTS No.']||'').trim(),category=String(common.Category||'').trim(),remarks=String(common['Allocation Remarks']||'').trim();
   if(!fgts)throw new Error('FGTS No. is required.');
   const rows=sh.getDataRange().getValues();
-  // Allow shared allocation details (especially Allocation Remarks) to be saved
-  // without requiring users to re-enter existing QC/Qty rows.
   if(!entries.length&&!common['Replace All']){
     const matches=[];
-    for(let i=1;i<rows.length;i++)if(String(rows[i][1])===String(transferId))matches.push({row:i+1,values:rows[i].slice()});
+    for(let i=1;i<rows.length;i++)if(String(rows[i][idx('Transfer Record ID')])===String(recordId))matches.push({row:i+1,values:rows[i].slice()});
     if(!matches.length)throw new Error('Click + Add QC, then enter QC In Charge and Qty for at least one allocation.');
     const now=new Date();
-    matches.forEach(item=>{
-      const out=item.values.slice(0,ALLOCATION_HEADERS.length);
-      out[3]=fgts;
-      out[5]=common['Date Finished']||'';
-      out[6]=allocationRemarks;
-      out[8]=now;
-      out[9]=category;
-      sh.getRange(item.row,1,1,ALLOCATION_HEADERS.length).setValues([out]);
-    });
-    syncTransferSummary_(transferId);
-    invalidateModuleCache_('Transfer Monitoring','J.O Register');
+    matches.forEach(item=>{sh.getRange(item.row,idx('FGTS No.')+1).setValue(fgts);sh.getRange(item.row,idx('Date Finished')+1).setValue(common['Date Finished']||'');sh.getRange(item.row,idx('Allocation Remarks')+1).setValue(remarks);sh.getRange(item.row,idx('Updated At')+1).setValue(now);sh.getRange(item.row,idx('Category')+1).setValue(category);});
+    syncTransferSummary_(recordId);invalidateModuleCache_('Transfer Monitoring','J.O Register');
     return {ok:true,message:'Allocation details updated.'};
   }
-  const ids=entries.map(e=>String(e['Allocation ID']||'')).filter(Boolean);
   const cleaned=entries.map(e=>({id:String(e['Allocation ID']||''),qc:String(e['QC In Charge']||'').trim(),qty:Number(e.Qty)}));
   cleaned.forEach(e=>{if(!e.qc)throw new Error('QC In Charge is required for every row.');if(!isFinite(e.qty)||e.qty<=0)throw new Error('Every QC Qty must be greater than zero.');});
-  const existingTotal=rows.slice(1).reduce((sum,r)=>sum+(String(r[1])===String(transferId)&&!ids.includes(String(r[0]))?(Number(r[4])||0):0),0);
+  const keepIds=cleaned.map(e=>e.id).filter(Boolean);
+  const existingTotal=rows.slice(1).reduce((sum,r)=>sum+(String(r[idx('Transfer Record ID')])===String(recordId)&&!keepIds.includes(String(r[idx('Allocation ID')]))?(Number(r[idx('Qty')])||0):0),0);
   const incomingTotal=cleaned.reduce((sum,e)=>sum+e.qty,0);
   if(existingTotal+incomingTotal>Number(tr[13]))throw new Error('Total allocated quantity ('+(existingTotal+incomingTotal)+') cannot exceed transfer Qty ('+tr[13]+').');
   const now=new Date();
   cleaned.forEach(e=>{
-    let row=-1, old=null;
-    if(e.id){for(let i=1;i<rows.length;i++)if(String(rows[i][0])===e.id&&String(rows[i][1])===String(transferId)){row=i+1;old=rows[i];break;}if(row<0)throw new Error('Allocation not found. Refresh and try again.');}
+    let row=-1,old=null;
+    if(e.id){for(let i=1;i<rows.length;i++)if(String(rows[i][idx('Allocation ID')])===e.id&&String(rows[i][idx('Transfer Record ID')])===String(recordId)){row=i+1;old=rows[i];break;}if(row<0)throw new Error('Allocation not found. Refresh and try again.');}
     const aid=e.id||Utilities.getUuid();
-    const out=ALLOCATION_HEADERS.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?transferId:h==='QC In Charge'?e.qc:h==='FGTS No.'?fgts:h==='Qty'?e.qty:h==='Date Finished'?(common['Date Finished']||''):h==='Allocation Remarks'?allocationRemarks:h==='Created At'?(old?old[7]:now):h==='Updated At'?now:h==='Category'?category:'');
+    const out=headers.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?tr[3]:h==='Transfer Record ID'?recordId:h==='QC In Charge'?e.qc:h==='FGTS No.'?fgts:h==='Qty'?e.qty:h==='Date Finished'?(common['Date Finished']||''):h==='Allocation Remarks'?remarks:h==='Created At'?(old?old[idx('Created At')]:now):h==='Updated At'?now:h==='Category'?category:'');
     if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
   });
-  const currentIds=cleaned.map(e=>e.id).filter(Boolean);
-  if(common['Replace All']){for(let i=rows.length-1;i>=1;i--){if(String(rows[i][1])===String(transferId)&&!currentIds.includes(String(rows[i][0]))){sh.deleteRow(i+1);}}}
-  syncTransferSummary_(transferId);
-  invalidateModuleCache_('Transfer Monitoring','J.O Register');
-  return {ok:true,message:common['Replace All']?'QC allocation changes saved.':(ids.length?'QC allocation changes saved.':'All QC allocations saved.')};
+  if(common['Replace All']){for(let i=rows.length-1;i>=1;i--)if(String(rows[i][idx('Transfer Record ID')])===String(recordId)&&!keepIds.includes(String(rows[i][idx('Allocation ID')])))sh.deleteRow(i+1);}
+  syncTransferSummary_(recordId);invalidateModuleCache_('Transfer Monitoring','J.O Register');
+  return {ok:true,message:common['Replace All']?'QC allocation changes saved.':(keepIds.length?'QC allocation changes saved.':'All QC allocations saved.')};
 }
 
 function ensureAllocationCategoryColumn_(sh) {
