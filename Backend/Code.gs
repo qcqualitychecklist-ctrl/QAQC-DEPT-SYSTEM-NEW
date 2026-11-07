@@ -1113,7 +1113,7 @@ function latestFinishedDate_(allocations) {
 }
 
 function saveAllocationsBatch(transferId, common, entries) {
-  if(!transferId||!common||!Array.isArray(entries)||(!entries.length&&!common['Replace All']))throw new Error('Transfer and at least one QC allocation are required.');
+  if(!transferId||!common||!Array.isArray(entries))throw new Error('Transfer and allocation details are required.');
   const ss=SpreadsheetApp.openById(DATABASE_ID), transfer=ss.getSheetByName(TRANSFER_SHEET), sh=ss.getSheetByName(ALLOCATION_SHEET);
   if(!transfer||!sh)throw new Error('Click Prepare Database first.');
   ensureAllocationCategoryColumn_(sh);
