@@ -1766,7 +1766,39 @@ function renderAllocations(){const body=el('allocationRows');if(editingSingleAll
 function editAllocation(a){editingSingleAllocation=true;clearAllocationFormMessage();el('allocationFormTitle').textContent='Edit QC Allocation';el('allocationSave').textContent='Save Changes';el('allocationClear').textContent='Cancel Edit';el('addQCBtn').style.display='none';el('allocationId').value=a['Allocation ID']||'';makeFields('allocationFields',ALLOCATION_FIELDS,{'Date Finished':a['Date Finished'],'FGTS No.':a['FGTS No.'],'Category':a.Category||'','Allocation Remarks':a['Allocation Remarks']||''});el('allocationRows').innerHTML='';qcRowCounter=0;addQCRow(a);updateAllocationHint()}
 function showAllocationFormMessage(title,message){const box=el('allocationFormNotice');if(!box)return;if(box._hideTimer)clearTimeout(box._hideTimer);box.className='transfer-form-notice allocation-floating-toast';box.replaceChildren();const strong=document.createElement('strong');strong.textContent=title||'Unable to save allocation';const detail=document.createElement('span');detail.textContent=message||'';box.append(strong,detail);box.hidden=false;box._hideTimer=setTimeout(()=>{box.hidden=true},4500)}
 function clearAllocationFormMessage(){const box=el('allocationFormNotice');if(box){box.hidden=true;box.replaceChildren()}}
-function submitAllocation(ev){ev.preventDefault();clearAllocationFormMessage();const common=readFields('allocationFields',ALLOCATION_FIELDS);common['Allocation Remarks']=String(common['Allocation Remarks']||'').trim();const singleEdit=editingSingleAllocation;const replaceAll=el('allocationFormTitle').textContent==='Edit QC Allocations';common['Replace All']=replaceAll;const entries=[...el('allocationRows').querySelectorAll('.qc-entry-row')].map(row=>({'Allocation ID':row.dataset.allocationId||'', 'QC In Charge':row.querySelector('.qc-name').value.trim(),Qty:row.querySelector('.qc-qty').value}));if((!entries.length&&!replaceAll&&!allocations.length)||entries.some(a=>!a['QC In Charge']||!a.Qty||Number(a.Qty)<=0)){showAllocationFormMessage('Check QC allocations',!entries.length&&!allocations.length?'Click ＋ Add QC, then enter QC In Charge and a Qty greater than zero for each row.':'Check each QC In Charge and enter a Qty greater than zero.');return}const btn=el('allocationSave');btn.disabled=true;btn.textContent='Saving...';callServer('saveAllocationsBatch',[activeTransfer['Transfer ID'],common,entries],r=>{btn.disabled=false;btn.textContent=(replaceAll||singleEdit)?'Save Changes':'Save Allocation';if(!r||r.ok===false){showAllocationFormMessage('Unable to save allocation',r&&r.message||'Please check the entered quantities and try again.');return}closeModal('allocationModal');resetAllocationForm();showStatus(true,r.message||'QC allocation saved successfully.',activeTransfer['Transfer ID']);loadAllocations();if(currentPage==='Transfer Monitoring')loadRecords(false,true)},err=>{btn.disabled=false;btn.textContent=(replaceAll||singleEdit)?'Save Changes':'Save Allocation';showAllocationFormMessage('Unable to save allocation',err&&err.message||String(err||'Please try again.'))})}
+function submitAllocation(ev){
+ ev.preventDefault();clearAllocationFormMessage();
+ const common=readFields('allocationFields',ALLOCATION_FIELDS);
+ common['Allocation Remarks']=String(common['Allocation Remarks']||'').trim();
+ const singleEdit=editingSingleAllocation;
+ const replaceAll=el('allocationFormTitle').textContent==='Edit QC Allocations';
+ common['Replace All']=replaceAll;
+ const entries=[...el('allocationRows').querySelectorAll('.qc-entry-row')].map(row=>({'Allocation ID':row.dataset.allocationId||'','QC In Charge':row.querySelector('.qc-name').value.trim(),Qty:row.querySelector('.qc-qty').value}));
+ const btn=el('allocationSave');
+ const finishSave=(r)=>{
+  btn.disabled=false;btn.textContent=(replaceAll||singleEdit)?'Save Changes':'Save Allocation';
+  if(!r||r.ok===false){showAllocationFormMessage('Unable to save allocation',r&&r.message||'Please check the entered quantities and try again.');return}
+  closeModal('allocationModal');resetAllocationForm();
+  showStatus(true,r.message||'QC allocation saved successfully.',activeTransfer['Transfer ID']);
+  loadAllocations();if(currentPage==='Transfer Monitoring')loadRecords(false,true);
+ };
+ const failSave=(err)=>{
+  btn.disabled=false;btn.textContent=(replaceAll||singleEdit)?'Save Changes':'Save Allocation';
+  showAllocationFormMessage('Unable to save allocation',err&&err.message||String(err||'Please try again.'));
+ };
+ // Editing shared Allocation Remarks must not require users to re-enter saved QC rows.
+ if(!entries.length&&!replaceAll&&!singleEdit&&allocations.length){
+  btn.disabled=true;btn.textContent='Saving...';
+  callServer('updateAllocationRemarksOnly',[activeTransfer['Transfer ID'],common['Allocation Remarks']],finishSave,failSave);
+  return;
+ }
+ if((!entries.length&&!replaceAll&&!allocations.length)||entries.some(a=>!a['QC In Charge']||!a.Qty||Number(a.Qty)<=0)){
+  showAllocationFormMessage('Check QC allocations',!entries.length&&!allocations.length?'Click ＋ Add QC, then enter QC In Charge and a Qty greater than zero for each row.':'Check each QC In Charge and enter a Qty greater than zero.');
+  return;
+ }
+ btn.disabled=true;btn.textContent='Saving...';
+ callServer('saveAllocationsBatch',[activeTransfer['Transfer ID'],common,entries],finishSave,failSave);
+}
 function removeAllocation(a){if(!confirm('Delete allocation for '+a['QC In Charge']+' ('+a['FGTS No.']+')?'))return;callServer('deleteAllocation',[activeTransfer['Transfer ID'],a['Allocation ID']],r=>{showStatus(true,r.message,'Transfer ID: '+activeTransfer['Transfer ID']);loadAllocations();if(currentPage==='Transfer Monitoring')loadRecords(false,true)})}
 let joModalDefs=null;
 function openEditJO(rec){freeFormTransfer=false;const defs=[['CLASSIFICATION','text',false],['J.O','text',false],['S.O','text',false],['Received','date',false],['Delivery Date','date',false],['Client','text',false],['Item No.','text',false],['Panel Name','text',false],['Qty','number',false],['Unit','text',false],['Transferred','number',false],['Balance','number',false],['FGTS No.','text',false],['Date Served','date',false],['Remarks','textarea',false],['Status','select',false],['Timeliness','select',false]];activeTransferFields=defs;joModalDefs=defs;el('transferRecordId').value=rec['Record ID'];el('transferTitle').textContent='Edit J.O Register — '+(rec['J.O']||'');el('transferSave').textContent='Save Changes';el('additionalItemsSection').style.display='none';makeFields('transferFields',defs,rec);const status=el('transferFields_15');status.innerHTML='';['Finished','Partial','Not Served','Cancelled'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;status.appendChild(o)});status.value=rec.Status||'Not Served';const time=el('transferFields_16');time.innerHTML='';['On Time','Delayed','Pending'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;time.appendChild(o)});time.value=rec.Timeliness||'Pending';openModal('transferModal')}
