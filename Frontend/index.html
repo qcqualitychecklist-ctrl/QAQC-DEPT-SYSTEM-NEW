@@ -97,6 +97,19 @@ main{min-width:0;padding:10px 10px 16px;width:100%;max-width:none;margin:0} .int
 .dashboard-cards.pdi-dashboard{grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
 @media(max-width:900px){.dashboard-cards.pdi-dashboard{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.dashboard-cards.pdi-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Compact controls consistently across all monitoring modules. */
+#monitoringPanel .toolbar{gap:5px;margin-bottom:7px}
+#monitoringPanel .toolbar>button,#monitoringPanel .toolbar .monitoring-actions button{height:24px!important;min-height:24px!important;padding:4px 7px!important;font-size:9px!important;line-height:1.1!important;border-radius:5px!important}
+#monitoringPanel .toolbar .refresh-btn{width:26px;min-width:26px;padding:3px!important;font-size:13px!important}
+#monitoringPanel .toolbar .actions{gap:4px}
+#monitoringPanel .toolbar #pagination{gap:3px}
+#monitoringPanel .toolbar #pagination button{height:20px!important;min-height:20px!important;padding:2px 6px!important;font-size:8px!important;line-height:1!important}
+#monitoringPanel .toolbar #pagination .pagination-label{font-size:8px;line-height:1}
+#monitoringPanel .filterbar{gap:7px;margin-bottom:8px;padding:8px 9px;border-radius:7px}
+#monitoringPanel .filterbar .field label{font-size:9px;margin-bottom:3px;line-height:1.15}
+#monitoringPanel .filterbar input,#monitoringPanel .filterbar select{height:27px;min-height:27px;padding:4px 7px!important;font-size:9px!important;border-radius:5px}
+#monitoringPanel .filterbar>button{height:27px;min-height:27px;padding:4px 8px!important;font-size:9px!important;border-radius:5px}
+#monitoringPanel .filterbar .field{min-width:0}
 /* Keep Transfer Monitoring search and actions in a stable toolbar row while records load. */
 #monitoringPanel .toolbar.transfer-monitoring-toolbar{display:grid;grid-template-columns:34px auto auto minmax(170px,220px) max-content;align-items:center;gap:7px;flex-wrap:nowrap;margin:0 0 10px}
 #monitoringPanel .toolbar.transfer-monitoring-toolbar #pagination{display:flex;align-items:center;justify-content:flex-start;gap:5px;min-width:0;width:auto;white-space:nowrap;flex-wrap:nowrap}
