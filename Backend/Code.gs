@@ -1169,6 +1169,31 @@ function ensureAllocationCategoryColumn_(sh) {
   if(headers.indexOf('Category')<0){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue('Category').setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');}
 }
 
+
+function updateAllocationRemarksOnly(transferId, remarks) {
+  if(!transferId)throw new Error('Transfer ID is required.');
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ALLOCATION_SHEET);
+  if(!sh||sh.getLastRow()<2)throw new Error('No saved QC allocations were found for this transfer.');
+  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0];
+  const transferCol=headers.indexOf('Transfer ID')+1;
+  const remarksCol=headers.indexOf('Allocation Remarks')+1;
+  const updatedCol=headers.indexOf('Updated At')+1;
+  if(!transferCol||!remarksCol)throw new Error('Allocation Remarks column was not found. Please prepare the database.');
+  const values=sh.getDataRange().getValues();
+  const now=new Date();
+  let updated=0;
+  for(let i=1;i<values.length;i++){
+    if(String(values[i][transferCol-1])!==String(transferId))continue;
+    sh.getRange(i+1,remarksCol).setValue(String(remarks||'').trim());
+    if(updatedCol)sh.getRange(i+1,updatedCol).setValue(now);
+    updated++;
+  }
+  if(!updated)throw new Error('No saved QC allocations were found for this transfer.');
+  syncTransferSummary_(transferId);
+  invalidateModuleCache_('Transfer Monitoring','J.O Register');
+  return {ok:true,message:'Allocation Remarks updated successfully.'};
+}
+
 function getAllocations(transferId) {
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(ALLOCATION_SHEET);
   if(!sh||sh.getLastRow()<2)return {ok:true,allocations:[]};
