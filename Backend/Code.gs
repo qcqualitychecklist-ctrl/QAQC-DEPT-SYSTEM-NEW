@@ -912,6 +912,7 @@ function syncRemainingTransferRow_(recordId) {
   sh.getRange(parentIndex+1,ix('Allocation Pool Qty')+1).setValue(pool);
   sh.getRange(parentIndex+1,ix('Done Qty')+1).setValue(done);
   sh.getRange(parentIndex+1,ix('Remaining Qty')+1).setValue(remaining);
+  sh.getRange(parentIndex+1,ix('Status')+1).setValue(done>0&&done>=Number(parent[ix('Allocation Pool Qty')])?'Passed':'Ongoing');
   const childRows=[];
   for(let i=1;i<data.length;i++)if(String(data[i][ix('Remaining For Record ID')])===String(recordId))childRows.push(i);
   let reusable=-1;
@@ -1124,6 +1125,7 @@ function saveTransfersBatch(common, items) {
  if(String(common['Record ID']||''))throw new Error('Multi-item save is only available when adding a new transfer.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
  if(!sh)throw new Error('Click Prepare Database first.');
+ ensureTransferAllocationColumns_(sh);
  items.forEach((item,i)=>{if(!isFinite(Number(item.Qty))||Number(item.Qty)<=0)throw new Error('Item '+(i+1)+' Qty must be greater than zero.');});
  validateTransferBatchQuantities_(common,items,sh);
  const now=new Date(),rows=[],transferIds=reserveTransferIds_(items.length,sh);
@@ -1143,6 +1145,7 @@ function saveAdditionalTransfersBatch(common, items) {
   if(!common||!Array.isArray(items)||items.length<1)throw new Error('Add at least one additional item.');
   const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
   if(!sh)throw new Error('Click Prepare Database first.');
+  ensureTransferAllocationColumns_(sh);
   const now=new Date(),saved=[],reservedIds=reserveTransferIds_(items.length,sh);
   items.forEach((item,index)=>{
     const transferId=reservedIds[index],recordId=Utilities.getUuid();
