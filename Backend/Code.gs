@@ -1163,7 +1163,8 @@ function saveTransfersBatch(common, items) {
 }
 
 function saveAdditionalTransfersBatch(common, items) {
-  if(!common||!Array.isArray(items)||items.length<1)throw new Error('Add at least one additional item.');
+  if(!Array.isArray(items))items=[];
+  if(!items.length)items=[{}];
   const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
   if(!sh)throw new Error('Click Prepare Database first.');
   ensureTransferAllocationColumns_(sh);
