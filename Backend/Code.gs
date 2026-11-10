@@ -618,25 +618,33 @@ function getExternalJORecords_(searchText) {
   // Include internal allocations as well, but skip any allocation already
   // represented by the same FGTS/QC/Qty/finish-date combination above.
   const transferSheet=db.getSheetByName(TRANSFER_SHEET), allocSheet=db.getSheetByName(ALLOCATION_SHEET);
+  // Ensure legacy allocation rows have their parent Transfer Record ID where it
+  // can be identified unambiguously. Never fall back to Transfer ID because one
+  // Transfer ID may contain multiple item records.
+  if(transferSheet&&allocSheet)migrateAllocationRecordIds_(transferSheet,allocSheet);
   const transferRows=transferSheet&&transferSheet.getLastRow()>1
     ?transferSheet.getRange(2,1,transferSheet.getLastRow()-1,TRANSFER_HEADERS.length).getDisplayValues():[];
+  const allocHeaders=allocSheet&&allocSheet.getLastRow()>0
+    ?allocSheet.getRange(1,1,1,allocSheet.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()):[];
   const allocs=allocSheet&&allocSheet.getLastRow()>1
-    ?allocSheet.getRange(2,1,allocSheet.getLastRow()-1,ALLOCATION_HEADERS.length).getValues():[];
-  const allocsByTransfer={};
+    ?allocSheet.getRange(2,1,allocSheet.getLastRow()-1,allocSheet.getLastColumn()).getValues():[];
+  const allocRecordIdIndex=allocHeaders.indexOf('Transfer Record ID');
+  const allocsByRecord={};
   allocs.forEach(a=>{
-    const id=String(a[1]||'');if(!id)return;
-    if(!allocsByTransfer[id])allocsByTransfer[id]=[];
-    allocsByTransfer[id].push(a);
+    const recordId=allocRecordIdIndex>=0?String(a[allocRecordIdIndex]||''):'';
+    if(!recordId)return;
+    if(!allocsByRecord[recordId])allocsByRecord[recordId]=[];
+    allocsByRecord[recordId].push(a);
   });
+  const recordIdIndex=TRANSFER_HEADERS.indexOf('Record ID');
   const soIndex=TRANSFER_HEADERS.indexOf('S.O'),itemIndex=TRANSFER_HEADERS.indexOf('Item No.');
-  const transferIdIndex=TRANSFER_HEADERS.indexOf('Transfer ID');
   transferRows.forEach(t=>{
-    const id=String(t[transferIdIndex]||''),linked=allocsByTransfer[id]||[];
+    const recordId=String(t[recordIdIndex]||''),linked=allocsByRecord[recordId]||[];
     if(!linked.length)return;
     const so=String(t[soIndex]||'').trim(),item=String(t[itemIndex]||'').trim();
     if(!so||!item)return;
     const key=fgtsJobKey_(so,item);
-    linked.forEach((a,i)=>addAllocation(key,a[3],a[2],a[4],a[5],'ALLOC-'+id+'-'+i));
+    linked.forEach((a,i)=>addAllocation(key,a[3],a[2],a[4],a[5],'ALLOC-'+recordId+'-'+i));
   });
 
   const q=String(searchText||'').trim().toLowerCase(), records=[];
