@@ -666,9 +666,12 @@ function getExternalJORecords_(searchText) {
     else o.Timeliness='Pending';
     const ov=overrides[key];
     if(ov)JO_OVERRIDE_HEADERS.slice(2).forEach((h,j)=>{if(h!=='Timeliness'&&ov[j+2]!==''&&ov[j+2]!=null)o[h]=ov[j+2];});
+    ['Qty','Transferred','Balance'].forEach(h=>o[h]=Number(String(o[h]||0).replace(/,/g,''))||0);
+    // J.O Register Date Completion is item-specific and appears only after
+    // the transferred quantity reaches that exact source item's required Qty.
+    if(o.Qty<=0||o.Transferred<o.Qty)o['Date Served']='';
     const finalDue=joParseDate_(o['Delivery Date']), finalServed=joParseDate_(o['Date Served']);
     o.Timeliness=finalServed&&finalDue?(finalServed.getTime()<=finalDue.getTime()?'On Time':'Delayed'):'Pending';
-    ['Qty','Transferred','Balance'].forEach(h=>o[h]=Number(String(o[h]||0).replace(/,/g,''))||0);
     if(!q||Object.values(o).join(' ').toLowerCase().includes(q))records.push(o);
   });
   return {ok:true,records:records,fields:JO_OVERRIDE_HEADERS.slice(2)};
