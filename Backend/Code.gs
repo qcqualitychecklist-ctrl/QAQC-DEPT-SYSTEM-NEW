@@ -41,6 +41,8 @@ const REWORK_CORRECTIVE_OPTIONS = ['To Correct Workmanship','To Complete Missing
 const JO_HEADERS = ['Record ID','Created At','Updated At','J.O No','S.O No','Customer','Item No','Description','Quantity','Date Received','Target Date','Status','Remarks'];
 const TRANSFER_HEADERS = ['Record ID','Created At','Updated At','Transfer ID','Date Received','Time Received','Section','Transfer No.','J.O','S.O','Client','Item No.','Panel Name','Qty','Location','Status','Done Qty','Remaining Qty','QC In Charge','FGTS No.','Date Finished','Status Remark','Remarks','Reminders','Allocation Pool Qty','Remaining For Record ID'];
 const ALLOCATION_HEADERS = ['Allocation ID','Transfer ID','QC In Charge','FGTS No.','Qty','Date Finished','Allocation Remarks','Created At','Updated At','Category','Transfer Record ID'];
+const FGTS_TRANSFER_SHEET = 'FGTS Transfer Allocation';
+const FGTS_TRANSFER_HEADERS = ['Allocation ID','Transfer Record ID','Transfer ID','FGTS Number','J.O. Number','S.O. Number','Client Name','Item Number','Panel Name','Transfer Quantity','QC In Charge','Allocated Quantity','Remaining Quantity','Date Assigned','Date Received','Date Finished','Remarks','Created At','Created By','Updated At','Updated By','Category','Transfer Status'];
 const TRANSFER_FIELDS = ['Date Received','Time Received','Section','Transfer No.','J.O','S.O','Client','Item No.','Panel Name','Qty','Location','Status','Status Remark','Remarks'];
 const JO_FIELDS = ['J.O No','S.O No','Customer','Item No','Description','Quantity','Date Received','Target Date','Status','Remarks'];
 const REMINDER_AFTER_DAYS = 3;
@@ -136,14 +138,14 @@ function getSystemStatus() {
   try {
     const ss = SpreadsheetApp.openById(DATABASE_ID);
     return {ok:true,databaseName:ss.getName(),existingSheets:ss.getSheets().map(s=>s.getName()),
-      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,REWORK_SHEET,REWORK_MAIN_SHEET,REWORK_DETAILS_SHEET,REWORK_ASSIGNMENTS_SHEET,PUNCHLIST_SHEET,NCR_SHEET,COMPLAINT_SHEET,PDI_SHEET]};
+      requiredSheets:[JO_SHEET,JO_OVERRIDE_SHEET,TRANSFER_SHEET,ALLOCATION_SHEET,FGTS_TRANSFER_SHEET,REWORK_SHEET,REWORK_MAIN_SHEET,REWORK_DETAILS_SHEET,REWORK_ASSIGNMENTS_SHEET,PUNCHLIST_SHEET,NCR_SHEET,COMPLAINT_SHEET,PDI_SHEET]};
   } catch (e) { return {ok:false,message:String(e.message||e)}; }
 }
 
 function setupDatabase() {
   const ss = SpreadsheetApp.openById(DATABASE_ID);
   const created = [];
-  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[REWORK_SHEET,REWORK_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS],[PUNCHLIST_SHEET,PUNCHLIST_HEADERS],[NCR_SHEET,NCR_HEADERS],[COMPLAINT_SHEET,COMPLAINT_HEADERS],[PDI_SHEET,PDI_HEADERS]].forEach(pair=>{
+  [[JO_SHEET,JO_HEADERS],[JO_OVERRIDE_SHEET,JO_OVERRIDE_HEADERS],[TRANSFER_SHEET,TRANSFER_HEADERS],[ALLOCATION_SHEET,ALLOCATION_HEADERS],[FGTS_TRANSFER_SHEET,FGTS_TRANSFER_HEADERS],[REWORK_SHEET,REWORK_HEADERS],[REWORK_MAIN_SHEET,REWORK_MAIN_HEADERS],[REWORK_DETAILS_SHEET,REWORK_DETAILS_HEADERS],[REWORK_ASSIGNMENTS_SHEET,REWORK_ASSIGNMENT_HEADERS],[PUNCHLIST_SHEET,PUNCHLIST_HEADERS],[NCR_SHEET,NCR_HEADERS],[COMPLAINT_SHEET,COMPLAINT_HEADERS],[PDI_SHEET,PDI_HEADERS]].forEach(pair=>{
     let sh=ss.getSheetByName(pair[0]);
     if (!sh) { sh=ss.insertSheet(pair[0]); created.push(pair[0]); }
     if (sh.getLastRow()===0) {
@@ -668,39 +670,62 @@ function getExternalJORecords_(searchText) {
  * FGTS Monitoring reads the external FGTS sheet. Classification is looked up
  * from the J.O Register source using S.O + Item No. Source data is not modified.
  */
+
+function syncFGTSTransferAllocations_() {
+  const ss=SpreadsheetApp.openById(DATABASE_ID),transfer=ss.getSheetByName(TRANSFER_SHEET),alloc=ss.getSheetByName(ALLOCATION_SHEET);
+  let target=ss.getSheetByName(FGTS_TRANSFER_SHEET);if(!target)target=ss.insertSheet(FGTS_TRANSFER_SHEET);
+  let th=target.getLastColumn()>0?target.getRange(1,1,1,target.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()):[];
+  if(!th.length||!th[0]){target.getRange(1,1,1,FGTS_TRANSFER_HEADERS.length).setValues([FGTS_TRANSFER_HEADERS]);target.setFrozenRows(1);target.getRange(1,1,1,FGTS_TRANSFER_HEADERS.length).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');}
+  else FGTS_TRANSFER_HEADERS.forEach(h=>{if(!th.includes(h)){const col=target.getLastColumn()+1;target.getRange(1,col).setValue(h).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');th[col-1]=h;}});
+  if(!transfer||!alloc||transfer.getLastRow()<2||alloc.getLastRow()<2){if(target.getLastRow()>1)target.getRange(2,1,target.getLastRow()-1,target.getLastColumn()).clearContent();return {ok:true,count:0};}
+  migrateAllocationRecordIds_(transfer,alloc);
+  const tHeaders=transfer.getRange(1,1,1,transfer.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()),aHeaders=alloc.getRange(1,1,1,alloc.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
+  const ti=n=>tHeaders.indexOf(n),ai=n=>aHeaders.indexOf(n),parents=Object.create(null);
+  transfer.getDataRange().getValues().slice(1).forEach(r=>{const id=String(r[ti('Record ID')]||'');if(id)parents[id]=r;});
+  const now=new Date(),out=[];
+  alloc.getDataRange().getValues().slice(1).forEach(a=>{
+    const parentId=String(a[ai('Transfer Record ID')]||''),p=parents[parentId],allocationId=String(a[ai('Allocation ID')]||'');
+    if(!p||!allocationId||String(p[ti('Status')]||'').trim().toLowerCase()!=='passed')return;
+    const created=a[ai('Created At')]||now,updated=a[ai('Updated At')]||created;
+    const row={'Allocation ID':allocationId,'Transfer Record ID':parentId,'Transfer ID':p[ti('Transfer ID')],'FGTS Number':a[ai('FGTS No.')],'J.O. Number':p[ti('J.O')],'S.O. Number':p[ti('S.O')],'Client Name':p[ti('Client')],'Item Number':p[ti('Item No.')],'Panel Name':p[ti('Panel Name')],'Transfer Quantity':Number(p[ti('Allocation Pool Qty')])||Number(p[ti('Qty')])||0,'QC In Charge':a[ai('QC In Charge')],'Allocated Quantity':Number(a[ai('Qty')])||0,'Remaining Quantity':Number(p[ti('Remaining Qty')])||0,'Date Assigned':created,'Date Received':p[ti('Date Received')],'Date Finished':a[ai('Date Finished')]||p[ti('Date Finished')]||'','Remarks':a[ai('Allocation Remarks')]||p[ti('Remarks')]||'','Created At':created,'Created By':'System','Updated At':updated,'Updated By':'System','Category':a[ai('Category')]||'','Transfer Status':p[ti('Status')]};
+    out.push(FGTS_TRANSFER_HEADERS.map(h=>row[h]??''));
+  });
+  if(target.getLastRow()>1)target.getRange(2,1,target.getLastRow()-1,target.getLastColumn()).clearContent();
+  if(out.length)target.getRange(2,1,out.length,FGTS_TRANSFER_HEADERS.length).setValues(out);
+  return {ok:true,count:out.length};
+}
+
 function getFGTSMonitoringRecords_(searchText) {
-  const fgtsSS=SpreadsheetApp.openById(FGTS_SOURCE_ID);
-  const fgtsSheet=fgtsSS.getSheets().find(s=>s.getSheetId()===FGTS_SOURCE_GID);
+  const query=String(searchText||'').trim().toLowerCase(),records=[];
+  const fgtsSS=SpreadsheetApp.openById(FGTS_SOURCE_ID),fgtsSheet=fgtsSS.getSheets().find(s=>s.getSheetId()===FGTS_SOURCE_GID);
   if(!fgtsSheet)throw new Error('Could not find FGTS source sheet tab gid '+FGTS_SOURCE_GID+'.');
-  const last=fgtsSheet.getLastRow();
-  if(last<FGTS_SOURCE_START_ROW)return {ok:true,records:[],fields:FGTS_HEADERS};
-  const rows=fgtsSheet.getRange(FGTS_SOURCE_START_ROW,1,last-FGTS_SOURCE_START_ROW+1,14).getValues();
-  const joSS=SpreadsheetApp.openById(JO_SOURCE_ID);
-  const joSheet=joSS.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
-  const classByJob={}, joRows=[];
+  const last=fgtsSheet.getLastRow(),rows=last>=FGTS_SOURCE_START_ROW?fgtsSheet.getRange(FGTS_SOURCE_START_ROW,1,last-FGTS_SOURCE_START_ROW+1,14).getValues():[];
+  const joSS=SpreadsheetApp.openById(JO_SOURCE_ID),joSheet=joSS.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID),classByJob={},joRows=[];
   const classificationStartRow=Math.min(2272,JO_SOURCE_START_ROW);
   if(joSheet&&joSheet.getLastRow()>=classificationStartRow){
     joRows.push(...joSheet.getRange(classificationStartRow,1,joSheet.getLastRow()-classificationStartRow+1,14).getDisplayValues());
     joRows.forEach(r=>{const so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(!so||!item)return;const key=fgtsJobKey_(so,item);if(!classByJob[key]&&String(r[6]||'').trim())classByJob[key]=String(r[6]).trim();});
     const db=SpreadsheetApp.openById(DATABASE_ID),overrideSheet=db.getSheetByName(JO_OVERRIDE_SHEET);
-    if(overrideSheet&&overrideSheet.getLastRow()>1){
-      overrideSheet.getDataRange().getDisplayValues().slice(1).forEach(o=>{
-        const m=String(o[0]||'').match(/^SRC-(\d+)$/),classification=String(o[2]||'').trim();if(!m||!classification)return;
-        const idx=Number(m[1])-classificationStartRow;if(idx<0||idx>=joRows.length)return;
-        const r=joRows[idx],so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(so&&item)classByJob[fgtsJobKey_(so,item)]=classification;
-      });
-    }
+    if(overrideSheet&&overrideSheet.getLastRow()>1)overrideSheet.getDataRange().getDisplayValues().slice(1).forEach(o=>{const m=String(o[0]||'').match(/^SRC-(\d+)$/),classification=String(o[2]||'').trim();if(!m||!classification)return;const idx=Number(m[1])-classificationStartRow;if(idx<0||idx>=joRows.length)return;const r=joRows[idx],so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(so&&item)classByJob[fgtsJobKey_(so,item)]=classification;});
   }
-  const query=String(searchText||'').trim().toLowerCase(),records=[];
   rows.forEach(r=>{
-    const so=String(r[4]||'').trim(),item=String(r[6]||'').trim();
-    const received=joDate_(formatCell_(r[2])),finished=joDate_(formatCell_(r[3]));
+    const so=String(r[4]||'').trim(),item=String(r[6]||'').trim(),received=joDate_(formatCell_(r[2])),finished=joDate_(formatCell_(r[3]));
     if(!so&&!item&&!String(r[9]||'').trim()&&!String(r[10]||'').trim())return;
-    const rd=joParseDate_(received),fd=joParseDate_(finished);
-    const leadDays=rd&&fd?Math.max(1,Math.round((fd.getTime()-rd.getTime())/86400000)+1):'';
-    const record={'Classification':classByJob[fgtsJobKey_(so,item)]||'Others','Lead Days':leadDays,'Date Received':received,'Date Finish':finished,'S.O. no.':so,'Client':r[5]||'','Item no.':item,'Panel Name':r[7]||'','Qty':Number(String(r[8]||'').replace(/,/g,''))||r[8]||'','FGTS no.':r[9]||'','QC-In Charge':r[10]||'','Remarks':r[11]||'','Category':r[13]||''};
-    if(!query||Object.values(record).join(' ').toLowerCase().includes(query))records.push(record);
+    const rd=joParseDate_(received),fd=joParseDate_(finished),leadDays=rd&&fd?Math.max(1,Math.round((fd.getTime()-rd.getTime())/86400000)+1):'';
+    const rec={'Classification':classByJob[fgtsJobKey_(so,item)]||'Others','Lead Days':leadDays,'Date Received':received,'Date Finish':finished,'S.O. no.':so,'Client':r[5]||'','Item no.':item,'Panel Name':r[7]||'','Qty':Number(String(r[8]||'').replace(/,/g,''))||r[8]||'','FGTS no.':r[9]||'','QC-In Charge':r[10]||'','Remarks':r[11]||'','Category':r[13]||''};
+    if(!query||Object.values(rec).join(' ').toLowerCase().includes(query))records.push(rec);
   });
+  syncFGTSTransferAllocations_();
+  const db=SpreadsheetApp.openById(DATABASE_ID),derived=db.getSheetByName(FGTS_TRANSFER_SHEET);
+  if(derived&&derived.getLastRow()>1){
+    const h=derived.getRange(1,1,1,derived.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()),ix=n=>h.indexOf(n);
+    derived.getDataRange().getValues().slice(1).forEach(r=>{
+      const so=String(r[ix('S.O. Number')]||'').trim(),item=String(r[ix('Item Number')]||'').trim(),received=joDate_(formatCell_(r[ix('Date Received')])),finished=joDate_(formatCell_(r[ix('Date Finished')]));
+      const rd=joParseDate_(received),fd=joParseDate_(finished),leadDays=rd&&fd?Math.max(1,Math.round((fd.getTime()-rd.getTime())/86400000)+1):'';
+      const rec={'Classification':classByJob[fgtsJobKey_(so,item)]||'Others','Lead Days':leadDays,'Date Received':received,'Date Finish':finished,'S.O. no.':so,'Client':r[ix('Client Name')]||'','Item no.':item,'Panel Name':r[ix('Panel Name')]||'','Qty':Number(r[ix('Allocated Quantity')])||0,'FGTS no.':r[ix('FGTS Number')]||'','QC-In Charge':r[ix('QC In Charge')]||'','Remarks':r[ix('Remarks')]||'','Category':r[ix('Category')]||''};
+      if(!query||Object.values(rec).join(' ').toLowerCase().includes(query))records.push(rec);
+    });
+  }
   records.reverse();return {ok:true,records:records,fields:FGTS_HEADERS};
 }
 function fgtsJobKey_(so,item){return JSON.stringify([String(so||'').trim().toUpperCase(),String(item||'').trim().toUpperCase()]);}
@@ -1115,8 +1140,10 @@ function saveTransfer(input) {
   const out=TRANSFER_HEADERS.map((h,j)=>h==='Record ID'?recordId:h==='Created At'?(old?old[1]:now):h==='Updated At'?now:(inputObj[h]??''));
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
   if(old)syncTransferSummary_(recordId,linkedAllocations);
+  syncRemainingTransferRow_(recordId);
   if(!old){const last=sh.getLastRow();sh.getRange(last,TRANSFER_HEADERS.indexOf('Allocation Pool Qty')+1).setValue(qty);}
-  invalidateModuleCache_('Transfer Monitoring','J.O Register');
+  syncFGTSTransferAllocations_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
   return {ok:true,recordId:recordId,transferId:transferId,message:row>0?'Transfer updated.':'Transfer saved.'};
 }
 
@@ -1137,7 +1164,8 @@ function saveTransfersBatch(common, items) {
  });
  const firstRow=sh.getLastRow()+1;
  sh.getRange(firstRow,1,rows.length,TRANSFER_HEADERS.length).setValues(rows);
- invalidateModuleCache_('Transfer Monitoring','J.O Register');
+ syncFGTSTransferAllocations_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
  return {ok:true,count:rows.length,transferIds:transferIds,message:'All '+rows.length+' item rows saved successfully.'};
 }
 
@@ -1153,7 +1181,8 @@ function saveAdditionalTransfersBatch(common, items) {
     const out=TRANSFER_HEADERS.map(h=>h==='Record ID'?recordId:h==='Created At'||h==='Updated At'?now:(inputObj[h]??''));
     sh.appendRow(out);saved.push(transferId);
   });
-  invalidateModuleCache_('Transfer Monitoring','J.O Register');
+  syncFGTSTransferAllocations_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
   return {ok:true,count:saved.length,transferIds:saved,message:'Saved '+saved.length+' additional item row(s) in free-form mode.'};
 }
 
@@ -1186,7 +1215,8 @@ function saveAllocationsBatch(recordId, common, entries) {
     if(!matches.length)throw new Error('Click + Add QC, then enter QC In Charge and Qty for at least one allocation.');
     const now=new Date();
     matches.forEach(item=>{sh.getRange(item.row,idx('FGTS No.')+1).setValue(fgts);sh.getRange(item.row,idx('Date Finished')+1).setValue(common['Date Finished']||'');sh.getRange(item.row,idx('Allocation Remarks')+1).setValue(remarks);sh.getRange(item.row,idx('Updated At')+1).setValue(now);sh.getRange(item.row,idx('Category')+1).setValue(category);});
-    syncTransferSummary_(recordId);invalidateModuleCache_('Transfer Monitoring','J.O Register');
+    syncTransferSummary_(recordId);syncFGTSTransferAllocations_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
     return {ok:true,message:'Allocation details updated.'};
   }
   const cleaned=entries.map(e=>({id:String(e['Allocation ID']||''),qc:String(e['QC In Charge']||'').trim(),qty:Number(e.Qty)}));
@@ -1204,7 +1234,8 @@ function saveAllocationsBatch(recordId, common, entries) {
     if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
   });
   if(common['Replace All']){for(let i=rows.length-1;i>=1;i--)if(String(rows[i][idx('Transfer Record ID')])===String(recordId)&&!keepIds.includes(String(rows[i][idx('Allocation ID')])))sh.deleteRow(i+1);}
-  syncTransferSummary_(recordId);syncRemainingTransferRow_(recordId);invalidateModuleCache_('Transfer Monitoring','J.O Register');
+  syncTransferSummary_(recordId);syncRemainingTransferRow_(recordId);syncFGTSTransferAllocations_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
   return {ok:true,message:common['Replace All']?'QC allocation changes saved.':(keepIds.length?'QC allocation changes saved.':'All QC allocations saved.')};
 }
 
@@ -1249,7 +1280,8 @@ function updateAllocationRemarksOnly(recordId, remarks) {
   }
   if(!updated)throw new Error('No saved QC allocations were found for this transfer.');
   syncTransferSummary_(recordId);
-  invalidateModuleCache_('Transfer Monitoring','J.O Register');
+  syncFGTSTransferAllocations_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
   return {ok:true,message:'Allocation Remarks updated successfully.'};
 }
 
@@ -1281,7 +1313,8 @@ function saveAllocation(recordId,input) {
   const now=new Date(),aid=id||Utilities.getUuid(),out=headers.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?tr[3]:h==='Transfer Record ID'?recordId:h==='QC In Charge'?qc:h==='FGTS No.'?fgts:h==='Qty'?qty:h==='Date Finished'?(input['Date Finished']||''):h==='Allocation Remarks'?(input['Allocation Remarks']||''):h==='Created At'?(row>0?rows[row-1][idx('Created At')]:now):h==='Updated At'?now:h==='Category'?(input.Category||''):'');
   if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
   syncTransferSummary_(recordId);syncRemainingTransferRow_(recordId);
-  invalidateModuleCache_('Transfer Monitoring','J.O Register');
+  syncFGTSTransferAllocations_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
   return {ok:true,message:row>0?'QC allocation updated.':'QC allocation saved.'};
 }
 
@@ -1290,7 +1323,8 @@ function deleteAllocation(recordId,allocationId) {
   if(!sh)throw new Error('Allocation sheet not found.');
   migrateAllocationRecordIds_(transfer,sh);
   const rows=sh.getDataRange().getValues(),headers=rows[0].map(v=>String(v||'').trim()),recordCol=headers.indexOf('Transfer Record ID');
-  for(let i=1;i<rows.length;i++)if(String(rows[i][0])===String(allocationId)&&String(rows[i][recordCol])===String(recordId)){sh.deleteRow(i+1);syncTransferSummary_(recordId);syncRemainingTransferRow_(recordId);invalidateModuleCache_('Transfer Monitoring','J.O Register');return {ok:true,message:'Allocation deleted.'};}
+  for(let i=1;i<rows.length;i++)if(String(rows[i][0])===String(allocationId)&&String(rows[i][recordCol])===String(recordId)){sh.deleteRow(i+1);syncTransferSummary_(recordId);syncRemainingTransferRow_(recordId);syncFGTSTransferAllocations_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');return {ok:true,message:'Allocation deleted.'};}
   throw new Error('Allocation not found.');
 }
 
@@ -1302,7 +1336,8 @@ function deleteTransfer(recordId) {
   if(row<0)throw new Error('Transfer record not found.');
   if(alloc&&alloc.getLastRow()>1){migrateAllocationRecordIds_(sh,alloc);const a=alloc.getDataRange().getValues(),headers=a[0].map(v=>String(v||'').trim()),recordCol=headers.indexOf('Transfer Record ID');for(let i=a.length-1;i>=1;i--)if(String(a[i][recordCol])===String(recordId))alloc.deleteRow(i+1);}
   sh.deleteRow(row);
-  invalidateModuleCache_('Transfer Monitoring','J.O Register');
+  syncFGTSTransferAllocations_();
+  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
   return {ok:true,message:'Transfer record and its linked QC allocations were deleted.'};
 }
 
