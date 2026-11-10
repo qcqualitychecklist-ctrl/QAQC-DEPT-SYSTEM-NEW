@@ -1472,7 +1472,7 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
 const STATUS_OPTIONS=['Ongoing','For line up','Hold'];
 const CATEGORY_OPTIONS=['Accessories','Ats/mts','Busbar/lugs','Cable trays','Cap. Bank panel','Components/breaker','Distribution panel','Ecb/boxes/gutters','Motor control center','Panelboards','Switchgear'];
 const TRANSFER_FIELDS=[
- ['Date Received','date',true],['Time Received','time',true],['Section','text',true],['Transfer No.','text',true],['J.O','text',false],['S.O','text',false],['Client','text',false],['Item No.','text',false],['Panel Name','text',false],['Qty','number',true],['Location','text',false],['Status','select',true]
+ ['Date Received','date',true],['Time Received','time',false],['Section','text',false],['Transfer No.','text',false],['J.O','text',true],['S.O','text',false],['Client','text',false],['Item No.','text',true],['Panel Name','text',false],['Qty','number',true],['Location','text',false],['Status','select',false]
 ];
 const ALLOCATION_FIELDS=[['Date Finished','date',false],['FGTS No.','text',true],['Category','select',false],['Allocation Remarks','textarea',false]];
 const PAGE_SIZE=50;
@@ -1726,9 +1726,10 @@ function submitTransfer(ev){
 function addTransferItem(values){
  const row=document.createElement('div');row.className='item-entry';
  [['Item No.','item-no','text'],['Panel Name','panel-name','text'],['Qty','item-qty','number']].forEach(([label,cls,type])=>{
-  const box=document.createElement('div');box.className='field';const l=document.createElement('label');l.textContent=label+(label==='Qty'?' *':'');
+  const box=document.createElement('div');box.className='field';const l=document.createElement('label');l.textContent=label+(!freeFormTransfer&&(label==='Item No.'||label==='Qty')?' *':'');
   const inp=document.createElement('input');inp.type=type;inp.className=cls;inp.placeholder=label;
   if(type==='number'){inp.step='any';inp.required=!freeFormTransfer;if(!freeFormTransfer)inp.min='0.01'}
+  if(cls==='item-no')inp.required=!freeFormTransfer;
   if(cls==='panel-name'&&!freeFormTransfer){inp.readOnly=true;inp.classList.add('transfer-auto-field');inp.placeholder='Auto-filled after Item No.';inp.setAttribute('aria-readonly','true')}
   inp.value=values&&values[label]!=null?values[label]:'';box.append(l,inp);row.appendChild(box);
  });
