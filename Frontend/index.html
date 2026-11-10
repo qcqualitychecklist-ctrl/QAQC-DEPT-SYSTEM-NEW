@@ -2361,17 +2361,7 @@ function addPublicComplaintItem(item){
  const remove=document.createElement('button');remove.type='button';remove.className='public-complaint-remove';remove.textContent='Remove';remove.onclick=()=>{if(host.children.length===1){row.querySelectorAll('input').forEach(x=>x.value='')}else row.remove()};row.append(remove);host.append(row);
 }
 function showPublicComplaintMessage(message,success){showStatus(!!success,success?'Complaint submitted':'Unable to submit complaint',message||'Please review the form and try again.');}
-function showGuestComplaintToast(message){
- let toast=el('guestComplaintToast');
- if(!toast){toast=document.createElement('div');toast.id='guestComplaintToast';toast.className='guest-complaint-toast';document.body.append(toast)}
- toast.innerHTML='';
- const mark=document.createElement('span');mark.textContent='✓';mark.style.cssText='font-size:16px;font-weight:800;line-height:1';
- const copy=document.createElement('div'),title=document.createElement('strong'),detail=document.createElement('span');
- title.textContent='Complaint submitted successfully';detail.textContent=message;
- copy.append(title,detail);toast.append(mark,copy);toast.classList.add('show');
- clearTimeout(window.guestComplaintToastTimer);
- window.guestComplaintToastTimer=setTimeout(()=>toast.classList.remove('show'),4200);
-}
+function showGuestComplaintToast(message){showStatus(true,'Complaint submitted successfully',message||'Your complaint has been received.');}
 let guestComplaintHistory=[];
  let guestPdiHistory=[];
 
