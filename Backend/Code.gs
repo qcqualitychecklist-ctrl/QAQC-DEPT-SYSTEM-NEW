@@ -694,7 +694,7 @@ function getFGTSMonitoringRecords_(searchText) {
     joRows.push(...joSheet.getRange(classificationStartRow,1,joSheet.getLastRow()-classificationStartRow+1,14).getDisplayValues());
     joRows.forEach(r=>{const so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(!so||!item)return;const key=fgtsJobKey_(so,item);if(!classByJob[key]&&String(r[6]||'').trim())classByJob[key]=String(r[6]).trim();});
     const db=SpreadsheetApp.openById(DATABASE_ID),overrideSheet=db.getSheetByName(JO_OVERRIDE_SHEET);
-    if(overrideSheet&&overrideSheet.getLastRow()>1)overrideSheet.getDataRange().getDisplayValues().slice(1).forEach(o=>{const m=String(o[0]||'').match(/^SRC-(\\d+)$/),classification=String(o[2]||'').trim();if(!m||!classification)return;const idx=Number(m[1])-classificationStartRow;if(idx<0||idx>=joRows.length)return;const r=joRows[idx],so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(so&&item)classByJob[fgtsJobKey_(so,item)]=classification;});
+    if(overrideSheet&&overrideSheet.getLastRow()>1)overrideSheet.getDataRange().getDisplayValues().slice(1).forEach(o=>{const m=String(o[0]||'').match(/^SRC-(\d+)$/),classification=String(o[2]||'').trim();if(!m||!classification)return;const idx=Number(m[1])-classificationStartRow;if(idx<0||idx>=joRows.length)return;const r=joRows[idx],so=String(r[1]||'').trim(),item=String(r[8]||'').trim();if(so&&item)classByJob[fgtsJobKey_(so,item)]=classification;});
   }
   rows.forEach(r=>{
     const so=String(r[4]||'').trim(),item=String(r[6]||'').trim(),received=joDate_(formatCell_(r[2])),finished=joDate_(formatCell_(r[3]));
