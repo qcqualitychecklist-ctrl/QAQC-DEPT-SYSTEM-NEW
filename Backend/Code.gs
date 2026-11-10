@@ -1036,61 +1036,33 @@ function getTransferItemDetails(joNumber,soNumber,itemNumber) {
  });
  return {ok:true,matches:Object.keys(seen).map(key=>({panelName:seen[key]}))};
 }
-function validateTransferBatchQuantities_(common,items,sh) {
+function validateTransferBatchQuantities_(items,sh) {
  const normalize=value=>String(value==null?'':value).replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ').toUpperCase();
- const jo=normalize(common['J.O']),original={},pending={};
- if(!jo)throw new Error('Enter a J.O. Number.');
- const source=SpreadsheetApp.openById(JO_SOURCE_ID);
- const sourceSheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
+ const source=SpreadsheetApp.openById(JO_SOURCE_ID),sourceSheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
  if(!sourceSheet)throw new Error('Could not find J.O Register source sheet.');
- const last=sourceSheet.getLastRow();
+ const last=sourceSheet.getLastRow(),original={},pending={},prior={};
  if(last>=JO_SOURCE_START_ROW){
-  const matches=sourceSheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,1)
-   .createTextFinder(String(common['J.O']).trim()).matchCase(false).matchEntireCell(true).findAll();
-  matches.forEach(cell=>{
-   const row=sourceSheet.getRange(cell.getRow(),1,1,10).getDisplayValues()[0];
-   if(normalize(row[0])!==jo)return;
-   const item=normalize(row[8]);if(!item)return;
-   const key=JSON.stringify([jo,item]);
-   original[key]=(original[key]||0)+(Number(String(row[3]||'').replace(/,/g,''))||0);
+  sourceSheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,10).getDisplayValues().forEach(row=>{
+   const jo=normalize(row[0]),item=normalize(row[8]);if(!jo||!item)return;
+   const key=JSON.stringify([jo,item]);original[key]=(original[key]||0)+(Number(String(row[3]||'').replace(/,/g,''))||0);
   });
  }
  const joIdx=TRANSFER_HEADERS.indexOf('J.O'),itemIdx=TRANSFER_HEADERS.indexOf('Item No.'),qtyIdx=TRANSFER_HEADERS.indexOf('Qty');
- const prior={};
  if(sh.getLastRow()>1)sh.getRange(2,1,sh.getLastRow()-1,TRANSFER_HEADERS.length).getDisplayValues().forEach(row=>{
-  if(normalize(row[joIdx])!==jo)return;
-  const item=normalize(row[itemIdx]);if(!item)return;
-  const key=JSON.stringify([jo,item]);
-  prior[key]=(prior[key]||0)+(Number(String(row[qtyIdx]||'').replace(/,/g,''))||0);
+  const jo=normalize(row[joIdx]),item=normalize(row[itemIdx]);if(!jo||!item)return;
+  const key=JSON.stringify([jo,item]);prior[key]=(prior[key]||0)+(Number(String(row[qtyIdx]||'').replace(/,/g,''))||0);
  });
  items.forEach((item,i)=>{
-  const itemNo=normalize(item['Item No.']),qty=Number(item.Qty)||0;
-  if(!itemNo)throw new Error('Enter Item No. for item '+(i+1)+'.');
+  const jo=normalize(item['J.O']),itemNo=normalize(item['Item No.']),qty=Number(item.Qty)||0;
+  if(!jo||!itemNo)throw new Error('J.O. and Item No. are required for row '+(i+1)+'.');
   const key=JSON.stringify([jo,itemNo]);
-  if(!original[key])throw new Error('J.O. '+String(common['J.O'])+' / Item '+String(item['Item No.'])+' was not found in the J.O Register.');
+  if(!original[key])throw new Error('J.O. '+item['J.O']+' / Item '+item['Item No.']+' was not found in the J.O Register.');
   pending[key]=(pending[key]||0)+qty;
  });
  Object.keys(pending).forEach(key=>{
   const total=(prior[key]||0)+pending[key],limit=original[key];
   if(total>limit)throw new Error('Cannot save: total transfer Qty ('+total+') exceeds the original J.O Register Qty ('+limit+') for this J.O. and Item No.');
  });
-}
-
-function reserveTransferIds_(count,sh) {
- const lock=LockService.getScriptLock();lock.waitLock(10000);
- try {
-  const year='2027',propertyKey='QAQC_TRANSFER_ID_SEQ_'+year,props=PropertiesService.getScriptProperties();
-  let max=Number(props.getProperty(propertyKey)||0)||0;
-  if(sh&&sh.getLastRow()>1){
-   const idx=TRANSFER_HEADERS.indexOf('Transfer ID')+1;
-   sh.getRange(2,idx,sh.getLastRow()-1,1).getDisplayValues().forEach(row=>{
-    const parts=String(row[0]||'').trim().split('-');
-    if(parts.length===3&&parts[0]==='TID'&&parts[1]===year){const seq=Number(parts[2]);if(Number.isFinite(seq))max=Math.max(max,seq);}
-   });
-  }
-  const first=max+1;props.setProperty(propertyKey,String(max+count));
-  return Array.from({length:count},(_,i)=>'TID-'+year+'-'+String(first+i).padStart(2,'0'));
- } finally {lock.releaseLock();}
 }
 
 function validateTransferEditQuantity_(input,recordId,transferSheet) {
@@ -1148,25 +1120,28 @@ function saveTransfer(input) {
 }
 
 function saveTransfersBatch(common, items) {
- if(!common||!Array.isArray(items)||items.length<1)throw new Error('Add at least one item to save.');
- if(String(common['Record ID']||''))throw new Error('Multi-item save is only available when adding a new transfer.');
+ if(!common||!Array.isArray(items)||items.length<1)throw new Error('Add at least one J.O. and item row to save.');
+ if(String(common['Record ID']||''))throw new Error('Multi-row save is only available when adding a new transfer.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
  if(!sh)throw new Error('Click Prepare Database first.');
  ensureTransferAllocationColumns_(sh);
- items.forEach((item,i)=>{if(!isFinite(Number(item.Qty))||Number(item.Qty)<=0)throw new Error('Item '+(i+1)+' Qty must be greater than zero.');});
- validateTransferBatchQuantities_(common,items,sh);
- const now=new Date(),rows=[],transferIds=reserveTransferIds_(items.length,sh);
+ items.forEach((item,i)=>{
+  if(!String(item['J.O']||'').trim())throw new Error('J.O. is required for row '+(i+1)+'.');
+  if(!String(item['Item No.']||'').trim())throw new Error('Item No. is required for row '+(i+1)+'.');
+  if(!isFinite(Number(item.Qty))||Number(item.Qty)<=0)throw new Error('Row '+(i+1)+' Qty must be greater than zero.');
+ });
+ validateTransferBatchQuantities_(items,sh);
+ const now=new Date(),rows=[],transferId=reserveTransferIds_(1,sh)[0];
  const status=String(common.Status||'Ongoing')==='Passed'?'Ongoing':(common.Status||'Ongoing');
- items.forEach((item,index)=>{
-  const recordId=Utilities.getUuid(),transferId=transferIds[index];
+ items.forEach(item=>{
+  const recordId=Utilities.getUuid();
   const input=Object.assign({},common,item,{'Record ID':recordId,'Created At':now,'Updated At':now,'Transfer ID':transferId,'Status':status,'Done Qty':0,'Remaining Qty':Number(item.Qty)||0,'QC In Charge':'','FGTS No.':'','Date Finished':'','Reminders':'','Allocation Pool Qty':Number(item.Qty)||0,'Remaining For Record ID':''});
   rows.push(TRANSFER_HEADERS.map(header=>input[header]??''));
  });
- const firstRow=sh.getLastRow()+1;
- sh.getRange(firstRow,1,rows.length,TRANSFER_HEADERS.length).setValues(rows);
+ sh.getRange(sh.getLastRow()+1,1,rows.length,TRANSFER_HEADERS.length).setValues(rows);
  syncFGTSTransferAllocations_();
-  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
- return {ok:true,count:rows.length,transferIds:transferIds,message:'All '+rows.length+' item rows saved successfully.'};
+ invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
+ return {ok:true,count:rows.length,transferId:transferId,message:'Saved '+rows.length+' detail row(s) under '+transferId+'.'};
 }
 
 function saveAdditionalTransfersBatch(common, items) {
