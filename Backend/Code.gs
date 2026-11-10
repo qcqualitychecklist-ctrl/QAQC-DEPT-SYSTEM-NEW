@@ -997,20 +997,20 @@ function getTransferRecords(searchText) {
 }
 
 function getTransferJOOptions(joNumber) {
-  const normalize=value=>String(value==null?'':value).replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ').toUpperCase();
+  const normalize=value=>String(value==null?'':value).replace(/\\u00a0/g,' ').trim().replace(/\\s+/g,' ').toUpperCase();
   const jo=normalize(joNumber);if(!jo)return {ok:true,matches:[]};
   const source=SpreadsheetApp.openById(JO_SOURCE_ID);
   const sheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
   if(!sheet)throw new Error('Could not find J.O Register source sheet tab gid '+JO_SOURCE_GID+'.');
   const last=sheet.getLastRow();if(last<JO_SOURCE_START_ROW)return {ok:true,matches:[]};
-  const found=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,1)
-    .createTextFinder(String(joNumber).trim()).matchCase(false).matchEntireCell(true).findAll();
+  // Read the source rows once and compare normalized display values. This avoids
+  // TextFinder exact-cell misses caused by spacing, non-breaking spaces, or formatting.
+  const rows=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,8).getDisplayValues();
   const seen={};
-  found.forEach(cell=>{
-    const row=sheet.getRange(cell.getRow(),1,1,8).getDisplayValues()[0];
+  rows.forEach(row=>{
     if(normalize(row[0])!==jo)return;
-    const so=String(row[1]||'').replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ');
-    const client=String(row[7]||'').replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ');
+    const so=String(row[1]||'').replace(/\\u00a0/g,' ').trim().replace(/\\s+/g,' ');
+    const client=String(row[7]||'').replace(/\\u00a0/g,' ').trim().replace(/\\s+/g,' ');
     if(!so&&!client)return;
     const key=JSON.stringify([normalize(so),normalize(client)]);
     if(!seen[key])seen[key]={so:so,client:client};
@@ -1019,18 +1019,17 @@ function getTransferJOOptions(joNumber) {
   return {ok:true,matches:pairs.length?[pairs[0]]:[]};
 }
 function getTransferItemDetails(joNumber,soNumber,itemNumber) {
- const normalize=value=>String(value==null?'':value).replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ').toUpperCase();
+ const normalize=value=>String(value==null?'':value).replace(/\\u00a0/g,' ').trim().replace(/\\s+/g,' ').toUpperCase();
  const jo=normalize(joNumber),item=normalize(itemNumber);
  if(!jo||!item)return {ok:true,matches:[]};
  const source=SpreadsheetApp.openById(JO_SOURCE_ID);
  const sheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
  if(!sheet)throw new Error('Could not find J.O Register source sheet tab gid '+JO_SOURCE_GID+'.');
  const last=sheet.getLastRow();if(last<JO_SOURCE_START_ROW)return {ok:true,matches:[]};
- const found=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,1)
-   .createTextFinder(String(joNumber).trim()).matchCase(false).matchEntireCell(true).findAll();
+ // Item No. and Panel Name are columns I and J in J.O Register.
+ const rows=sheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,10).getDisplayValues();
  const seen={};
- found.forEach(cell=>{
-  const row=sheet.getRange(cell.getRow(),1,1,10).getDisplayValues()[0];
+ rows.forEach(row=>{
   if(normalize(row[0])!==jo||normalize(row[8])!==item)return;
   const panelName=String(row[9]||'').trim();if(panelName)seen[normalize(panelName)]=panelName;
  });
