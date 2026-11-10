@@ -1065,6 +1065,24 @@ function validateTransferBatchQuantities_(items,sh) {
  });
 }
 
+
+function reserveTransferIds_(count,sh) {
+ const lock=LockService.getScriptLock();lock.waitLock(10000);
+ try {
+  const year='2027',propertyKey='QAQC_TRANSFER_ID_SEQ_'+year,props=PropertiesService.getScriptProperties();
+  let max=Number(props.getProperty(propertyKey)||0)||0;
+  if(sh&&sh.getLastRow()>1){
+   const idx=TRANSFER_HEADERS.indexOf('Transfer ID')+1;
+   sh.getRange(2,idx,sh.getLastRow()-1,1).getDisplayValues().forEach(row=>{
+    const parts=String(row[0]||'').trim().split('-');
+    if(parts.length===3&&parts[0]==='TID'&&parts[1]===year){const seq=Number(parts[2]);if(Number.isFinite(seq))max=Math.max(max,seq);}
+   });
+  }
+  const first=max+1;props.setProperty(propertyKey,String(max+count));
+  return Array.from({length:count},(_,i)=>'TID-'+year+'-'+String(first+i).padStart(2,'0'));
+ } finally {lock.releaseLock();}
+}
+
 function validateTransferEditQuantity_(input,recordId,transferSheet) {
  const normalize=value=>String(value==null?'':value).replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ').toUpperCase();
  const jo=normalize(input['J.O']),item=normalize(input['Item No.']),qty=Number(input.Qty)||0;
