@@ -1710,11 +1710,15 @@ function submitTransfer(ev){
  const data=readFields('transferFields',activeTransferFields);data['Record ID']=el('transferRecordId').value;
  const btn=el('transferSave');btn.disabled=true;btn.textContent='Saving...';
  if(!data['Record ID']&&currentPage==='Transfer Monitoring'){
-  const items=[...el('additionalItems').querySelectorAll('.item-entry')].map(row=>freeFormTransfer?
-   ({'J.O':row.querySelector('.item-jo').value.trim(),'S.O':row.querySelector('.item-so').value.trim(),'Client':row.querySelector('.item-client').value.trim(),'Item No.':row.querySelector('.item-no').value.trim(),'Panel Name':row.querySelector('.panel-name').value.trim(),Qty:row.querySelector('.item-qty').value}):
-   ({'J.O':row.querySelector('.item-jo').value.trim(),'S.O':row.querySelector('.item-so').value.trim(),'Client':row.querySelector('.item-client').value.trim(),'Item No.':row.querySelector('.item-no').value.trim(),'Panel Name':row.querySelector('.panel-name').value.trim(),Qty:row.querySelector('.item-qty').value})
-  );
-  if(!items.length){btn.disabled=false;btn.textContent='Save Transfer';showTransferFormMessage('Add a detail row','Add at least one J.O. and Item row.');return;}
+  const items=[...el('additionalItems').querySelectorAll('.item-entry')].map(row=>({
+   'J.O':row.querySelector('.item-jo').value.trim(),
+   'S.O':row.querySelector('.item-so').value.trim(),
+   'Client':row.querySelector('.item-client').value.trim(),
+   'Item No.':row.querySelector('.item-no').value.trim(),
+   'Panel Name':row.querySelector('.panel-name').value.trim(),
+   Qty:row.querySelector('.item-qty').value
+  }));
+  if(!freeFormTransfer&&!items.length){btn.disabled=false;btn.textContent='Save Transfer';showTransferFormMessage('Add a detail row','Add at least one J.O. and Item row.');return;}
   if(freeFormTransfer){
    callTransferSave('saveAdditionalTransfersBatch',[data,items],r=>{btn.disabled=false;clearTransferFormMessage();closeModal('transferModal');showStatus(true,'Additional transfer saved',r.message);loadRecords(false,true);refreshFgtsRecordsSilently();});
    return;
