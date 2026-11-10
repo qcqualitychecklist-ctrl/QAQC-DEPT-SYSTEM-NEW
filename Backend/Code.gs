@@ -643,7 +643,7 @@ function getExternalJORecords_(searchText) {
   sourceRows.forEach((r,i)=>{
     const row=JO_SOURCE_START_ROW+i, jo=String(r[0]||'').trim(); if(!jo)return;
     const key='SRC-'+row, qty=Number(String(r[3]||'').replace(/,/g,''))||0;
-    const o={'Record ID':key,'CLASSIFICATION':r[6]||'','J.O':jo,'S.O':r[1]||'','Received':joDate_(r[10]),'Delivery Date':joDate_(r[13]),'Client':r[7]||'','Item No.':r[8]||'','Panel Name':r[9]||'','Qty':qty,'Unit':r[4]||'','Transferred':0,'Balance':qty,'FGTS No.':'','Date Served':'','Remarks':'','Status':'Not Served','Timeliness':'Pending'};
+    const o={'Record ID':key,'CLASSIFICATION':r[6]||'','J.O':jo,'S.O':r[1]||'','Received':joDate_(r[10]),'Delivery Date':joDate_(r[13]),'Client':r[7]||'','Item No.':r[8]||'','Panel Name':r[9]||'','Qty':qty,'Unit':r[4]||'','Transferred':0,'Balance':qty,'FGTS No.':'','Date Served':'','Date Completion':'','Remarks':'','Status':'Not Served','Timeliness':'Pending'};
     const summary=summaryByJob[fgtsJobKey_(o['S.O'],o['Item No.'])];
     if(summary){
       o.Transferred=summary.transferred;
@@ -651,6 +651,7 @@ function getExternalJORecords_(searchText) {
       o['FGTS No.']=[...summary.fgts].join(', ');
       summary.dates.sort();
       o['Date Served']=summary.dates.length?summary.dates[summary.dates.length-1]:'';
+      o['Date Completion']=o['Date Served'];
     }
     if(qty>0&&o.Balance<=0)o.Status='Finished';else if(o.Transferred>0)o.Status='Partial';
     const due=joParseDate_(o['Delivery Date']), served=joParseDate_(o['Date Served']);
@@ -658,7 +659,8 @@ function getExternalJORecords_(searchText) {
     else o.Timeliness='Pending';
     const ov=overrides[key];
     if(ov)JO_OVERRIDE_HEADERS.slice(2).forEach((h,j)=>{if(h!=='Timeliness'&&ov[j+2]!==''&&ov[j+2]!=null)o[h]=ov[j+2];});
-    const finalDue=joParseDate_(o['Delivery Date']), finalServed=joParseDate_(o['Date Served']);
+    o['Date Completion']=o['Date Served'];
+    const finalDue=joParseDate_(o['Delivery Date']), finalServed=joParseDate_(o['Date Completion']);
     o.Timeliness=finalServed&&finalDue?(finalServed.getTime()<=finalDue.getTime()?'On Time':'Delayed'):'Pending';
     ['Qty','Transferred','Balance'].forEach(h=>o[h]=Number(String(o[h]||0).replace(/,/g,''))||0);
     if(!q||Object.values(o).join(' ').toLowerCase().includes(q))records.push(o);
@@ -898,7 +900,7 @@ function saveJOOverride_(input) {
   const lastRow=sh.getLastRow();let target=0;
   if(lastRow>1){const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(id).matchEntireCell(true).findNext();if(match)target=match.getRow();}
   const now=new Date();
-  const out=JO_OVERRIDE_HEADERS.map(h=>h==='Source Row'?id:h==='Updated At'?now:(input[h]??''));
+  const out=JO_OVERRIDE_HEADERS.map(h=>h==='Source Row'?id:h==='Updated At'?now:(h==='Date Served'?(input['Date Completion']??input['Date Served']??''):(input[h]??'')));
   if(target)sh.getRange(target,1,1,out.length).setValues([out]);else sh.appendRow(out);
   invalidateModuleCache_('J.O Register','FGTS Monitoring');
   return {ok:true,message:'J.O changes saved for source row '+id.slice(4)+'.'};
