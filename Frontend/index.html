@@ -1598,12 +1598,12 @@ function loadRecords(useCache=false,silent=false){
  tablePage=1;
  if(hasCachedFull){records=recordCache[cacheKey];recordsLoadedFully=true;renderTable();if(loading&&!silent)loading.classList.remove('show');return}
  else if(!silent){records=[];recordsLoadedFully=false;renderTable()}
- callServer('getModuleData',[requestedModule,'',1,PAGE_SIZE,false],first=>{
+ callServer('getModuleData',[requestedModule,'',1,PAGE_SIZE,false,requestedModule==='J.O Register'],first=>{
    if(token!==loadRequestToken||currentPage!==requestedModule)return;if(!first||!first.ok){if(loading&&!silent)loading.classList.remove('show');return}
    if(!hasCachedFull&&!silent){records=first.records||[];recordsLoadedFully=false;renderTable()}
    // The first response is small. Fetch the complete set in the background so filters,
    // dashboard totals, and subsequent pages continue to work across every record.
-   callServer('getModuleData',[requestedModule,'',1,PAGE_SIZE,true],all=>{
+   callServer('getModuleData',[requestedModule,'',1,PAGE_SIZE,true,requestedModule==='J.O Register'],all=>{
      if(token!==loadRequestToken||currentPage!==requestedModule)return;if(!all||!all.ok){if(loading&&!silent)loading.classList.remove('show');return}
      records=all.records||[];recordCache[cacheKey]=records;recordsLoadedFully=true;
      if(tablePage<1)tablePage=1;
@@ -1636,8 +1636,8 @@ function configureJOSilentRefresh(page){
  if(joSilentRefreshTimer){clearInterval(joSilentRefreshTimer);joSilentRefreshTimer=null;}
  joSilentRefreshBusy=false;
  if(page==='J.O Register'){
-  // Pull once immediately on entry, then keep the visible register current.
-  refreshJORecordsSilently();
+  // loadRecords() performs the initial forced-fresh load; poll only after that
+  // to avoid a stale cached initial response racing with the silent refresh.
   joSilentRefreshTimer=setInterval(refreshJORecordsSilently,15000);
  }
 }
