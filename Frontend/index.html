@@ -1315,6 +1315,14 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
   background:#fff!important;color:#334155!important;border:1px solid #cbd5e1!important;
 }
 
+/* J.O Register only: keep the full Transferred header visible. */
+#monitoringPanel .tablewrap table.jo-table th:nth-child(11),
+#monitoringPanel .tablewrap table.jo-table td:nth-child(11){
+  width:92px!important;min-width:92px!important;max-width:92px!important;
+}
+#monitoringPanel .tablewrap table.jo-table th:nth-child(11){
+  overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important;
+}
 /* Precise sizing based on the user's status-pill reference image. */
 /* Status controls: match the compact 78x26px oval appearance in the reference. */
 #monitoringPanel .tablewrap table:not(.fgts-table) td .pill,
