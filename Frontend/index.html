@@ -1315,52 +1315,57 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
   background:#fff!important;color:#334155!important;border:1px solid #cbd5e1!important;
 }
 
-/* Scoped correction: keep requested monitoring columns compact without changing other columns. */
-/* J.O Register: give the Transferred header enough room to show its full label. */
-#monitoringPanel .tablewrap table.jo-table th:nth-child(11),
-#monitoringPanel .tablewrap table.jo-table td:nth-child(11){
-  width:92px!important;min-width:92px!important;max-width:92px!important;
-}
-#monitoringPanel .tablewrap table.jo-table th:nth-child(11){
-  overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important;
-}
-/* Compact status ovals across monitoring tables; FGTS is intentionally excluded. */
+/* Precise sizing based on the user's status-pill reference image. */
+/* Status controls: match the compact 78x26px oval appearance in the reference. */
 #monitoringPanel .tablewrap table:not(.fgts-table) td .pill,
 #monitoringPanel .tablewrap table:not(.fgts-table) td .rework-summary-pill,
 #monitoringPanel .tablewrap table:not(.fgts-table) td .punchlist-status-button,
 #monitoringPanel .tablewrap table:not(.fgts-table) td .ncr-status-toggle,
 #monitoringPanel .tablewrap table:not(.fgts-table) td .transfer-status-pill{
-  font-size:9px!important;line-height:1.1!important;padding:4px 8px!important;
-  min-height:0!important;height:auto!important;border-radius:999px!important;
-  box-sizing:border-box!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-height:26px!important;height:26px!important;box-sizing:border-box!important;
+  padding:4px 12px!important;font-size:13px!important;line-height:16px!important;
+  font-weight:700!important;border-radius:999px!important;white-space:nowrap!important;
 }
-/* Transfer: retain room for all four actions, including Delete. */
+/* Transfer Monitoring: fit four actions closely; do not reserve excess blank width. */
 #monitoringPanel .tablewrap table.transfer-monitoring-table th:last-child,
 #monitoringPanel .tablewrap table.transfer-monitoring-table td.actioncell{
-  width:320px!important;min-width:320px!important;max-width:320px!important;
+  width:205px!important;min-width:205px!important;max-width:205px!important;
+  padding-left:5px!important;padding-right:5px!important;
   white-space:nowrap!important;overflow:visible!important;box-sizing:border-box!important;
 }
 #monitoringPanel .tablewrap table.transfer-monitoring-table td.actioncell button{
-  display:inline-flex!important;visibility:visible!important;opacity:1!important;
-  padding:4px 6px!important;font-size:9px!important;margin:1px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:auto!important;min-width:0!important;max-width:none!important;
+  padding:3px 4px!important;margin:0 1px!important;font-size:9px!important;
+  line-height:1.1!important;white-space:nowrap!important;visibility:visible!important;opacity:1!important;
 }
-/* Rework: override later legacy 210px rule; keep its three actions visible in a slimmer cell. */
-#monitoringPanel:has(#recordFilters.rework-filterbar) .tablewrap table.rework-merged-table th:last-child,
-#monitoringPanel:has(#recordFilters.rework-filterbar) .tablewrap table.rework-merged-table td.actioncell{
-  width:185px!important;min-width:185px!important;max-width:185px!important;
+/* Rework Monitoring: three actions only; override legacy global 260px minimum. */
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(17),
+#monitoringPanel .tablewrap table.rework-merged-table td.actioncell{
+  width:165px!important;min-width:165px!important;max-width:165px!important;
+  padding-left:5px!important;padding-right:5px!important;
   white-space:nowrap!important;overflow:visible!important;box-sizing:border-box!important;
 }
-#monitoringPanel:has(#recordFilters.rework-filterbar) .tablewrap table.rework-merged-table td.actioncell button{
-  padding:3px 5px!important;font-size:9px!important;margin:1px!important;
+#monitoringPanel .tablewrap table.rework-merged-table td.actioncell button{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:auto!important;min-width:0!important;max-width:none!important;
+  padding:3px 4px!important;margin:0 1px!important;font-size:9px!important;line-height:1.1!important;
+  white-space:nowrap!important;
 }
-/* Punchlist: reduce its action cell from the legacy 280px minimum. */
-#monitoringPanel .tablewrap table.punchlist-table th:last-child,
+/* Punchlist Monitoring: keep all other 16 column widths unchanged; reduce Action only. */
+#monitoringPanel .tablewrap table.punchlist-table{width:2110px!important;min-width:2110px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(17),
 #monitoringPanel .tablewrap table.punchlist-table td.punchlist-action-cell{
-  width:190px!important;min-width:190px!important;max-width:190px!important;
+  width:165px!important;min-width:165px!important;max-width:165px!important;
+  padding-left:5px!important;padding-right:5px!important;
   white-space:nowrap!important;overflow:visible!important;box-sizing:border-box!important;
 }
 #monitoringPanel .tablewrap table.punchlist-table td.punchlist-action-cell button{
-  padding:3px 5px!important;font-size:9px!important;margin:1px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:auto!important;min-width:0!important;max-width:none!important;
+  padding:3px 4px!important;margin:0 1px!important;font-size:9px!important;line-height:1.1!important;
+  white-space:nowrap!important;
 }
 
 </style></head><body>
