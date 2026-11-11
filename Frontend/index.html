@@ -1635,7 +1635,16 @@ function refreshJORecordsSilently(){
 function configureJOSilentRefresh(page){
  if(joSilentRefreshTimer){clearInterval(joSilentRefreshTimer);joSilentRefreshTimer=null;}
  joSilentRefreshBusy=false;
- if(page==='J.O Register')joSilentRefreshTimer=setInterval(refreshJORecordsSilently,45000);
+ if(page==='J.O Register'){
+  // Pull once immediately on entry, then keep the visible register current.
+  refreshJORecordsSilently();
+  joSilentRefreshTimer=setInterval(refreshJORecordsSilently,15000);
+ }
+}
+if(!window.__joSilentRefreshFocusBound){
+ window.__joSilentRefreshFocusBound=true;
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshJORecordsSilently();});
+ window.addEventListener('focus',()=>refreshJORecordsSilently());
 }
 function clearRecordFilters(){['monthFrom','monthTo','statusFilter','reminderFilter','classificationFilter','qcFilter','categoryFilter','reworkSectionFilter','reworkCategoryFilter','reworkTypeFilter','punchlistCategoryFilter','punchlistSectionFilter','ncrMonthFrom','ncrMonthTo','ncrStatusFilter','ncrSectionFilter','ncrPicFilter','cmpMonthFrom','cmpMonthTo','cmpStatusFilter','cmpCompanyFilter','pdiMonthFrom','pdiMonthTo','pdiStatusFilter'].forEach(id=>{if(el(id))el(id).value=''});el('search').value='';searchByModule[currentPage]='';tablePage=1;renderTable()}
 function normalizeFgtsLabel(value){const raw=String(value??'').trim();if(!raw)return '';const key=raw.toLowerCase().replace(/\s+/g,' ');if(key==='other'||key==='others')return 'Other';if(key==='non-standard'||key==='non standard')return 'Non-standard';if(key==='standard')return 'Standard';if(key==='telcos'||key==='telco')return 'Telcos';const known=typeof CATEGORY_OPTIONS!=='undefined'?CATEGORY_OPTIONS.find(v=>v.toLowerCase()===key):null;if(known)return known;return raw.toLowerCase().replace(/(^|[\s/()-])([a-z])/g,(m,a,b)=>a+b.toUpperCase())}
