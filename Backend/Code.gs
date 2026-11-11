@@ -370,13 +370,14 @@ function submitPublicComplaint(payload,sessionToken){
   if(!payload||!payload.header||!Array.isArray(payload.items)||!payload.items.length)throw new Error('Complete the complaint details and add at least one item.');
   const accountUsername=sessionToken?getComplaintSessionUsername_(sessionToken):'';
   if(sessionToken&&!accountUsername)throw new Error('Your account session expired. Please log in again before submitting.');
-  const h=payload.header,required=['Date','Company','Client','Name of Complainant','Complaint Description'];
+  const h=payload.header,required=['Date','Company','Client','Name of Complainant'];
   required.forEach(k=>{if(!String(h[k]||'').trim())throw new Error(k+' is required.')});
   const company=String(h.Company||'').trim().toUpperCase();
   if(!['GEMCOR','GPI'].includes(company))throw new Error('Please select GEMCOR or GPI.');
   if(payload.items.length>30)throw new Error('A maximum of 30 items can be included in one submission.');
   payload.items.forEach((item,i)=>{
     if(!String(item.Item||'').trim())throw new Error('Item is required for item row '+(i+1)+'.');
+    if(!String(item['Complaint Description']||'').trim())throw new Error('Complaint Description is required for item row '+(i+1)+'.');
     if(item.Qty!==''&&item.Qty!=null&&(!isFinite(Number(item.Qty))||Number(item.Qty)<=0))throw new Error('Qty must be greater than zero for item row '+(i+1)+'.');
   });
   const lock=LockService.getScriptLock();lock.waitLock(20000);
@@ -397,8 +398,8 @@ function submitPublicComplaint(payload,sessionToken){
       const file=folder.createFile(Utilities.newBlob(bytes,mime,id+ext));
       attachmentUrl=file.getUrl();
     }
-    const items=payload.items.map(x=>({Item:String(x.Item||'').trim(), 'Panel Name':String(x['Panel Name']||'').trim(),Qty:String(x.Qty||'').trim()}));
-    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':String(h['Complaint Description']).trim(),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl,'Submitted By Username':accountUsername};
+    const items=payload.items.map(x=>({Item:String(x.Item||'').trim(), 'Panel Name':String(x['Panel Name']||'').trim(),Qty:String(x.Qty||'').trim(),'Complaint Description':String(x['Complaint Description']||'').trim()}));
+    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl,'Submitted By Username':accountUsername};
     sh.appendRow(headers.map(k=>rec[k]===undefined?'':rec[k]));
     invalidateComplaintCache_();
     return {ok:true,recordId:id,attachmentUrl:attachmentUrl,message:'Your complaint has been submitted successfully.'};
