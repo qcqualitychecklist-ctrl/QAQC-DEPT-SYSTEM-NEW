@@ -1468,6 +1468,15 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
   background:#dbeafe!important;color:#1d4ed8!important;border-color:#93c5fd!important;
 }
 
+
+/* Remove the unwanted gray row-ending strokes highlighted in the Rework screenshot. */
+#monitoringPanel .tablewrap table.rework-merged-table td.rework-case-shared,
+#monitoringPanel .tablewrap table.rework-merged-table td.actioncell,
+#monitoringPanel .tablewrap table.rework-merged-table td[rowspan]{
+  border-bottom:0!important;
+  box-shadow:none!important;
+}
+
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
@@ -2292,7 +2301,7 @@ function renderReworkTable(){
      const sectionLead=sectionClosed&&d['Lead Time']!==''&&d['Lead Time']!=null?d['Lead Time']+' days':'—';const lead=cell(sectionLead,'rework-case-shared');lead.rowSpan=sectionGroup.span;tr.append(lead);
     }
     const typeValue=String(d['Rework or Back Job']||'Rework').trim().replace(/^[\\s\\-–—]+/,'');
-    const typeCell=cell('','rework-type-cell');
+    const typeCell=document.createElement('td');typeCell.className='rework-type-cell';
     const typeBadge=document.createElement('span');
     typeBadge.className='fgts-category-badge rework-type-badge '+(typeValue.toLowerCase()==='back job'?'rework-type-backjob':'rework-type-rework');
     typeBadge.textContent=typeValue;
