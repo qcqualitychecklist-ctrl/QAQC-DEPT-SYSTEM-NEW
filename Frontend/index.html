@@ -1495,6 +1495,32 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
   width:0!important;height:0!important;display:none!important;
 }
 
+
+/* Rework dashboard: force all six cards into one desktop row and enforce number colors. */
+#dashboardCards.rework-dashboard{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  gap:7px!important;
+  align-items:stretch!important;
+}
+#dashboardCards.rework-dashboard>.dash-card{min-width:0!important;width:auto!important;max-width:none!important}
+#dashboardCards.rework-dashboard>.dash-card.rework-total .dash-value{color:#4338ca!important}
+#dashboardCards.rework-dashboard>.dash-card.rework-jo-count .dash-value{color:#7c3aed!important}
+#dashboardCards.rework-dashboard>.dash-card.rework-open .dash-value{color:#c2410c!important}
+#dashboardCards.rework-dashboard>.dash-card.rework-closed .dash-value{color:#16834a!important}
+#dashboardCards.rework-dashboard>.dash-card.rework-count .dash-value{color:#b42318!important}
+#dashboardCards.rework-dashboard>.dash-card.rework-backjob .dash-value{color:#1d4ed8!important}
+@media(max-width:700px){
+  #dashboardCards.rework-dashboard{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:420px){
+  #dashboardCards.rework-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
