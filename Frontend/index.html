@@ -1324,16 +1324,16 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
   overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important;
 }
 /* Precise sizing based on the user's status-pill reference image. */
-/* Status controls: match the compact 78x26px oval appearance in the reference. */
+/* Status controls: use the same compact dimensions as the original J.O Register .pill. */
 #monitoringPanel .tablewrap table:not(.fgts-table) td .pill,
 #monitoringPanel .tablewrap table:not(.fgts-table) td .rework-summary-pill,
 #monitoringPanel .tablewrap table:not(.fgts-table) td .punchlist-status-button,
 #monitoringPanel .tablewrap table:not(.fgts-table) td .ncr-status-toggle,
 #monitoringPanel .tablewrap table:not(.fgts-table) td .transfer-status-pill{
-  display:inline-flex!important;align-items:center!important;justify-content:center!important;
-  min-height:26px!important;height:26px!important;box-sizing:border-box!important;
-  padding:4px 12px!important;font-size:13px!important;line-height:16px!important;
-  font-weight:700!important;border-radius:999px!important;white-space:nowrap!important;
+  display:inline-block!important;vertical-align:middle!important;
+  min-height:0!important;height:auto!important;
+  padding:4px 8px!important;font-size:inherit!important;line-height:normal!important;
+  font-weight:700!important;border-radius:20px!important;white-space:nowrap!important;
 }
 /* Transfer Monitoring: fit four actions closely; do not reserve excess blank width. */
 #monitoringPanel .tablewrap table.transfer-monitoring-table th:last-child,
