@@ -1380,6 +1380,25 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
 /* All monitoring record data: use one consistent 10px text size. Keep headers, action buttons, column widths and spacing unchanged. */
 #monitoringPanel .tablewrap table tbody td{font-size:10px!important}
 #monitoringPanel .tablewrap table tbody td .pill{font-size:10px!important}
+
+/* Rework Monitoring: give the three description columns a little more room and tighten Action to its three buttons. */
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(9),
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(9){
+  width:200px!important;min-width:200px!important;max-width:200px!important;
+}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(10),
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(10){
+  width:205px!important;min-width:205px!important;max-width:205px!important;
+}
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table th:nth-child(11),
+#monitoringPanel:has(#recordFilters.rework-filterbar) .rework-merged-table td:nth-child(11){
+  width:205px!important;min-width:205px!important;max-width:205px!important;
+}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(17),
+#monitoringPanel .tablewrap table.rework-merged-table td.actioncell{
+  width:145px!important;min-width:145px!important;max-width:145px!important;
+}
+
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
