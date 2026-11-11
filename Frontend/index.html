@@ -1437,6 +1437,26 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
   height:28px!important;padding:3px!important;margin:0 1px!important;
 }
 
+
+/* Rework type badges: match FGTS category badge sizing and appearance. */
+#monitoringPanel .tablewrap table.rework-merged-table td.rework-type-cell{
+  text-align:center!important;white-space:nowrap!important;overflow:hidden!important;
+}
+#monitoringPanel .tablewrap table.rework-merged-table .rework-type-badge{
+  max-width:100%!important;padding:3px 7px!important;font-size:9px!important;
+  font-weight:700!important;line-height:1.25!important;border-radius:6px!important;
+}
+#monitoringPanel .tablewrap table.rework-merged-table .rework-type-badge.rework-type-rework{
+  background:#fff1f0!important;border-color:#fecaca!important;color:#b42318!important;
+}
+#monitoringPanel .tablewrap table.rework-merged-table .rework-type-badge.rework-type-backjob{
+  background:#eff6ff!important;border-color:#bfdbfe!important;color:#1d4ed8!important;
+}
+/* Light gray row separator under the shared Date Finished and Lead Time cells. */
+#monitoringPanel .tablewrap table.rework-merged-table td.rework-case-shared{
+  border-bottom:1px solid #e5e7eb!important;
+}
+
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
@@ -2260,7 +2280,14 @@ function renderReworkTable(){
      const sectionClosed=sectionGroup.flat.length>0&&sectionGroup.flat.every(e=>String(e.detail.Status||'Open').toLowerCase()==='closed');
      const sectionLead=sectionClosed&&d['Lead Time']!==''&&d['Lead Time']!=null?d['Lead Time']+' days':'—';const lead=cell(sectionLead,'rework-case-shared');lead.rowSpan=sectionGroup.span;tr.append(lead);
     }
-    tr.append(cell(d['Rework or Back Job']||'Rework','rework-type-cell'));
+    const typeValue=String(d['Rework or Back Job']||'Rework').trim();
+    const typeCell=cell('','rework-type-cell');
+    const typeBadge=document.createElement('span');
+    typeBadge.className='fgts-category-badge rework-type-badge '+(typeValue.toLowerCase()==='back job'?'rework-type-backjob':'rework-type-rework');
+    typeBadge.textContent=typeValue;
+    typeBadge.title=typeValue;
+    typeCell.append(typeBadge);
+    tr.append(typeCell);
     if(idx===0){const act=document.createElement('td');act.className='actioncell';act.rowSpan=caseSpan;act.append(button('Full Details','small',()=>openReworkDetails(rec)),document.createTextNode(' '),button('Edit','small primary',()=>openEditRework(rec)),document.createTextNode(' '),button('Delete','small danger',()=>deleteReworkCase(rec)));tr.append(act)}
     el('tbody').append(tr);
    });
