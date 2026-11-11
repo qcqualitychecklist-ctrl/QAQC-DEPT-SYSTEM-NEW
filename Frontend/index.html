@@ -1815,8 +1815,9 @@ function scheduleLoadRecords(){searchByModule[currentPage]=el('search')?.value||
 function loadRecords(useCache=false,silent=false){
  if(searchLoadTimer){clearTimeout(searchLoadTimer);searchLoadTimer=null}
  const requestedModule=currentPage,cacheKey=requestedModule+'::',token=++loadRequestToken;const loading=el('loadingOverlay');if(loading&&!silent)loading.classList.add('show');
- if(!silent&&!useCache&&requestedModule!=='Punchlist Monitoring')delete recordCache[cacheKey];
- const hasCachedFull=(useCache||requestedModule==='Punchlist Monitoring')&&Object.prototype.hasOwnProperty.call(recordCache,cacheKey);
+ const keepModuleCache=['NCR Monitoring','Punchlist Monitoring','Complaint Monitoring'].includes(requestedModule);
+ if(!silent&&!useCache&&!keepModuleCache)delete recordCache[cacheKey];
+ const hasCachedFull=(useCache||keepModuleCache)&&Object.prototype.hasOwnProperty.call(recordCache,cacheKey);
  tablePage=1;
  if(hasCachedFull){records=recordCache[cacheKey];recordsLoadedFully=true;renderTable();if(loading&&!silent)loading.classList.remove('show');return}
  else if(!silent){records=[];recordsLoadedFully=false;renderTable()}
