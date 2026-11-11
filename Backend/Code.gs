@@ -161,14 +161,14 @@ function setupDatabase() {
   return {ok:true,created:created,message:created.length?'Database tabs are ready.':'Database tabs already exist; existing records were preserved.'};
 }
 
-function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll) {
+function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll, forceRefresh) {
   if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring','Punchlist Monitoring','NCR Monitoring','Complaint Monitoring','PDI Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const query=String(searchText||'').trim();
   // v3 stores the records already sorted, avoiding a full-array sort on the
   // immediate follow-up request used by the first-50 loading flow.
   const cacheKey='qaqc_module_v3_'+moduleName.replace(/[^a-z0-9]/gi,'_');
   let result=null,loadedFromCache=false;
-  if(!query){
+  if(!query&&!forceRefresh){
     result=readModuleCache_(cacheKey);
     loadedFromCache=!!(result&&result.ok);
   }
