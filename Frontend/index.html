@@ -1558,7 +1558,7 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
  </div>
 </section>
 
-<section id="publicComplaintPage" class="public-complaint-page" style="display:none"><div class="public-complaint-card"><header class="public-complaint-head"><h1>Complaint Form</h1><p>Please provide the details of your complaint. The information submitted will be forwarded to the QA/QC Department for review.</p></header><form id="publicComplaintForm" class="public-complaint-body" onsubmit="submitPublicComplaintForm(event)"><div id="publicComplaintMessage" class="public-complaint-message"></div><section class="public-complaint-section"><h2>Complainant Information</h2><div class="public-complaint-grid"><div class="public-complaint-field"><label for="pubDate">Date *</label><input id="pubDate" type="date" required></div><div class="public-complaint-field"><label for="pubName">Name of Complainant *</label><input id="pubName" required placeholder="Enter your full name"></div><div class="public-complaint-field"><label for="pubCompany">Company *</label><select id="pubCompany" required><option value="">Select Company</option><option value="GEMCOR">Gemcor</option><option value="GPI">Gpi</option></select></div><div class="public-complaint-field"><label for="pubJO">J.O Number</label><input id="pubJO" placeholder="Enter J.O number"></div><div class="public-complaint-field"><label for="pubSO">S.O Number</label><input id="pubSO" placeholder="Enter S.O number"></div><div class="public-complaint-field"><label for="pubClient">Client *</label><input id="pubClient" required placeholder="Enter client / company name"></div></div></section><section class="public-complaint-section"><h2>Items Concerned</h2><div id="publicComplaintItems"></div><button type="button" onclick="addPublicComplaintItem()">＋ Add Item</button><p class="public-complaint-note">Each item can have its own complaint description. You may add multiple items under the same J.O. Number.</p></section><section class="public-complaint-section"><h2>Photo / Video Attachment (Optional)</h2><div class="public-complaint-grid"><div class="public-complaint-field full"><input id="pubAttachment" type="file" accept="image/*,video/mp4,video/quicktime,video/webm"><span class="public-complaint-note">Maximum file size: 10 MB. One photo or video may be attached.</span></div></div></section><div class="public-complaint-actions"><span class="public-complaint-note">Fields marked with * are required. Your complaint will be recorded as Open for QA/QC review.</span><button id="publicComplaintSubmit" class="public-complaint-submit" type="submit">Submit Complaint</button></div></form></div></section>
+<section id="publicComplaintPage" class="public-complaint-page" style="display:none"><div class="public-complaint-card"><header class="public-complaint-head"><h1>Complaint Form</h1><p>Please provide the details of your complaint. The information submitted will be forwarded to the QA/QC Department for review.</p></header><form id="publicComplaintForm" class="public-complaint-body" onsubmit="submitPublicComplaintForm(event)"><div id="publicComplaintMessage" class="public-complaint-message"></div><section class="public-complaint-section"><h2>Complainant Information</h2><div class="public-complaint-grid"><div class="public-complaint-field"><label for="pubDate">Date *</label><input id="pubDate" type="date" required></div><div class="public-complaint-field"><label for="pubName">Name of Complainant *</label><input id="pubName" required placeholder="Enter your full name"></div><div class="public-complaint-field"><label for="pubCompany">Company *</label><select id="pubCompany" required><option value="">Select Company</option><option value="GEMCOR">Gemcor</option><option value="GPI">Gpi</option></select></div><div class="public-complaint-field"><label for="pubJO">J.O Number</label><input id="pubJO" placeholder="Enter J.O number"></div><div class="public-complaint-field"><label for="pubSO">S.O Number</label><input id="pubSO" placeholder="Enter S.O number"></div><div class="public-complaint-field"><label for="pubClient">Client *</label><input id="pubClient" required placeholder="Enter client / company name"></div></div></section><section class="public-complaint-section"><h2>Items Concerned</h2><div id="publicComplaintItems"></div><button type="button" onclick="addPublicComplaintItem()">＋ Add Item</button><p class="public-complaint-note">Each item can have its own complaint description. You may add multiple items under the same J.O. Number.</p></section><section class="public-complaint-section"><h2>Photo / Video Attachment (Optional)</h2><div class="public-complaint-grid"><div class="public-complaint-field full"><input id="pubAttachment" type="file" multiple accept="image/*,video/mp4,video/quicktime,video/webm"><span class="public-complaint-note">You may attach multiple photos and videos. Maximum combined attachment size: 200 MB per complaint.</span></div></div></section><div class="public-complaint-actions"><span class="public-complaint-note">Fields marked with * are required. Your complaint will be recorded as Open for QA/QC review.</span><button id="publicComplaintSubmit" class="public-complaint-submit" type="submit">Submit Complaint</button></div></form></div></section>
 <section class="login-landing" id="loginLanding">
  <div class="access-card" id="accessCard">
   <div class="access-brand"><div class="access-logo">QC</div><div><h1>QAQC Department System</h1><p>Quality Assurance &amp; Quality Control</p></div></div>
@@ -2343,6 +2343,36 @@ function printPdiRequest(rec){
  win.setTimeout(()=>{win.print();},350);
 }
 
+
+function getComplaintAttachments(rec){
+ let files=[];try{files=JSON.parse(rec&&rec['Attachments JSON']||'[]')}catch(e){}
+ if(!Array.isArray(files))files=[];
+ if(!files.length&&rec&&rec['Attachment URL'])files=[{fileName:'Attachment',mimeType:'',url:rec['Attachment URL']}];
+ return files;
+}
+function openComplaintAttachments(rec){
+ const files=getComplaintAttachments(rec),old=el('complaintAttachmentsModal');if(old)old.remove();
+ const modal=document.createElement('div');modal.id='complaintAttachmentsModal';modal.className='modal open';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');
+ const dialog=document.createElement('div');dialog.className='dialog';dialog.style.maxWidth='900px';dialog.style.maxHeight='88vh';dialog.style.overflow='auto';
+ const head=document.createElement('div');head.className='dialoghead';const wrap=document.createElement('div'),h=document.createElement('h3'),sub=document.createElement('div');h.textContent='Complaint Attachments';sub.className='muted';sub.textContent=String(rec['Complaint ID']||'')+' · '+files.length+' file(s)';wrap.append(h,sub);head.append(wrap);
+ const body=document.createElement('div');body.style.padding='16px';body.style.display='grid';body.style.gap='14px';
+ files.forEach((file,index)=>{
+  const card=document.createElement('section');card.style.border='1px solid var(--border,#d9e0e8)';card.style.borderRadius='10px';card.style.padding='12px';
+  const row=document.createElement('div');row.style.display='flex';row.style.alignItems='center';row.style.justifyContent='space-between';row.style.gap='12px';
+  const name=document.createElement('strong');name.textContent=(index+1)+'. '+String(file.fileName||file.name||'Attachment');row.append(name);
+  const url=file.url||(file.fileId?'https://drive.google.com/file/d/'+encodeURIComponent(file.fileId)+'/view':'');
+  if(url){const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener';link.textContent='Open in Drive';link.className='small';row.append(link)}
+  card.append(row);
+  const mime=String(file.mimeType||'');
+  if(file.fileId&&(mime.startsWith('image/')||mime.startsWith('video/'))){const frame=document.createElement('iframe');frame.src='https://drive.google.com/file/d/'+encodeURIComponent(file.fileId)+'/preview';frame.title=String(file.fileName||'Attachment preview');frame.style.width='100%';frame.style.height=mime.startsWith('video/')?'420px':'360px';frame.style.border='0';frame.style.marginTop='10px';frame.allow='autoplay';card.append(frame)}
+  else{const meta=document.createElement('div');meta.className='muted';meta.style.marginTop='8px';meta.textContent=(mime||'File')+(file.size?' · '+(file.size/1024/1024).toFixed(2)+' MB':'');card.append(meta)}
+  body.append(card);
+ });
+ if(!files.length){const empty=document.createElement('p');empty.textContent='No attachments found for this complaint.';body.append(empty)}
+ const actions=document.createElement('div');actions.className='actions';actions.style.padding='0 16px 16px';actions.style.justifyContent='flex-end';actions.append(button('Close','small primary',()=>modal.remove()));
+ dialog.append(head,body,actions);modal.append(dialog);modal.addEventListener('click',e=>{if(e.target===modal)modal.remove()});document.body.append(modal);
+}
+
 function renderComplaintTable(){
  const table=el('thead').closest('table');table.classList.remove('ncr-table','punchlist-table','rework-table','rework-merged-table');table.classList.add('complaint-table');
  const from=el('cmpMonthFrom')?.value||'',to=el('cmpMonthTo')?.value||'',status=el('cmpStatusFilter')?.value||'',company=el('cmpCompanyFilter')?.value||'',q=String(el('search')?.value||'').trim().toLowerCase();
@@ -2367,7 +2397,7 @@ function renderComplaintTable(){
    if(index===0){
     const responsible=makeCell(rec['Person Responsible']||rec['QC In-Charge']||'',span);tr.append(responsible);
     const investigation=makeCell(rec.Investigation||rec.Cause||'',span);tr.append(investigation);
-    const attachment=makeCell('',span);if(rec['Attachment URL']){const view=document.createElement('button');view.className='small';view.textContent='See Attachment';view.onclick=()=>window.open(rec['Attachment URL'],'_blank','noopener');attachment.append(view)}else attachment.textContent='—';tr.append(attachment);
+    const attachment=makeCell('',span),files=getComplaintAttachments(rec);if(files.length){attachment.append(button('View Attachments ('+files.length+')','small',()=>openComplaintAttachments(rec)))}else if(rec['Attachment URL']){attachment.append(button('View Attachments (1)','small',()=>openComplaintAttachments(rec)))}else attachment.textContent='—';tr.append(attachment);
     const action=makeCell('',span);action.className='actioncell ncr-action-cell';action.append(button('Full View','small',()=>showComplaintHistoryDetails(rec)),document.createTextNode(' '),button('Allocation','small primary',()=>openComplaintAssignment(rec)),document.createTextNode(' '),button('Delete','small danger',()=>{if(!confirm('Delete complaint '+(rec['Complaint ID']||'')+'?'))return;callServer('deleteComplaint',[rec['Complaint ID']],()=>loadRecords(false),e=>showStatus(false,'Delete failed',e.message||String(e)))}));tr.append(action);
    }
    el('tbody').append(tr);
@@ -2887,27 +2917,52 @@ function submitPublicPdiForm(event){
   btn.disabled=false;btn.textContent='Submit PDI Request';showPublicPdiMessage(err&&err.message||String(err),false);
  }).submitPdiRequest(payload);
 }
-function submitPublicComplaintForm(event){
- event.preventDefault();const btn=el('publicComplaintSubmit'),file=el('pubAttachment').files[0];
- if(file&&file.size>10*1024*1024){showPublicComplaintMessage('Attachment must not exceed 10 MB.',false);return}
+function runComplaintServer(method,args){
+ return new Promise((resolve,reject)=>{const runner=google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);runner[method].apply(runner,args||[])});
+}
+function readComplaintBlobBase64(blob){
+ return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||'').split(',').pop());reader.onerror=()=>reject(new Error('Unable to read an attachment.'));reader.readAsDataURL(blob)});
+}
+async function uploadComplaintAttachments(files,onProgress){
+ const uploaded=[],chunkSize=8*1024*1024,total=files.reduce((n,f)=>n+f.size,0);let completed=0;
+ for(const file of files){
+  const started=await runComplaintServer('startComplaintAttachmentUpload',[file.name,file.type,file.size]);
+  if(!started||!started.ok||!started.uploadToken)throw new Error(started&&started.message||'Unable to prepare attachment upload.');
+  let result=null;
+  for(let start=0;start<file.size;start+=chunkSize){
+   const end=Math.min(start+chunkSize,file.size),encoded=await readComplaintBlobBase64(file.slice(start,end));
+   result=await runComplaintServer('uploadComplaintAttachmentChunk',[started.uploadToken,encoded,start,end,file.size,file.type]);
+   if(!result||!result.ok)throw new Error(result&&result.message||'An attachment chunk could not be uploaded.');
+   completed+=end-start;if(onProgress)onProgress(Math.min(100,Math.round(completed/total*100)));
+  }
+  if(!result||!result.done||!result.file)throw new Error('The upload did not finish for '+file.name+'.');
+  uploaded.push({fileId:result.file.id,fileName:file.name,mimeType:file.type,size:file.size,url:result.file.webViewLink||''});
+ }
+ return uploaded;
+}
+async function submitPublicComplaintForm(event){
+ event.preventDefault();const btn=el('publicComplaintSubmit'),files=[...el('pubAttachment').files],totalBytes=files.reduce((n,f)=>n+f.size,0),maxBytes=200*1024*1024;
+ if(totalBytes>maxBytes){showPublicComplaintMessage('The combined size of all attachments must not exceed 200 MB.',false);return}
+ const allowed=/^(image\/(jpeg|png|gif|webp)|video\/(mp4|quicktime|webm))$/;
+ const invalid=files.find(f=>!allowed.test(f.type));if(invalid){showPublicComplaintMessage('Only JPG, PNG, GIF, WEBP, MP4, MOV, and WEBM files are allowed.',false);return}
  const items=[...el('publicComplaintItems').children].map(row=>{const x={};row.querySelectorAll('input,textarea').forEach(i=>x[i.dataset.key]=i.value.trim());return x});
  if(!items.length||items.some(x=>!x.Item||!x['Complaint Description'])){showPublicComplaintMessage('Please enter an Item and its Complaint Description for every item row.',false);return}
  const header={Date:el('pubDate').value,Company:el('pubCompany').value,Client:el('pubClient').value,'Name of Complainant':el('pubName').value,'J.O':el('pubJO').value,'S.O':el('pubSO').value},payload={header,items};
- const send=data=>{
-  if(file)payload.attachment={fileName:file.name,mimeType:file.type,data};
-  const user=window.qaqcCurrentUser,accountUser=!!(user&&user.username&&user.role!=='Guest Access'),token=accountUser?qaqcAuthToken:'';
-  btn.disabled=true;btn.textContent='Submitting...';
-  google.script.run.withSuccessHandler(r=>{
-   btn.disabled=false;btn.textContent='Submit Complaint';
-   if(!r||!r.ok){showPublicComplaintMessage(r&&r.message||'Unable to submit complaint. Please try again.',false);return}
-   const localRecord={'Complaint ID':r.recordId,...header,Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Items JSON':JSON.stringify(items),'Attachment URL':r.attachmentUrl||''};
-   el('publicComplaintForm').reset();el('publicComplaintItems').innerHTML='';addPublicComplaintItem();const today=new Date(),localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);el('pubDate').value=localDate;
-   const workspace=el('guestComplainWorkspace'),formArea=el('guestComplainFormArea'),create=el('createGuestComplainButton'),notice=el('guestComplaintNotice');
-   if(workspace){if(!accountUser){guestComplaintHistory.unshift(localRecord);renderComplaintHistory(guestComplaintHistory)}if(formArea)formArea.style.display='none';if(create)create.style.display='';if(notice)notice.style.display='none';showGuestComplaintToast('Reference No.: '+r.recordId);if(accountUser)loadComplaintHistory();}
-   else showPublicComplaintMessage('Your complaint has been successfully submitted! Reference No.: '+r.recordId,true);
-  }).withFailureHandler(err=>{btn.disabled=false;btn.textContent='Submit Complaint';showPublicComplaintMessage(err&&err.message||String(err),false)}).submitPublicComplaint(payload,token);
- };
- if(file){const reader=new FileReader();reader.onload=()=>send(reader.result);reader.onerror=()=>showPublicComplaintMessage('Unable to read the selected attachment.',false);reader.readAsDataURL(file)}else send('');
+ const user=window.qaqcCurrentUser,accountUser=!!(user&&user.username&&user.role!=='Guest Access'),token=accountUser?qaqcAuthToken:'';
+ btn.disabled=true;
+ try{
+  let attachments=[];
+  if(files.length){btn.textContent='Uploading attachments 0%';attachments=await uploadComplaintAttachments(files,p=>btn.textContent='Uploading attachments '+p+'%');}
+  payload.attachments=attachments;btn.textContent='Submitting complaint...';
+  const r=await runComplaintServer('submitPublicComplaint',[payload,token]);
+  btn.disabled=false;btn.textContent='Submit Complaint';
+  if(!r||!r.ok){showPublicComplaintMessage(r&&r.message||'Unable to submit complaint. Please try again.',false);return}
+  const localRecord={'Complaint ID':r.recordId,...header,Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Items JSON':JSON.stringify(items),'Attachment URL':r.attachmentUrl||'','Attachments JSON':JSON.stringify(attachments)};
+  el('publicComplaintForm').reset();el('publicComplaintItems').innerHTML='';addPublicComplaintItem();const today=new Date(),localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);el('pubDate').value=localDate;
+  const workspace=el('guestComplainWorkspace'),formArea=el('guestComplainFormArea'),create=el('createGuestComplainButton'),notice=el('guestComplaintNotice');
+  if(workspace){if(!accountUser){guestComplaintHistory.unshift(localRecord);renderComplaintHistory(guestComplaintHistory)}if(formArea)formArea.style.display='none';if(create)create.style.display='';if(notice)notice.style.display='none';showGuestComplaintToast('Reference No.: '+r.recordId);if(accountUser)loadComplaintHistory();}
+  else showPublicComplaintMessage('Your complaint has been successfully submitted! Reference No.: '+r.recordId,true);
+ }catch(err){btn.disabled=false;btn.textContent='Submit Complaint';showPublicComplaintMessage(err&&err.message||String(err),false)}
 }
 function renderComplaintHistory(records){
  const host=el('complaintHistoryBody');if(!host)return;host.innerHTML='';
