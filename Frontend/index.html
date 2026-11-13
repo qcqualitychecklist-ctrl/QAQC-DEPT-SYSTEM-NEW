@@ -2250,7 +2250,7 @@ function pdiRequestPrintStyles(){
  '</style>';
 }
 function buildPdiRequestMarkup(rec,logoSrc){
- const get=(key)=>escapePdiPrintHtml(rec[key]||'');
+ const get=(key)=>String(rec[key]||'');
  const joSo=[rec['J.O']?'J.O: '+rec['J.O']:'',rec['S.O']?'S.O: '+rec['S.O']:''].filter(Boolean).join('   |   ');
  const ref=rec['Ref no']||rec['Ref No.']||rec['Reference No']||rec['PDI Request No']||'';
  const dateRequest=rec['Date of Request']||rec['Date of request']||'';
@@ -2275,9 +2275,9 @@ function buildPdiRequestMarkup(rec,logoSrc){
    field('Contact Number',get('Contact Number'))+
   '</div>'+
   '<div class="pdi-band">Scope of Inspection</div>'+
-  '<div class="pdi-writing-box">'+get('Scope of Inspection')+'</div>'+
+  '<div class="pdi-writing-box">'+escapePdiPrintHtml(get('Scope of Inspection'))+'</div>'+
   '<div class="pdi-band">Comments or Special Requests</div>'+
-  '<div class="pdi-writing-box comments">'+get('Comments or Special Request')+'</div>'+
+  '<div class="pdi-writing-box comments">'+escapePdiPrintHtml(get('Comments or Special Request'))+'</div>'+
  '</div>';
 }
 function openPdiRequestView(rec){
