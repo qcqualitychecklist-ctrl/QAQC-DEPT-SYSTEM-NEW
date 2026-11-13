@@ -22,7 +22,7 @@ const NCR_SHEET = 'NCR Monitoring';
 const COMPLAINT_SHEET = 'Complaint Monitoring';
 const PDI_SHEET = 'PDI Monitoring';
 const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','Person Responsible','Investigation','Status','Created At','Updated At','Items JSON','Attachment URL','Submitted By Username'];
-const PDI_HEADERS = ["Requestor's Email","Requestor's Name",'J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request','QC in Charge','Status','Remarks','Date of Request'];
+const PDI_HEADERS = ["Requestor's Email","Requestor's Name",'J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request','QC in Charge','Status','Remarks','PDI Reference No','Date of Request'];
 const NCR_HEADERS = ['Reference','Date','Prepared by','Section','Person In Charge','Description of Issue','Corrective Action','Status','Date Closed'];
 const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
 const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
@@ -424,13 +424,27 @@ function submitPdiRequest(payload){
  try{
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
   if(!sh)throw new Error('PDI Monitoring database is not prepared. Please contact QA/QC.');
-  let headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
-  if(!headers.includes('Date of Request')){const newCol=sh.getLastColumn()+1;sh.getRange(1,newCol).setValue('Date of Request').setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers.push('Date of Request');}
+  let headers=sh.getRange(1,1,1,Math.max(sh.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
+  ['PDI Reference No','Date of Request'].forEach(name=>{
+   if(!headers.includes(name)){
+    const newCol=sh.getLastColumn()+1;
+    sh.getRange(1,newCol).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');
+    headers.push(name);
+   }
+  });
+  const refCol=headers.indexOf('PDI Reference No')+1;
+  const existingRefs=sh.getLastRow()>1?sh.getRange(2,refCol,sh.getLastRow()-1,1).getDisplayValues().flat():[];
+  let lastSequence=0;
+  existingRefs.forEach(value=>{
+   const match=String(value||'').trim().match(/^PDI-27-(\d+)$/);
+   if(match)lastSequence=Math.max(lastSequence,Number(match[1])||0);
+  });
+  const referenceNo='PDI-27-'+String(lastSequence+1).padStart(3,'0');
   const requestDate=Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'yyyy-MM-dd');
-  const record=Object.assign({},payload,{'Date of Request':requestDate,'QC in Charge':'',Status:'Pending',Remarks:''});
+  const record=Object.assign({},payload,{'PDI Reference No':referenceNo,'Date of Request':requestDate,'QC in Charge':'',Status:'Pending',Remarks:''});
   sh.appendRow(headers.map(h=>record[h]===undefined?'':record[h]));
   try{CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');}catch(e){}
-  return {ok:true,message:'Your PDI request has been submitted successfully.'};
+  return {ok:true,referenceNo:referenceNo,message:'Your PDI request has been submitted successfully. Reference No: '+referenceNo};
  }finally{lock.releaseLock();}
 }
 function getPdiRecords_(searchText){
