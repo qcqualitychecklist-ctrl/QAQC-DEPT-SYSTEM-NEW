@@ -2331,7 +2331,7 @@ function printPdiRequest(rec){
 function renderComplaintTable(){
  const table=el('thead').closest('table');table.classList.remove('ncr-table','punchlist-table','rework-table','rework-merged-table');table.classList.add('complaint-table');
  const from=el('cmpMonthFrom')?.value||'',to=el('cmpMonthTo')?.value||'',status=el('cmpStatusFilter')?.value||'',company=el('cmpCompanyFilter')?.value||'',q=String(el('search')?.value||'').trim().toLowerCase();
- const shown=records.filter(r=>{const d=String(r.Date||'').slice(0,7);if(from&&(!d||d<from))return false;if(to&&(!d||d>to))return false;if(status&&String(r.Status||'Open')!==status)return false;if(company&&String(r.Company||'')!==company;if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;return true});
+ const shown=records.filter(r=>{const d=String(r.Date||'').slice(0,7);if(from&&(!d||d<from))return false;if(to&&(!d||d>to))return false;if(status&&String(r.Status||'Open')!==status)return false;if(company&&String(r.Company||'')!==company)return false;if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;return true});
  const getItems=rec=>{let items=[];try{items=JSON.parse(rec['Items JSON']||'[]')}catch(e){}if(!Array.isArray(items)||!items.length)items=[{Item:rec.Item||'', 'Panel Name':rec['Panel Name']||'',Qty:rec.Qty||'', 'Complaint Description':rec['Complaint Description']||''}];return items};
  const totalQty=shown.reduce((sum,r)=>sum+getItems(r).reduce((n,item)=>n+(Number(item.Qty)||0),0),0);
  const gpiCount=shown.filter(r=>String(r.Company||'').trim().toUpperCase()==='GPI').length;
