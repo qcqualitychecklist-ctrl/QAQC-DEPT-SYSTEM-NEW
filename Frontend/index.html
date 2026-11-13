@@ -1835,9 +1835,7 @@ function switchPage(page){window.scrollTo(0,0);if(document.body.classList.contai
 function scheduleLoadRecords(){searchByModule[currentPage]=el('search')?.value||'';if(searchLoadTimer)clearTimeout(searchLoadTimer);searchLoadTimer=setTimeout(()=>{searchLoadTimer=null;tablePage=1;renderTable()},160)}
 function loadRecords(useCache=false,silent=false){
  if(searchLoadTimer){clearTimeout(searchLoadTimer);searchLoadTimer=null}
- const requestedModule=currentPage,cacheKey=requestedModule+'::',token=(moduleLoadTokens[requestedModule]||0)+1;
- moduleLoadTokens[requestedModule]=token;
- const loading=el('loadingOverlay');
+ const requestedModule=currentPage,cacheKey=requestedModule+'::',loading=el('loadingOverlay');
  const hasCachedFull=Object.prototype.hasOwnProperty.call(recordCache,cacheKey);
  tablePage=1;
  if(useCache&&hasCachedFull){
@@ -1850,6 +1848,8 @@ function loadRecords(useCache=false,silent=false){
   if(loading&&!silent)loading.classList.remove('show');
   return;
  }
+ const token=(moduleLoadTokens[requestedModule]||0)+1;
+ moduleLoadTokens[requestedModule]=token;
  if(!useCache){
   delete recordCache[cacheKey];delete modulePartialCache[cacheKey];
  }
@@ -1876,9 +1876,9 @@ function loadRecords(useCache=false,silent=false){
     if(currentPage===requestedModule&&loading&&!silent)loading.classList.remove('show');
     return;
    }
-   records=all.records||[];recordCache[cacheKey]=records;delete modulePartialCache[cacheKey];
+   recordCache[cacheKey]=all.records||[];delete modulePartialCache[cacheKey];
    if(currentPage===requestedModule){
-    recordsLoadedFully=true;
+    records=recordCache[cacheKey];recordsLoadedFully=true;
     if(tablePage<1)tablePage=1;
     renderTable();
     if(loading&&!silent)loading.classList.remove('show');
