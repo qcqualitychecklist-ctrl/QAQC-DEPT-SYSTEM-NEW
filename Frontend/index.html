@@ -1830,12 +1830,12 @@ function loadRecords(useCache=false,silent=false){
  if(hasCachedFull){records=recordCache[cacheKey];recordsLoadedFully=true;renderTable();if(loading&&!silent)loading.classList.remove('show');return}
  else if(!silent){records=[];recordsLoadedFully=false;renderTable()}
  callServer('getModuleData',[requestedModule,'',1,PAGE_SIZE,false,requestedModule==='J.O Register'],first=>{
-   if(token!==loadRequestToken||currentPage!==requestedModule)return;if(!first||!first.ok){if(loading&&!silent)loading.classList.remove('show');return}
+   if(token!==loadRequestToken)return;if(currentPage!==requestedModule){if(loading)loading.classList.remove('show');return}if(!first||!first.ok){if(loading&&!silent)loading.classList.remove('show');return}
    if(!hasCachedFull&&!silent){records=first.records||[];recordsLoadedFully=false;renderTable()}
    // The first response is small. Fetch the complete set in the background so filters,
    // dashboard totals, and subsequent pages continue to work across every record.
    callServer('getModuleData',[requestedModule,'',1,PAGE_SIZE,true,requestedModule==='J.O Register'],all=>{
-     if(token!==loadRequestToken||currentPage!==requestedModule)return;if(!all||!all.ok){if(loading&&!silent)loading.classList.remove('show');return}
+     if(token!==loadRequestToken)return;if(currentPage!==requestedModule){if(loading)loading.classList.remove('show');return}if(!all||!all.ok){if(loading&&!silent)loading.classList.remove('show');return}
      records=all.records||[];recordCache[cacheKey]=records;recordsLoadedFully=true;
      if(tablePage<1)tablePage=1;
      renderTable();if(loading&&!silent)loading.classList.remove('show');
@@ -2208,8 +2208,9 @@ function renderPdiTable(){
     view.title='View or print this PDI request';
     td.append(view);
    }else{
-    const key=x==='Requestor Email'?"Requestor's Email":x==='Requestor Name'?"Requestor's Name":x==='Comments / Special Request'?'Comments or Special Request':x==='Ref. No.'?'PDI Reference No':x;
-    td.textContent=rec[key]??'';td.title=String(td.textContent||'');
+    const key=x==='Requestor Email'?"Requestor's Email":x==='Requestor Name'?"Requestor's Name":(x==='Comments or Special Requests'||x==='Comments or Special Request')?'Comments or Special Request':x==='Ref. No.'?'PDI Reference No':x;
+    const value=rec[key]??(key==='Comments or Special Request'?(rec['Comments or Special Requests']??rec['Comments/Special Request']):undefined)??'';
+    td.textContent=value;td.title=String(td.textContent||'');
     if(x==='Status'){
      td.classList.add('pdi-status-cell');
      const s=String(rec.Status||'Pending'),p=document.createElement('span');
@@ -3014,7 +3015,7 @@ function openGuestComplaintForm(){
  const pdiWorkspace=el('guestPdiWorkspace');if(pdiWorkspace)pdiWorkspace.style.display='none';
  app.style.display='grid';document.querySelectorAll('.nav button[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page==='Complain'));
  currentPage='Complain';el('pageHeading').textContent='Complain Monitoring';el('pageDescription').textContent='Submit a complaint and review your complaint history.';
- el('status').style.display='none';el('monitoringPanel').style.display='none';let workspace=el('guestComplainWorkspace');
+ el('status').style.display='none';el('monitoringPanel').style.display='none';el('loadingOverlay')?.classList.remove('show');let workspace=el('guestComplainWorkspace');
  if(!workspace){
   workspace=document.createElement('section');workspace.id='guestComplainWorkspace';workspace.className='panel';workspace.style.cssText='display:flex;flex-direction:column;gap:16px;min-height:180px';
   const action=document.createElement('div');action.style.cssText='display:flex;justify-content:flex-start;align-items:center';
@@ -3032,10 +3033,11 @@ function openGuestComplaintForm(){
 function renderGuestPdiHistory(){
  const host=el('pdiRequestHistoryBody');if(!host)return;host.innerHTML='';
  if(!guestPdiHistory.length){const p=document.createElement('p');p.className='muted';p.textContent='No PDI requests submitted in this guest session yet.';host.append(p);return}
- const table=document.createElement('table');table.style.cssText='width:100%;min-width:650px;border-collapse:collapse;table-layout:fixed';
+ const table=document.createElement('table');table.style.cssText='width:100%;min-width:0;border-collapse:collapse;table-layout:fixed';
+ const colgroup=document.createElement('colgroup');['22%','10%','10%','22%','20%','16%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
  const thead=document.createElement('thead'),hr=document.createElement('tr'),body=document.createElement('tbody');
- ['Requestor Name','J.O','S.O','Client','Date of PDI','Status'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.cssText='padding:10px;text-align:left;background:#edf2f8;color:#233b5d;font-size:11px';hr.append(th)});thead.append(hr);table.append(thead);
- guestPdiHistory.forEach(rec=>{const tr=document.createElement('tr');[rec["Requestor's Name"],rec['J.O'],rec['S.O'],rec.Client,rec['Date of PDI'],rec.Status||'Pending'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value||'—');td.title=td.textContent;td.style.cssText='padding:10px;border-bottom:1px solid #e4eaf2;font-size:11px;overflow-wrap:anywhere';tr.append(td)});body.append(tr)});
+ ['Requestor Name','J.O','S.O','Client','Date of PDI','Status'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.cssText='padding:10px 6px;text-align:center;background:#edf2f8;color:#233b5d;font-size:11px;white-space:normal;overflow-wrap:anywhere';hr.append(th)});thead.append(hr);table.append(thead);
+ guestPdiHistory.forEach(rec=>{const tr=document.createElement('tr');[rec["Requestor's Name"],rec['J.O'],rec['S.O'],rec.Client,rec['Date of PDI'],rec.Status||'Pending'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value||'—');td.title=td.textContent;td.style.cssText='padding:10px 6px;text-align:center;border-bottom:1px solid #e4eaf2;font-size:11px;white-space:normal;overflow-wrap:anywhere';tr.append(td)});body.append(tr)});
  table.append(body);host.append(table);
 }
 function openGuestPdiRequest(){
@@ -3043,7 +3045,7 @@ function openGuestPdiRequest(){
  const complaintWorkspace=el('guestComplainWorkspace');if(complaintWorkspace)complaintWorkspace.style.display='none';
  app.style.display='grid';document.querySelectorAll('.nav button[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page==='PDI Request'));
  currentPage='PDI Request';el('pageHeading').textContent='PDI Request';el('pageDescription').textContent='Submit a PDI request and review requests submitted during this guest session.';
- el('status').style.display='none';el('monitoringPanel').style.display='none';let workspace=el('guestPdiWorkspace');
+ el('status').style.display='none';el('monitoringPanel').style.display='none';el('loadingOverlay')?.classList.remove('show');let workspace=el('guestPdiWorkspace');
  if(!workspace){
   workspace=document.createElement('section');workspace.id='guestPdiWorkspace';workspace.className='panel';workspace.style.cssText='display:flex;flex-direction:column;gap:16px;min-height:180px';
   const action=document.createElement('div');action.style.cssText='display:flex;justify-content:flex-start;align-items:center';
