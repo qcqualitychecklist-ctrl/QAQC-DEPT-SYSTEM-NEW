@@ -1527,7 +1527,7 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
 .complaint-company-badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;line-height:1.35;white-space:nowrap}
 .complaint-company-badge.gemcor{background:#dbeafe;color:#1d4ed8}
 .complaint-company-badge.gpi{background:#dcfce7;color:#15803d}
-</style><style>#monitoringPanel .tablewrap table.pdi-table{min-width:2000px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(15),#monitoringPanel .tablewrap table.pdi-table td:nth-child(15){width:125px;min-width:125px;max-width:125px}#monitoringPanel .tablewrap table.pdi-table td.pdi-action-cell{overflow:visible;text-overflow:clip;text-align:center}#monitoringPanel .tablewrap table.pdi-table td.pdi-action-cell button{white-space:nowrap}.pdi-request-view-dialog{width:min(1160px,96vw);max-width:1160px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}.pdi-request-preview-body{overflow:auto;min-height:0;padding:12px 4px}.pdi-request-view-actions{position:sticky;bottom:0;flex:0 0 auto;justify-content:flex-end;padding:10px 0 2px;background:#fff;border-top:1px solid var(--line)}@media(max-width:700px){.pdi-request-view-dialog{width:96vw;max-height:94vh}.pdi-request-preview-body{padding:8px 2px}}</style></head><body>
+</style><style>#monitoringPanel .tablewrap table.pdi-table{min-width:2000px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(15),#monitoringPanel .tablewrap table.pdi-table td:nth-child(15){width:125px;min-width:125px;max-width:125px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(16),#monitoringPanel .tablewrap table.pdi-table td:nth-child(16){width:125px;min-width:125px;max-width:125px}#monitoringPanel .tablewrap table.pdi-table td.pdi-action-cell{overflow:visible;text-overflow:clip;text-align:center}#monitoringPanel .tablewrap table.pdi-table td.pdi-action-cell button{white-space:nowrap}.pdi-request-view-dialog{width:min(1160px,96vw);max-width:1160px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}.pdi-request-preview-body{overflow:auto;min-height:0;padding:12px 4px}.pdi-request-view-actions{position:sticky;bottom:0;flex:0 0 auto;justify-content:flex-end;padding:10px 0 2px;background:#fff;border-top:1px solid var(--line)}@media(max-width:700px){.pdi-request-view-dialog{width:96vw;max-height:94vh}.pdi-request-preview-body{padding:8px 2px}}</style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
  <div class="pdi-request-card">
@@ -2183,7 +2183,7 @@ function renderPdiTable(){
   const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];
   c.append(l,n);dashboard.append(c);
  });
- const heads=['Requestor Email','Requestor Name','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments / Special Request','QC in Charge','Status','Remarks','Action'];
+ const heads=['Requestor Email','Requestor Name','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments / Special Request','QC in Charge','Status','Remarks','Ref. No.','Action'];
  const pages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));
  if(tablePage>pages)tablePage=pages;
  const startRow=(tablePage-1)*PAGE_SIZE,rows=shown.slice(startRow,startRow+PAGE_SIZE);
@@ -2206,7 +2206,7 @@ function renderPdiTable(){
     view.title='View or print this PDI request';
     td.append(view);
    }else{
-    const key=x==='Requestor Email'?"Requestor's Email":x==='Requestor Name'?"Requestor's Name":x==='Comments / Special Request'?'Comments or Special Request':x;
+    const key=x==='Requestor Email'?"Requestor's Email":x==='Requestor Name'?"Requestor's Name":x==='Comments / Special Request'?'Comments or Special Request':x==='Ref. No.'?'PDI Reference No':x;
     td.textContent=rec[key]??'';td.title=String(td.textContent||'');
     if(x==='Status'){
      td.classList.add('pdi-status-cell');
@@ -2252,7 +2252,7 @@ function pdiRequestPrintStyles(){
 function buildPdiRequestMarkup(rec,logoSrc){
  const get=(key)=>String(rec[key]||'');
  const joSo=[rec['J.O']?'J.O: '+rec['J.O']:'',rec['S.O']?'S.O: '+rec['S.O']:''].filter(Boolean).join('   |   ');
- const ref=rec['Ref no']||rec['Ref No.']||rec['Reference No']||rec['PDI Request No']||'';
+ const ref=rec['PDI Reference No']||rec['Ref no']||rec['Ref No.']||rec['Reference No']||rec['PDI Request No']||'';
  const dateRequest=rec['Date of Request']||rec['Date of request']||'';
  const logo=logoSrc?'<img class="pdi-doc-logo" src="'+escapePdiPrintHtml(logoSrc)+'" alt="GEMCOR">':'<div style="font-size:34px;font-weight:800;color:#123b9a">GEMCOR</div>';
  const field=(label,value)=>'<div class="pdi-field"><label>'+label+'</label><div class="pdi-value">'+escapePdiPrintHtml(value)+'</div></div>';
