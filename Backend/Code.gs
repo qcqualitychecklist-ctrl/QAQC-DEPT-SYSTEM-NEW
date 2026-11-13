@@ -341,7 +341,7 @@ function ensureComplaintSchema_(sh){
  if(!sh||!sh.getLastColumn())throw new Error('Complaint Monitoring database is not prepared yet.');
  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
  [['QC In-Charge','Person Responsible'],['Cause','Investigation']].forEach(([oldName,newName])=>{const oldIndex=headers.indexOf(oldName),newIndex=headers.indexOf(newName);if(oldIndex>=0&&newIndex<0){sh.getRange(1,oldIndex+1).setValue(newName);headers[oldIndex]=newName;}});
- ['Person Responsible','Investigation','Submitted By Username'].forEach(name=>{if(!headers.includes(name)){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers.push(name);}});
+ ['Person Responsible','Investigation','Submitted By Username','Attachments JSON'].forEach(name=>{if(!headers.includes(name)){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers.push(name);}});
  return headers;
 }
 function saveComplaint_(input){
@@ -366,6 +366,44 @@ function saveComplaint_(input){
  return {ok:true,recordId:id,message:row>0?'Complaint updated.':'Complaint saved.'};
 }
 
+function startComplaintAttachmentUpload(fileName,mimeType,fileSize){
+ const name=String(fileName||'attachment').trim(),mime=String(mimeType||''),size=Number(fileSize||0);
+ if(!name||!size||size>200*1024*1024)throw new Error('Invalid attachment name or size.');
+ if(!/^(image\/(jpeg|png|gif|webp)|video\/(mp4|quicktime|webm))$/.test(mime))throw new Error('Only image or video attachments are allowed.');
+ const folders=DriveApp.getFoldersByName('QAQC Complaint Attachments'),folder=folders.hasNext()?folders.next():DriveApp.createFolder('QAQC Complaint Attachments');
+ const metadata={name:name,mimeType:mime,parents:[folder.getId()]};
+ const response=UrlFetchApp.fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name,mimeType,webViewLink',{
+  method:'post',contentType:'application/json; charset=UTF-8',payload:JSON.stringify(metadata),
+  headers:{Authorization:'Bearer '+ScriptApp.getOAuthToken(),'X-Upload-Content-Type':mime,'X-Upload-Content-Length':String(size)},
+  muteHttpExceptions:true,followRedirects:false
+ });
+ const code=response.getResponseCode(),headers=response.getHeaders(),sessionUrl=headers.Location||headers.location||'';
+ if(code!==200||!sessionUrl)throw new Error('Google Drive could not start the attachment upload. HTTP '+code+'.');
+ const token=Utilities.getUuid().replace(/-/g,'');
+ CacheService.getScriptCache().put('complaint_upload_'+token,sessionUrl,3600);
+ return {ok:true,uploadToken:token};
+}
+function uploadComplaintAttachmentChunk(uploadToken,base64Chunk,start,end,total,mimeType){
+ const token=String(uploadToken||''),sessionUrl=CacheService.getScriptCache().get('complaint_upload_'+token);
+ if(!sessionUrl)throw new Error('Attachment upload session expired. Please select the files again.');
+ const from=Number(start),to=Number(end),size=Number(total),mime=String(mimeType||'');
+ if(!isFinite(from)||!isFinite(to)||!isFinite(size)||from<0||to<=from||to>size||to-from>8*1024*1024)throw new Error('Invalid attachment chunk range.');
+ const bytes=Utilities.base64Decode(String(base64Chunk||''));
+ if(bytes.length!==to-from)throw new Error('Attachment chunk size did not match the requested range.');
+ const response=UrlFetchApp.fetch(sessionUrl,{method:'put',contentType:mime,payload:bytes,headers:{'Content-Range':'bytes '+from+'-'+(to-1)+'/'+size},muteHttpExceptions:true,followRedirects:false});
+ const code=response.getResponseCode();
+ if(code===308)return {ok:true,done:false};
+ if(code===200||code===201){
+  const file=JSON.parse(response.getContentText()||'{}');
+  CacheService.getScriptCache().remove('complaint_upload_'+token);
+  if(!file.id)throw new Error('Google Drive completed the upload but did not return a file ID.');
+  const uploadedFile=DriveApp.getFileById(file.id);
+  uploadedFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK,DriveApp.Permission.VIEW);
+  file.webViewLink=uploadedFile.getUrl();
+  return {ok:true,done:true,file:file};
+ }
+ throw new Error('Google Drive attachment upload failed. HTTP '+code+': '+response.getContentText().slice(0,300));
+}
 function submitPublicComplaint(payload,sessionToken){
   if(!payload||!payload.header||!Array.isArray(payload.items)||!payload.items.length)throw new Error('Complete the complaint details and add at least one item.');
   const accountUsername=sessionToken?getComplaintSessionUsername_(sessionToken):'';
@@ -380,32 +418,34 @@ function submitPublicComplaint(payload,sessionToken){
     if(!String(item['Complaint Description']||'').trim())throw new Error('Complaint Description is required for item row '+(i+1)+'.');
     if(item.Qty!==''&&item.Qty!=null&&(!isFinite(Number(item.Qty))||Number(item.Qty)<=0))throw new Error('Qty must be greater than zero for item row '+(i+1)+'.');
   });
+  const attachments=Array.isArray(payload.attachments)?payload.attachments:[];
+  const folders=DriveApp.getFoldersByName('QAQC Complaint Attachments');
+  if(attachments.length&&!folders.hasNext())throw new Error('The complaint attachment folder is missing.');
+  const folder=folders.hasNext()?folders.next():null;
+  let attachmentBytes=0;
+  const safeAttachments=attachments.map(a=>{
+    const fileId=String(a.fileId||'').trim(),mime=String(a.mimeType||'');
+    if(!fileId||!(/^(image\/(jpeg|png|gif|webp)|video\/(mp4|quicktime|webm))$/.test(mime)))throw new Error('An attachment record is invalid.');
+    const file=DriveApp.getFileById(fileId),actualMime=String(file.getMimeType()||''),actualSize=file.getSize();
+    let belongsToFolder=false;const parents=file.getParents();while(parents.hasNext())if(parents.next().getId()===folder.getId()){belongsToFolder=true;break}
+    if(!belongsToFolder||actualMime!==mime)throw new Error('An uploaded attachment could not be verified.');
+    attachmentBytes+=actualSize;
+    return {fileId:fileId,fileName:String(a.fileName||file.getName()),mimeType:actualMime,size:actualSize,url:file.getUrl()};
+  });
+  if(attachmentBytes>200*1024*1024)throw new Error('The combined size of all attachments must not exceed 200 MB.');
   const lock=LockService.getScriptLock();lock.waitLock(20000);
   try{
     const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
     if(!sh)throw new Error('Complaint Monitoring database is not prepared yet. Please contact QA/QC.');
-    const id='CMP-'+Utilities.getUuid().slice(0,8).toUpperCase(),now=new Date();
-    const headers=ensureComplaintSchema_(sh);
-    let attachmentUrl='';
-    if(payload.attachment&&payload.attachment.data){
-      const a=payload.attachment, mime=String(a.mimeType||'');
-      if(!/^(image\/(jpeg|png|gif|webp)|video\/(mp4|quicktime|webm))$/.test(mime))throw new Error('Only image or video attachments are allowed.');
-      const bytes=Utilities.base64Decode(String(a.data).split(',').pop());
-      if(bytes.length>10*1024*1024)throw new Error('Attachment must not exceed 10 MB.');
-      let folder;const folders=DriveApp.getFoldersByName('QAQC Complaint Attachments');
-      folder=folders.hasNext()?folders.next():DriveApp.createFolder('QAQC Complaint Attachments');
-      const ext=(String(a.fileName||'attachment').match(/\.[A-Za-z0-9]{2,5}$/)||[''])[0];
-      const file=folder.createFile(Utilities.newBlob(bytes,mime,id+ext));
-      attachmentUrl=file.getUrl();
-    }
+    const id='CMP-'+Utilities.getUuid().slice(0,8).toUpperCase(),now=new Date(),headers=ensureComplaintSchema_(sh);
     const items=payload.items.map(x=>({Item:String(x.Item||'').trim(), 'Panel Name':String(x['Panel Name']||'').trim(),Qty:String(x.Qty||'').trim(),'Complaint Description':String(x['Complaint Description']||'').trim()}));
-    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl,'Submitted By Username':accountUsername};
+    const attachmentUrl=safeAttachments.length?safeAttachments[0].url:'';
+    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl,'Attachments JSON':JSON.stringify(safeAttachments),'Submitted By Username':accountUsername};
     sh.appendRow(headers.map(k=>rec[k]===undefined?'':rec[k]));
     invalidateComplaintCache_();
-    return {ok:true,recordId:id,attachmentUrl:attachmentUrl,message:'Your complaint has been submitted successfully.'};
+    return {ok:true,recordId:id,attachmentUrl:attachmentUrl,attachments:safeAttachments,message:'Your complaint has been submitted successfully.'};
   }finally{lock.releaseLock();}
 }
-
 function getMyComplaintHistory(sessionToken){
   const username=getComplaintSessionUsername_(sessionToken);if(!username)throw new Error('Your account session expired. Please log in again to view complaint history.');
   const result=getComplaintRecords_('');return {ok:true,records:(result.records||[]).filter(r=>String(r['Submitted By Username']||'').toLowerCase()===username.toLowerCase())};
@@ -507,6 +547,28 @@ function updateComplaintStatus(id,status,personResponsible,investigation){
  invalidateModuleCache_('Complaint Monitoring');
  return {ok:true,recordId:key,message:'Complaint updated.'};
 }
+
+function updateComplaintAssignment(id,personResponsible,investigation){
+ const key=String(id||'').trim();
+ if(!key)throw new Error('Missing Complaint ID.');
+ const person=String(personResponsible||'').trim(),details=String(investigation||'').trim();
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ try{
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
+  if(!sh||sh.getLastRow()<2)throw new Error('Complaint record was not found.');
+  const headers=ensureComplaintSchema_(sh),data=sh.getDataRange().getValues(),idCol=headers.indexOf('Complaint ID');
+  let row=-1;for(let i=1;i<data.length;i++)if(String(data[i][idCol]).trim()===key){row=i+1;break}
+  if(row<0)throw new Error('Complaint record was not found. Refresh and try again.');
+  const personCol=headers.indexOf('Person Responsible'),investigationCol=headers.indexOf('Investigation'),updatedCol=headers.indexOf('Updated At');
+  if(personCol<0||investigationCol<0)throw new Error('Complaint assignment columns are missing.');
+  sh.getRange(row,personCol+1).setValue(person);
+  sh.getRange(row,investigationCol+1).setValue(details);
+  if(updatedCol>=0)sh.getRange(row,updatedCol+1).setValue(new Date());
+  invalidateComplaintCache_();
+  return {ok:true,recordId:key,message:'Person In Charge and Investigation updated.'};
+ }finally{lock.releaseLock();}
+}
+
 function deleteComplaint(id){
  const key=String(id||'').trim();if(!key)throw new Error('Missing Complaint ID.');
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
