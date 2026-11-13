@@ -168,7 +168,7 @@ function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll, 
   // immediate follow-up request used by the first-50 loading flow.
   const cacheKey='qaqc_module_v3_'+moduleName.replace(/[^a-z0-9]/gi,'_');
   let result=null,loadedFromCache=false;
-  if(!query&&!forceRefresh){
+  if(!query&&!forceRefresh&&moduleName!=='PDI Monitoring'){
     result=readModuleCache_(cacheKey);
     loadedFromCache=!!(result&&result.ok);
   }
@@ -414,11 +414,13 @@ function getMyComplaintHistory(sessionToken){
 
 function ensurePdiTrackingColumns_(sh){
  let headers=sh.getRange(1,1,1,Math.max(sh.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
+ let schemaChanged=false;
  ['PDI Reference No','Date of Request'].forEach(name=>{
   if(!headers.includes(name)){
    const newCol=sh.getLastColumn()+1;
    sh.getRange(1,newCol).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');
    headers.push(name);
+   schemaChanged=true;
   }
  });
  const refCol=headers.indexOf('PDI Reference No')+1;
@@ -429,15 +431,18 @@ function ensurePdiTrackingColumns_(sh){
   const match=String(row[0]||'').trim().match(/^PDI-27-(\d+)$/);
   if(match)lastSequence=Math.max(lastSequence,Number(match[1])||0);
  });
- let changed=false;
+ let refsChanged=false;
  refs.forEach(row=>{
   if(!String(row[0]||'').trim()){
    lastSequence++;
    row[0]='PDI-27-'+String(lastSequence).padStart(3,'0');
-   changed=true;
+   refsChanged=true;
   }
  });
- if(changed)sh.getRange(2,refCol,refs.length,1).setValues(refs);
+ if(refsChanged)sh.getRange(2,refCol,refs.length,1).setValues(refs);
+ if(schemaChanged||refsChanged){
+  try{CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');}catch(e){}
+ }
  return {headers:headers,lastSequence:lastSequence};
 }
 
