@@ -507,6 +507,28 @@ function updateComplaintStatus(id,status,personResponsible,investigation){
  invalidateModuleCache_('Complaint Monitoring');
  return {ok:true,recordId:key,message:'Complaint updated.'};
 }
+
+function updateComplaintAssignment(id,personResponsible,investigation){
+ const key=String(id||'').trim();
+ if(!key)throw new Error('Missing Complaint ID.');
+ const person=String(personResponsible||'').trim(),details=String(investigation||'').trim();
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ try{
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
+  if(!sh||sh.getLastRow()<2)throw new Error('Complaint record was not found.');
+  const headers=ensureComplaintSchema_(sh),data=sh.getDataRange().getValues(),idCol=headers.indexOf('Complaint ID');
+  let row=-1;for(let i=1;i<data.length;i++)if(String(data[i][idCol]).trim()===key){row=i+1;break}
+  if(row<0)throw new Error('Complaint record was not found. Refresh and try again.');
+  const personCol=headers.indexOf('Person Responsible'),investigationCol=headers.indexOf('Investigation'),updatedCol=headers.indexOf('Updated At');
+  if(personCol<0||investigationCol<0)throw new Error('Complaint assignment columns are missing.');
+  sh.getRange(row,personCol+1).setValue(person);
+  sh.getRange(row,investigationCol+1).setValue(details);
+  if(updatedCol>=0)sh.getRange(row,updatedCol+1).setValue(new Date());
+  invalidateComplaintCache_();
+  return {ok:true,recordId:key,message:'Person In Charge and Investigation updated.'};
+ }finally{lock.releaseLock();}
+}
+
 function deleteComplaint(id){
  const key=String(id||'').trim();if(!key)throw new Error('Missing Complaint ID.');
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
