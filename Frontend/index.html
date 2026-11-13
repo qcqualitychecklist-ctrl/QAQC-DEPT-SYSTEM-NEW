@@ -1056,9 +1056,11 @@ td.actioncell button.action-icon-btn:not(.primary):not(.danger){background:#f1f5
 #complaintHistoryDetailsModal .complaint-items-table thead,#complaintHistoryDetailsModal .complaint-items-table tbody{display:table-row-group!important;width:100%!important}
 #complaintHistoryDetailsModal .complaint-items-table tr{display:table-row!important;width:100%!important}
 #complaintHistoryDetailsModal .complaint-items-table th,#complaintHistoryDetailsModal .complaint-items-table td{display:table-cell!important;box-sizing:border-box!important;min-width:0!important;width:auto!important;padding:10px 12px!important;text-align:left!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word!important;vertical-align:top!important}
-#complaintHistoryDetailsModal .complaint-items-table th:nth-child(1),#complaintHistoryDetailsModal .complaint-items-table td:nth-child(1){width:40%!important}
-#complaintHistoryDetailsModal .complaint-items-table th:nth-child(2),#complaintHistoryDetailsModal .complaint-items-table td:nth-child(2){width:42%!important}
-#complaintHistoryDetailsModal .complaint-items-table th:nth-child(3),#complaintHistoryDetailsModal .complaint-items-table td:nth-child(3){width:18%!important;text-align:center!important}
+/* Four item-detail columns: keep the description column wide enough to read. */
+#complaintHistoryDetailsModal .complaint-items-table th:nth-child(1),#complaintHistoryDetailsModal .complaint-items-table td:nth-child(1){width:18%!important}
+#complaintHistoryDetailsModal .complaint-items-table th:nth-child(2),#complaintHistoryDetailsModal .complaint-items-table td:nth-child(2){width:22%!important}
+#complaintHistoryDetailsModal .complaint-items-table th:nth-child(3),#complaintHistoryDetailsModal .complaint-items-table td:nth-child(3){width:10%!important;text-align:center!important}
+#complaintHistoryDetailsModal .complaint-items-table th:nth-child(4),#complaintHistoryDetailsModal .complaint-items-table td:nth-child(4){width:50%!important}
 #complaintHistoryDetailsModal .complaint-details-actions{flex:0 0 auto!important;position:relative!important;padding:12px 0 0!important;margin-top:0!important}
 @media(max-width:620px){#complaintHistoryDetailsModal .complaint-history-dialog{width:96vw!important;padding:12px!important}#complaintHistoryDetailsModal .complaint-detail-row,#complaintHistoryDetailsModal .complaint-detail-row.full{grid-template-columns:minmax(0,1fr)!important;gap:4px!important}}
 
