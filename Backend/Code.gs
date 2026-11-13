@@ -411,6 +411,36 @@ function getMyComplaintHistory(sessionToken){
   const result=getComplaintRecords_('');return {ok:true,records:(result.records||[]).filter(r=>String(r['Submitted By Username']||'').toLowerCase()===username.toLowerCase())};
 }
 
+
+function ensurePdiTrackingColumns_(sh){
+ let headers=sh.getRange(1,1,1,Math.max(sh.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
+ ['PDI Reference No','Date of Request'].forEach(name=>{
+  if(!headers.includes(name)){
+   const newCol=sh.getLastColumn()+1;
+   sh.getRange(1,newCol).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');
+   headers.push(name);
+  }
+ });
+ const refCol=headers.indexOf('PDI Reference No')+1;
+ const lastRow=sh.getLastRow();
+ let refs=lastRow>1?sh.getRange(2,refCol,lastRow-1,1).getDisplayValues():[];
+ let lastSequence=0;
+ refs.forEach(row=>{
+  const match=String(row[0]||'').trim().match(/^PDI-27-(\d+)$/);
+  if(match)lastSequence=Math.max(lastSequence,Number(match[1])||0);
+ });
+ let changed=false;
+ refs.forEach(row=>{
+  if(!String(row[0]||'').trim()){
+   lastSequence++;
+   row[0]='PDI-27-'+String(lastSequence).padStart(3,'0');
+   changed=true;
+  }
+ });
+ if(changed)sh.getRange(2,refCol,refs.length,1).setValues(refs);
+ return {headers:headers,lastSequence:lastSequence};
+}
+
 function submitPdiRequest(payload){
  const required=["Requestor's Email","Requestor's Name",'J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection'];
  if(!payload||typeof payload!=='object')throw new Error('Please complete the PDI request form.');
@@ -424,37 +454,33 @@ function submitPdiRequest(payload){
  try{
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
   if(!sh)throw new Error('PDI Monitoring database is not prepared. Please contact QA/QC.');
-  let headers=sh.getRange(1,1,1,Math.max(sh.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
-  ['PDI Reference No','Date of Request'].forEach(name=>{
-   if(!headers.includes(name)){
-    const newCol=sh.getLastColumn()+1;
-    sh.getRange(1,newCol).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');
-    headers.push(name);
-   }
-  });
-  const refCol=headers.indexOf('PDI Reference No')+1;
-  const existingRefs=sh.getLastRow()>1?sh.getRange(2,refCol,sh.getLastRow()-1,1).getDisplayValues().flat():[];
-  let lastSequence=0;
-  existingRefs.forEach(value=>{
-   const match=String(value||'').trim().match(/^PDI-27-(\d+)$/);
-   if(match)lastSequence=Math.max(lastSequence,Number(match[1])||0);
-  });
-  const referenceNo='PDI-27-'+String(lastSequence+1).padStart(3,'0');
+  const tracking=ensurePdiTrackingColumns_(sh);
+  const referenceNo='PDI-27-'+String(tracking.lastSequence+1).padStart(3,'0');
   const requestDate=Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'yyyy-MM-dd');
   const record=Object.assign({},payload,{'PDI Reference No':referenceNo,'Date of Request':requestDate,'QC in Charge':'',Status:'Pending',Remarks:''});
-  sh.appendRow(headers.map(h=>record[h]===undefined?'':record[h]));
+  sh.appendRow(tracking.headers.map(h=>record[h]===undefined?'':record[h]));
   try{CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');}catch(e){}
   return {ok:true,referenceNo:referenceNo,message:'Your PDI request has been submitted successfully. Reference No: '+referenceNo};
  }finally{lock.releaseLock();}
 }
 function getPdiRecords_(searchText){
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
- if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:PDI_HEADERS};
- const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
- const records=sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues().map(row=>{const rec={};headers.forEach((name,i)=>rec[name]=name==='Time'?formatTimeCell_(row[i]):formatCell_(row[i]));if(!rec.Status)rec.Status='Pending';return rec;});
+ if(!sh)return {ok:true,records:[],fields:PDI_HEADERS};
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ let tracking;
+ try{tracking=ensurePdiTrackingColumns_(sh);}finally{lock.releaseLock();}
+ if(sh.getLastRow()<2)return {ok:true,records:[],fields:PDI_HEADERS};
+ const headers=tracking.headers;
+ const records=sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues().map(row=>{
+  const rec={};
+  headers.forEach((name,i)=>rec[name]=name==='Time'?formatTimeCell_(row[i]):formatCell_(row[i]));
+  if(!rec.Status)rec.Status='Pending';
+  return rec;
+ });
  const q=String(searchText||'').trim().toLowerCase();
  return {ok:true,records:q?records.filter(rec=>Object.values(rec).some(v=>String(v||'').toLowerCase().includes(q))):records,fields:PDI_HEADERS};
 }
+
 function getComplaintRecords_(searchText){
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(COMPLAINT_SHEET);
  if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:COMPLAINT_HEADERS};
