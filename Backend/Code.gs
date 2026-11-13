@@ -416,14 +416,20 @@ function submitPublicComplaint(payload,sessionToken){
     if(item.Qty!==''&&item.Qty!=null&&(!isFinite(Number(item.Qty))||Number(item.Qty)<=0))throw new Error('Qty must be greater than zero for item row '+(i+1)+'.');
   });
   const attachments=Array.isArray(payload.attachments)?payload.attachments:[];
-  const attachmentBytes=attachments.reduce((sum,a)=>sum+Number(a.size||0),0);
-  if(attachmentBytes>200*1024*1024)throw new Error('The combined size of all attachments must not exceed 200 MB.');
+  const folders=DriveApp.getFoldersByName('QAQC Complaint Attachments');
+  if(attachments.length&&!folders.hasNext())throw new Error('The complaint attachment folder is missing.');
+  const folder=folders.hasNext()?folders.next():null;
+  let attachmentBytes=0;
   const safeAttachments=attachments.map(a=>{
     const fileId=String(a.fileId||'').trim(),mime=String(a.mimeType||'');
     if(!fileId||!(/^(image\/(jpeg|png|gif|webp)|video\/(mp4|quicktime|webm))$/.test(mime)))throw new Error('An attachment record is invalid.');
-    const file=DriveApp.getFileById(fileId);
-    return {fileId:fileId,fileName:String(a.fileName||file.getName()),mimeType:mime,size:Number(a.size||file.getSize()),url:file.getUrl()};
+    const file=DriveApp.getFileById(fileId),actualMime=String(file.getMimeType()||''),actualSize=file.getSize();
+    let belongsToFolder=false;const parents=file.getParents();while(parents.hasNext())if(parents.next().getId()===folder.getId()){belongsToFolder=true;break}
+    if(!belongsToFolder||actualMime!==mime)throw new Error('An uploaded attachment could not be verified.');
+    attachmentBytes+=actualSize;
+    return {fileId:fileId,fileName:String(a.fileName||file.getName()),mimeType:actualMime,size:actualSize,url:file.getUrl()};
   });
+  if(attachmentBytes>200*1024*1024)throw new Error('The combined size of all attachments must not exceed 200 MB.');
   const lock=LockService.getScriptLock();lock.waitLock(20000);
   try{
     const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
