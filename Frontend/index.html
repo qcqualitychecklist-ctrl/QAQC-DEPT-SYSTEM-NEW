@@ -1527,7 +1527,7 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
 .complaint-company-badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;line-height:1.35;white-space:nowrap}
 .complaint-company-badge.gemcor{background:#dbeafe;color:#1d4ed8}
 .complaint-company-badge.gpi{background:#dcfce7;color:#15803d}
-</style></head><body>
+</style><style>#monitoringPanel .tablewrap table.pdi-table{min-width:2000px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(15),#monitoringPanel .tablewrap table.pdi-table td:nth-child(15){width:125px;min-width:125px;max-width:125px}#monitoringPanel .tablewrap table.pdi-table td.pdi-action-cell{overflow:visible;text-overflow:clip;text-align:center}#monitoringPanel .tablewrap table.pdi-table td.pdi-action-cell button{white-space:nowrap}.pdi-request-view-dialog{width:min(1160px,96vw);max-width:1160px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}.pdi-request-preview-body{overflow:auto;min-height:0;padding:12px 4px}.pdi-request-view-actions{position:sticky;bottom:0;flex:0 0 auto;justify-content:flex-end;padding:10px 0 2px;background:#fff;border-top:1px solid var(--line)}@media(max-width:700px){.pdi-request-view-dialog{width:96vw;max-height:94vh}.pdi-request-preview-body{padding:8px 2px}}</style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
  <div class="pdi-request-card">
@@ -2156,7 +2156,161 @@ function submitComplaint(event){
  event.preventDefault();const input={'Complaint ID':el('complaintId').value,Date:el('complaintDate').value,Company:el('complaintCompany').value,Client:el('complaintClient').value,'Name of Complainant':el('complaintName').value,'J.O':el('complaintJO').value,'S.O':el('complaintSO').value,Item:el('complaintItem').value,'Panel Name':el('complaintPanel').value,Qty:el('complaintQty').value,'Complaint Description':el('complaintDescription').value,'Person Responsible':el('complaintQC').value,Investigation:el('complaintCause').value,Status:el('complaintStatus').value};
  el('complaintSave').disabled=true;callServer('saveRecord',['Complaint Monitoring',input],r=>{el('complaintSave').disabled=false;if(!r||r.ok===false){showStatus(false,'Save failed',r&&r.message||'Unable to save complaint.');return}closeModal('complaintModal');delete recordCache['Complaint Monitoring::'];showStatus(true,'Complaint saved',r.message);loadRecords(false)},err=>{el('complaintSave').disabled=false;showStatus(false,'Save failed',err&&err.message||String(err))});
 }
-function renderPdiTable(){const table=el('thead').closest('table');table.classList.remove('ncr-table','punchlist-table','rework-table','rework-merged-table','complaint-table');table.classList.add('pdi-table');const from=el('pdiMonthFrom')?.value||'',to=el('pdiMonthTo')?.value||'',status=el('pdiStatusFilter')?.value||'',q=String(el('search')?.value||'').trim().toLowerCase();const shown=records.filter(r=>{const d=String(r['Date of PDI']||'').slice(0,7);if(from&&(!d||d<from))return false;if(to&&(!d||d>to))return false;if(status&&String(r.Status||'Pending')!==status)return false;if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;return true});const statuses=['Pending','Scheduled','Ongoing','Completed','Cancelled'];const cards=[['Total Requests',shown.length,'ncr-total']];statuses.forEach((s,i)=>cards.push([s,shown.filter(r=>String(r.Status||'Pending')===s).length,['ncr-open','ncr-open','ncr-total','ncr-closed',''][i]]));const dashboard=el('dashboardCards');dashboard.innerHTML='';dashboard.classList.remove('complaint-dashboard','ncr-dashboard','punchlist-dashboard','rework-dashboard');dashboard.classList.add('pdi-dashboard');cards.forEach(v=>{const c=document.createElement('div');c.className='dash-card '+v[2];const l=document.createElement('div');l.className='dash-label';l.textContent=v[0];const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];c.append(l,n);dashboard.append(c)});const heads=['Requestor Email','Requestor Name','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments / Special Request','QC in Charge','Status','Remarks'];const pages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));if(tablePage>pages)tablePage=pages;const start=(tablePage-1)*PAGE_SIZE,rows=shown.slice(start,start+PAGE_SIZE);el('thead').innerHTML='';el('tbody').innerHTML='';const hr=document.createElement('tr');heads.forEach(x=>{const th=document.createElement('th');th.textContent=x;hr.append(th)});el('thead').append(hr);applyMonitoringStatusColumnWidth();if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;if(recordsLoadedFully){td.className='empty';td.textContent='No PDI requests found.'}else{td.innerHTML='<div class="loading-state"><span class="loading-spinner" aria-hidden="true"></span><span>Loading PDI requests, please wait…</span></div>'}tr.append(td);el('tbody').append(tr)}else rows.forEach(rec=>{const tr=document.createElement('tr');heads.forEach(x=>{const td=document.createElement('td');const key=x==='Requestor Email'?"Requestor's Email":x==='Requestor Name'?"Requestor's Name":x==='Comments / Special Request'?'Comments or Special Request':x;td.textContent=rec[key]??'';td.title=String(td.textContent||'');if(x==='Status'){td.classList.add('pdi-status-cell');const s=String(rec.Status||'Pending'),p=document.createElement('span');p.className='pill '+(s==='Completed'?'status-passed':s==='Cancelled'?'status-hold':s==='Ongoing'?'status-ongoing':s==='Scheduled'?'status-lineup':'');p.textContent=s;td.textContent='';td.append(p)}tr.append(td)});el('tbody').append(tr)});el('count').textContent=recordsLoadedFully?(shown.length?(start+1)+'–'+Math.min(start+PAGE_SIZE,shown.length)+' of '+shown.length+' PDI requests':'0 PDI requests'):(shown.length?'Showing '+(start+1)+'–'+Math.min(start+PAGE_SIZE,shown.length)+' PDI requests · loading remaining records…':'Loading PDI requests…');renderPagination(shown.length);applyMonitoringStatusColumnWidth();}
+
+function renderPdiTable(){
+ const table=el('thead').closest('table');
+ table.classList.remove('ncr-table','punchlist-table','rework-table','rework-merged-table','complaint-table');
+ table.classList.add('pdi-table');
+ const from=el('pdiMonthFrom')?.value||'',to=el('pdiMonthTo')?.value||'',status=el('pdiStatusFilter')?.value||'',q=String(el('search')?.value||'').trim().toLowerCase();
+ const shown=records.filter(r=>{
+  const d=String(r['Date of PDI']||'').slice(0,7);
+  if(from&&(!d||d<from))return false;
+  if(to&&(!d||d>to))return false;
+  if(status&&String(r.Status||'Pending')!==status)return false;
+  if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;
+  return true;
+ });
+ const statuses=['Pending','Scheduled','Ongoing','Completed','Cancelled'];
+ const cards=[['Total Requests',shown.length,'ncr-total']];
+ statuses.forEach((s,i)=>cards.push([s,shown.filter(r=>String(r.Status||'Pending')===s).length,['ncr-open','ncr-open','ncr-total','ncr-closed',''][i]]));
+ const dashboard=el('dashboardCards');
+ dashboard.innerHTML='';
+ dashboard.classList.remove('complaint-dashboard','ncr-dashboard','punchlist-dashboard','rework-dashboard');
+ dashboard.classList.add('pdi-dashboard');
+ cards.forEach(v=>{
+  const c=document.createElement('div');c.className='dash-card '+v[2];
+  const l=document.createElement('div');l.className='dash-label';l.textContent=v[0];
+  const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];
+  c.append(l,n);dashboard.append(c);
+ });
+ const heads=['Requestor Email','Requestor Name','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments / Special Request','QC in Charge','Status','Remarks','Action'];
+ const pages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));
+ if(tablePage>pages)tablePage=pages;
+ const startRow=(tablePage-1)*PAGE_SIZE,rows=shown.slice(startRow,startRow+PAGE_SIZE);
+ el('thead').innerHTML='';el('tbody').innerHTML='';
+ const hr=document.createElement('tr');
+ heads.forEach(x=>{const th=document.createElement('th');th.textContent=x;hr.append(th)});
+ el('thead').append(hr);applyMonitoringStatusColumnWidth();
+ if(!rows.length){
+  const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;
+  if(recordsLoadedFully){td.className='empty';td.textContent='No PDI requests found.'}
+  else{td.innerHTML='<div class="loading-state"><span class="loading-spinner" aria-hidden="true"></span><span>Loading PDI requests, please wait…</span></div>'}
+  tr.append(td);el('tbody').append(tr);
+ }else rows.forEach(rec=>{
+  const tr=document.createElement('tr');
+  heads.forEach(x=>{
+   const td=document.createElement('td');
+   if(x==='Action'){
+    td.className='actioncell pdi-action-cell';
+    const view=button('View / Print','small primary',()=>openPdiRequestView(rec));
+    view.title='View or print this PDI request';
+    td.append(view);
+   }else{
+    const key=x==='Requestor Email'?"Requestor's Email":x==='Requestor Name'?"Requestor's Name":x==='Comments / Special Request'?'Comments or Special Request':x;
+    td.textContent=rec[key]??'';td.title=String(td.textContent||'');
+    if(x==='Status'){
+     td.classList.add('pdi-status-cell');
+     const s=String(rec.Status||'Pending'),p=document.createElement('span');
+     p.className='pill '+(s==='Completed'?'status-passed':s==='Cancelled'?'status-hold':s==='Ongoing'?'status-ongoing':s==='Scheduled'?'status-lineup':'');
+     p.textContent=s;td.textContent='';td.append(p);
+    }
+   }
+   tr.append(td);
+  });
+  el('tbody').append(tr);
+ });
+ el('count').textContent=recordsLoadedFully?(shown.length?(startRow+1)+'–'+Math.min(startRow+PAGE_SIZE,shown.length)+' of '+shown.length+' PDI requests':'0 PDI requests'):(shown.length?'Showing '+(startRow+1)+'–'+Math.min(startRow+PAGE_SIZE,shown.length)+' PDI requests · loading remaining records…':'Loading PDI requests…');
+ renderPagination(shown.length);applyMonitoringStatusColumnWidth();
+}
+function escapePdiPrintHtml(value){
+ return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function formatPdiPrintDate(value){
+ const s=String(value||'').trim(),m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+ return m?m[2]+'/'+m[3]+'/'+m[1]:s;
+}
+function pdiRequestPrintStyles(){
+ return '<style>'+
+ '*,*:before,*:after{box-sizing:border-box}'+
+ 'body{margin:0;background:#fff;color:#111;font:12px Arial,Helvetica,sans-serif}'+
+ '.pdi-request-sheet{width:100%;max-width:1120px;margin:0 auto;padding:8px;background:#fff}'+
+ '.pdi-doc-top{display:grid;grid-template-columns:minmax(0,1fr) 220px;align-items:end;gap:18px;margin-bottom:10px}'+
+ '.pdi-doc-logo{display:block;width:235px;max-width:100%;height:62px;object-fit:contain;object-position:left bottom}'+
+ '.pdi-ref{display:flex;align-items:end;gap:8px;font-weight:700;white-space:nowrap;padding-bottom:4px}.pdi-ref-value{flex:1;min-height:19px;border-bottom:1px solid #111;text-align:center;font-weight:400}'+
+ '.pdi-doc-title{margin:0 0 10px;padding:7px 8px;background:#80a7e8;border:1px solid #111;text-align:center;font-size:23px;line-height:1.2;font-weight:800}'+
+ '.pdi-meta-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 7%;margin-bottom:14px}'+
+ '.pdi-meta-col{display:flex;flex-direction:column;gap:3px}.pdi-field{display:flex;align-items:end;gap:7px;min-height:19px;min-width:0}.pdi-field label{flex:0 0 auto;font-weight:700;white-space:nowrap}.pdi-field .pdi-value{flex:1;min-width:30px;min-height:18px;padding:0 3px 1px;border-bottom:1px solid #111;white-space:pre-wrap;overflow-wrap:anywhere}'+
+ '.pdi-band{margin:15px 0 0;padding:4px 7px;background:#80a7e8;border:1px solid #111;text-align:center;font-weight:700;font-size:14px;line-height:1.2}'+
+ '.pdi-rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 7%;padding:10px 0 5px}'+
+ '.pdi-writing-box{min-height:76px;border:1px solid #111;padding:8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4}'+
+ '.pdi-writing-box.comments{min-height:70px}'+
+ '@media screen{.pdi-request-sheet{box-shadow:0 2px 12px #142b4a22;border:1px solid #dce3ec}}'+
+ '@media print{@page{size:A4 landscape;margin:9mm}html,body{width:100%;height:auto;background:#fff}.pdi-request-sheet{max-width:none;margin:0;padding:0;box-shadow:none;border:0;break-inside:avoid;page-break-inside:avoid}.pdi-doc-title,.pdi-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}.pdi-writing-box{break-inside:avoid;page-break-inside:avoid}}'+
+ '@media(max-width:720px){.pdi-doc-top{grid-template-columns:1fr 150px}.pdi-doc-logo{width:170px}.pdi-doc-title{font-size:18px}.pdi-meta-grid{gap:5px 12px}.pdi-field label{font-size:10px}.pdi-rep-grid{grid-template-columns:1fr}}'+
+ '</style>';
+}
+function buildPdiRequestMarkup(rec,logoSrc){
+ const get=(key)=>escapePdiPrintHtml(rec[key]||'');
+ const joSo=[rec['J.O']?'J.O: '+rec['J.O']:'',rec['S.O']?'S.O: '+rec['S.O']:''].filter(Boolean).join('   |   ');
+ const ref=rec['Ref no']||rec['Ref No.']||rec['Reference No']||rec['PDI Request No']||'';
+ const dateRequest=rec['Date of Request']||rec['Date of request']||'';
+ const logo=logoSrc?'<img class="pdi-doc-logo" src="'+escapePdiPrintHtml(logoSrc)+'" alt="GEMCOR">':'<div style="font-size:34px;font-weight:800;color:#123b9a">GEMCOR</div>';
+ const field=(label,value)=>'<div class="pdi-field"><label>'+label+'</label><div class="pdi-value">'+escapePdiPrintHtml(value)+'</div></div>';
+ return '<div class="pdi-request-sheet">'+
+  '<div class="pdi-doc-top"><div>'+logo+'</div><div class="pdi-ref"><span>Ref no:</span><span class="pdi-ref-value">'+escapePdiPrintHtml(ref)+'</span></div></div>'+
+  '<h1 class="pdi-doc-title">PRE-DELIVERY INSPECTION REQUEST</h1>'+
+  '<div class="pdi-meta-grid"><div class="pdi-meta-col">'+
+   field("Requestor's Name",get("Requestor's Name"))+
+   field("Requestor's email",get("Requestor's Email"))+
+   field('S.O/J.O Number',joSo)+
+   field('Client Name',get('Client'))+
+  '</div><div class="pdi-meta-col">'+
+   field('Date of request',formatPdiPrintDate(dateRequest))+
+   field('Date of PDI',formatPdiPrintDate(get('Date of PDI')))+
+   field('Time of PDI',get('Time'))+
+  '</div></div>'+
+  '<div class="pdi-band">Information of Client Representative Conducting the PDI</div>'+
+  '<div class="pdi-rep-grid">'+
+   field('Representative Name',get('Representative Name'))+
+   field('Contact Number',get('Contact Number'))+
+  '</div>'+
+  '<div class="pdi-band">Scope of Inspection</div>'+
+  '<div class="pdi-writing-box">'+get('Scope of Inspection')+'</div>'+
+  '<div class="pdi-band">Comments or Special Requests</div>'+
+  '<div class="pdi-writing-box comments">'+get('Comments or Special Request')+'</div>'+
+ '</div>';
+}
+function openPdiRequestView(rec){
+ const old=el('pdiRequestViewModal');if(old)old.remove();
+ const modal=document.createElement('div');modal.id='pdiRequestViewModal';modal.className='modal open';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');
+ const dialog=document.createElement('div');dialog.className='dialog pdi-request-view-dialog';
+ const head=document.createElement('div');head.className='dialoghead';
+ const titleWrap=document.createElement('div'),title=document.createElement('h3'),sub=document.createElement('div');
+ title.textContent='Pre-Delivery Inspection Request';sub.className='muted';sub.textContent='Review the saved request using the official PDI Request template.';
+ titleWrap.append(title,sub);head.append(titleWrap);
+ const preview=document.createElement('div');preview.className='pdi-request-preview-body';
+ const logo=document.querySelector('.system-topbar-logo');
+ preview.innerHTML=pdiRequestPrintStyles()+buildPdiRequestMarkup(rec,logo?logo.src:'');
+ const actions=document.createElement('div');actions.className='actions pdi-request-view-actions';
+ const printBtn=button('Print Request','small primary',()=>printPdiRequest(rec));
+ const closeBtn=button('Close','small',()=>modal.remove());
+ actions.append(printBtn,closeBtn);
+ dialog.append(head,preview,actions);modal.append(dialog);
+ modal.addEventListener('click',e=>{if(e.target===modal)modal.remove()});
+ document.body.append(modal);
+}
+function printPdiRequest(rec){
+ const logo=document.querySelector('.system-topbar-logo');
+ const win=window.open('','_blank');
+ if(!win){showStatus(false,'Print window blocked','Allow pop-ups for this site, then select Print Request again.');return;}
+ const doc=win.document;
+ doc.open();
+ doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(rec,logo?logo.src:'')+'</body></html>');
+ doc.close();
+ win.focus();
+ win.setTimeout(()=>{win.print();},350);
+}
+
 function renderComplaintTable(){
  const table=el('thead').closest('table');table.classList.remove('ncr-table','punchlist-table','rework-table','rework-merged-table');table.classList.add('complaint-table');
  const from=el('cmpMonthFrom')?.value||'',to=el('cmpMonthTo')?.value||'',status=el('cmpStatusFilter')?.value||'',company=el('cmpCompanyFilter')?.value||'',q=String(el('search')?.value||'').trim().toLowerCase();
