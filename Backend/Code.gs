@@ -397,6 +397,9 @@ function uploadComplaintAttachmentChunk(uploadToken,base64Chunk,start,end,total,
   const file=JSON.parse(response.getContentText()||'{}');
   CacheService.getScriptCache().remove('complaint_upload_'+token);
   if(!file.id)throw new Error('Google Drive completed the upload but did not return a file ID.');
+  const uploadedFile=DriveApp.getFileById(file.id);
+  uploadedFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK,DriveApp.Permission.VIEW);
+  file.webViewLink=uploadedFile.getUrl();
   return {ok:true,done:true,file:file};
  }
  throw new Error('Google Drive attachment upload failed. HTTP '+code+': '+response.getContentText().slice(0,300));
