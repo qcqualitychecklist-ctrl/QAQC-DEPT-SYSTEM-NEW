@@ -478,7 +478,7 @@ function getPdiRecords_(searchText){
  const headers=tracking.headers;
  const records=sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues().map(row=>{
   const rec={};
-  headers.forEach((name,i)=>rec[name]=name==='Time'?formatTimeCell_(row[i]):formatCell_(row[i]));
+  headers.forEach((name,i)=>rec[name]=name==='Time'?formatPdiTimeCell_(row[i]):formatCell_(row[i]));
   if(!rec.Status)rec.Status='Pending';
   return rec;
  });
@@ -1429,3 +1429,4 @@ function deleteJO(recordId) {
 }
 function formatCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'yyyy-MM-dd');return v==null?'':v;}
 function formatTimeCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'HH:mm');return v==null?'':String(v).trim();}
+function formatPdiTimeCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'h:mm a');const s=String(v==null?'':v).trim(),m=s.match(/^(\\d{1,2}):(\\d{2})$/);if(!m)return s;const h=Number(m[1]);return ((h%12)||12)+':'+m[2]+' '+(h>=12?'PM':'AM');}

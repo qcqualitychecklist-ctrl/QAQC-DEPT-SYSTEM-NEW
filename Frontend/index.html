@@ -91,6 +91,8 @@ main{min-width:0;padding:10px 10px 16px;width:100%;max-width:none;margin:0} .int
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(9),#monitoringPanel .tablewrap table.pdi-table td:nth-child(9){width:115px}
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(10),#monitoringPanel .tablewrap table.pdi-table td:nth-child(10){width:220px}
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(11),#monitoringPanel .tablewrap table.pdi-table td:nth-child(11){width:220px}
+#monitoringPanel .tablewrap table.pdi-table th:nth-child(13),#monitoringPanel .tablewrap table.pdi-table td:nth-child(13){width:260px;min-width:260px}
+#monitoringPanel .tablewrap table.pdi-table th:nth-child(13){white-space:normal;line-height:1.25;overflow:visible;text-overflow:clip}
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(12),#monitoringPanel .tablewrap table.pdi-table td:nth-child(12){width:125px}
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(13),#monitoringPanel .tablewrap table.pdi-table td:nth-child(13){width:100px}
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(14),#monitoringPanel .tablewrap table.pdi-table td:nth-child(14){width:180px}
@@ -2183,7 +2185,7 @@ function renderPdiTable(){
   const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];
   c.append(l,n);dashboard.append(c);
  });
- const heads=['Date of Request','Ref. No.','Requestor Email','Requestor Name','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments / Special Request','QC in Charge','Status','Remarks','Action'];
+ const heads=['Date of Request','Ref. No.','Requestor Email','Requestor Name','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Requests','QC in Charge','Status','Remarks','Action'];
  const pages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));
  if(tablePage>pages)tablePage=pages;
  const startRow=(tablePage-1)*PAGE_SIZE,rows=shown.slice(startRow,startRow+PAGE_SIZE);
@@ -2222,12 +2224,26 @@ function renderPdiTable(){
  el('count').textContent=recordsLoadedFully?(shown.length?(startRow+1)+'–'+Math.min(startRow+PAGE_SIZE,shown.length)+' of '+shown.length+' PDI requests':'0 PDI requests'):(shown.length?'Showing '+(startRow+1)+'–'+Math.min(startRow+PAGE_SIZE,shown.length)+' PDI requests · loading remaining records…':'Loading PDI requests…');
  renderPagination(shown.length);applyMonitoringStatusColumnWidth();
 }
-function escapePdiPrintHtml(value){
+function formatPdiDisplayDate(value){
+  const s=String(value||'').trim(),m=s.match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+  if(!m)return s;
+  const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+  return d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+ }
+ function formatPdiDisplayTime(value){
+  const s=String(value||'').trim(),m=s.match(/^(\\d{1,2}):(\\d{2})$/);
+  if(!m)return s;
+  const h=Number(m[1]),minute=m[2];
+  return ((h%12)||12)+':'+minute+' '+(h>=12?'PM':'AM');
+ }
+ function escapePdiPrintHtml(value){
  return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 function formatPdiPrintDate(value){
  const s=String(value||'').trim(),m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
- return m?m[2]+'/'+m[3]+'/'+m[1]:s;
+ if(!m)return s;
+  const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+  return d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 }
 function pdiRequestPrintStyles(){
  return '<style>'+
@@ -2239,7 +2255,7 @@ function pdiRequestPrintStyles(){
  '.pdi-ref{display:flex;align-items:end;gap:8px;font-weight:700;white-space:nowrap;padding-bottom:4px}.pdi-ref-value{flex:1;min-height:19px;border-bottom:1px solid #111;text-align:center;font-weight:800;font-size:14px;color:#142b4a}'+
  '.pdi-doc-title{margin:0 0 10px;padding:7px 8px;background:#80a7e8;border:1px solid #111;text-align:center;font-size:23px;line-height:1.2;font-weight:800}'+
  '.pdi-meta-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 7%;margin-bottom:14px}'+
- '.pdi-meta-col{display:flex;flex-direction:column;gap:3px}.pdi-field{display:flex;align-items:end;gap:7px;min-height:19px;min-width:0}.pdi-field label{flex:0 0 auto;font-weight:700;white-space:nowrap}.pdi-field .pdi-value{flex:1;min-width:30px;min-height:18px;padding:0 3px 1px;border-bottom:1px solid #111;white-space:pre-wrap;overflow-wrap:anywhere}'+
+ '.pdi-meta-col{display:flex;flex-direction:column;gap:3px}.pdi-field{display:flex;align-items:end;gap:7px;min-height:19px;min-width:0}.pdi-field label{flex:0 0 auto;font-weight:700;white-space:nowrap}.pdi-field .pdi-value{flex:1;min-width:30px;min-height:18px;padding:0 3px 1px;border-bottom:1px solid #111;white-space:pre-wrap;overflow-wrap:anywhere;text-align:center}'+
  '.pdi-band{margin:15px 0 0;padding:4px 7px;background:#80a7e8;border:1px solid #111;text-align:center;font-weight:700;font-size:14px;line-height:1.2}'+
  '.pdi-rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 7%;padding:10px 0 5px}'+
  '.pdi-writing-box{min-height:76px;border:1px solid #111;padding:8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4}'+
@@ -2267,7 +2283,7 @@ function buildPdiRequestMarkup(rec,logoSrc){
   '</div><div class="pdi-meta-col">'+
    field('Date of request',formatPdiPrintDate(dateRequest))+
    field('Date of PDI',formatPdiPrintDate(get('Date of PDI')))+
-   field('Time of PDI',get('Time'))+
+   field('Time of PDI',formatPdiDisplayTime(get('Time')))+
   '</div></div>'+
   '<div class="pdi-band">Information of Client Representative Conducting the PDI</div>'+
   '<div class="pdi-rep-grid">'+
