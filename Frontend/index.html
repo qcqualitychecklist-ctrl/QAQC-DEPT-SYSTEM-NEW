@@ -2582,26 +2582,94 @@ function getComplaintAttachments(rec){
  return files;
 }
 function openComplaintAttachments(rec){
- const files=getComplaintAttachments(rec),old=el('complaintAttachmentsModal');if(old)old.remove();
- const modal=document.createElement('div');modal.id='complaintAttachmentsModal';modal.className='modal open';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');
- const dialog=document.createElement('div');dialog.className='dialog complaint-attachments-dialog';dialog.style.maxWidth='900px';dialog.style.maxHeight='88vh';dialog.style.overflow='auto';
- const head=document.createElement('div');head.className='dialoghead complaint-attachments-head';const wrap=document.createElement('div'),h=document.createElement('h3'),sub=document.createElement('div');h.textContent='Complaint Attachments';sub.className='muted';sub.textContent=String(rec['Complaint ID']||'')+' · '+files.length+' file(s)';wrap.append(h,sub);head.append(wrap);
- const body=document.createElement('div');body.className='complaint-attachments-body';body.style.display='grid';body.style.gap='14px';
- files.forEach((file,index)=>{
-  const card=document.createElement('section');card.style.border='1px solid var(--border,#d9e0e8)';card.style.borderRadius='10px';card.style.padding='12px';
-  const row=document.createElement('div');row.style.display='flex';row.style.alignItems='center';row.style.justifyContent='space-between';row.style.gap='12px';
-  const name=document.createElement('strong');name.textContent=(index+1)+'. '+String(file.fileName||file.name||'Attachment');row.append(name);
-  const url=file.url||(file.fileId?'https://drive.google.com/file/d/'+encodeURIComponent(file.fileId)+'/view':'');
-  if(url){const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener';link.textContent='Open in Drive';link.className='small';row.append(link)}
+ var files=getComplaintAttachments(rec);
+ var old=el('complaintAttachmentsModal');
+ if(old)old.remove();
+ var modal=document.createElement('div');
+ modal.id='complaintAttachmentsModal';
+ modal.className='modal open';
+ modal.setAttribute('role','dialog');
+ modal.setAttribute('aria-modal','true');
+ var dialog=document.createElement('div');
+ dialog.className='dialog complaint-attachments-dialog';
+ dialog.style.maxWidth='900px';
+ dialog.style.maxHeight='88vh';
+ dialog.style.overflow='auto';
+ var head=document.createElement('div');
+ head.className='dialoghead complaint-attachments-head';
+ var wrap=document.createElement('div');
+ var h=document.createElement('h3');
+ var sub=document.createElement('div');
+ h.textContent='Complaint Attachments';
+ sub.className='muted';
+ sub.textContent=String(rec['Complaint ID']||'')+' - '+files.length+' file(s)';
+ wrap.append(h,sub);
+ head.append(wrap);
+ var body=document.createElement('div');
+ body.className='complaint-attachments-body';
+ body.style.display='grid';
+ body.style.gap='14px';
+ for(var i=0;i<files.length;i++){
+  var file=files[i]||{};
+  var card=document.createElement('section');
+  card.style.border='1px solid #d9e0e8';
+  card.style.borderRadius='10px';
+  card.style.padding='12px';
+  var row=document.createElement('div');
+  row.style.display='flex';
+  row.style.alignItems='center';
+  row.style.justifyContent='space-between';
+  row.style.gap='12px';
+  var name=document.createElement('strong');
+  name.textContent=String(i+1)+'. '+String(file.fileName||file.name||'Attachment');
+  row.append(name);
+  var attachmentUrl='';
+  if(file.url) attachmentUrl=String(file.url);
+  else if(file.fileId) attachmentUrl='https://drive.google.com/file/d/'+encodeURIComponent(file.fileId)+'/view';
+  if(attachmentUrl){
+   var link=document.createElement('a');
+   link.href=attachmentUrl;
+   link.target='_blank';
+   link.rel='noopener';
+   link.textContent='Open in Drive';
+   link.className='small';
+   row.append(link);
+  }
   card.append(row);
-  const mime=String(file.mimeType||'');
-  if(file.fileId&&(mime.startsWith('image/')||mime.startsWith('video/'))){const frame=document.createElement('iframe');frame.src='https://drive.google.com/file/d/'+encodeURIComponent(file.fileId)+'/preview';frame.title=String(file.fileName||'Attachment preview');frame.style.width='100%';frame.style.height=mime.startsWith('video/')?'420px':'360px';frame.style.border='0';frame.style.marginTop='10px';frame.allow='autoplay';card.append(frame)}
-  else{const meta=document.createElement('div');meta.className='muted';meta.style.marginTop='8px';meta.textContent=(mime||'File')+(file.size?' · '+(file.size/1024/1024).toFixed(2)+' MB':'');card.append(meta)}
+  var mime=String(file.mimeType||'');
+  if(file.fileId&&(mime.indexOf('image/')===0||mime.indexOf('video/')===0)){
+   var frame=document.createElement('iframe');
+   frame.src='https://drive.google.com/file/d/'+encodeURIComponent(file.fileId)+'/preview';
+   frame.title=String(file.fileName||'Attachment preview');
+   frame.style.width='100%';
+   frame.style.height=mime.indexOf('video/')===0?'420px':'360px';
+   frame.style.border='0';
+   frame.style.marginTop='10px';
+   frame.allow='autoplay';
+   card.append(frame);
+  }else{
+   var meta=document.createElement('div');
+   meta.className='muted';
+   meta.style.marginTop='8px';
+   meta.textContent=mime||'File';
+   card.append(meta);
+  }
   body.append(card);
- });
- if(!files.length){const empty=document.createElement('p');empty.textContent='No attachments found for this complaint.';body.append(empty)}
- const actions=document.createElement('div');actions.className='actions complaint-attachments-actions';actions.style.justifyContent='flex-end';const closeBtn=button('Close','small primary',()=>modal.remove());closeBtn.classList.add('modal-close-uniform');actions.append(closeBtn);
- dialog.append(head,body,actions);modal.append(dialog);document.body.append(modal);
+ }
+ if(!files.length){
+  var empty=document.createElement('p');
+  empty.textContent='No attachments found for this complaint.';
+  body.append(empty);
+ }
+ var actions=document.createElement('div');
+ actions.className='actions complaint-attachments-actions';
+ actions.style.justifyContent='flex-end';
+ var closeBtn=button('Close','small primary',function(){modal.remove();});
+ closeBtn.classList.add('modal-close-uniform');
+ actions.append(closeBtn);
+ dialog.append(head,body,actions);
+ modal.append(dialog);
+ document.body.append(modal);
 }
 
 function renderComplaintTable(){
@@ -3414,6 +3482,11 @@ if(monitoringToolbar){
  const actions=monitoringToolbar.querySelector('.actions');
  if(actions){actions.classList.add('monitoring-actions');actions.style.marginTop='0';}
 }
+// Expose the access actions explicitly for Apps Script HTML form handlers.
+window.submitLogin=submitLogin;
+window.submitRegistration=submitRegistration;
+window.continueAsGuest=continueAsGuest;
+window.toggleRegistration=toggleRegistration;
 </script><!-- GitHub Actions deployment trigger: guest complaint navigation -->
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><span class="loading-orbit" aria-hidden="true"></span><span class="loading-title">Loading records…</span></div></div>
 </body></html>
