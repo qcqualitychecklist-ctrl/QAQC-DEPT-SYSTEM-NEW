@@ -1827,6 +1827,7 @@ function openAddPunchlist(){
  addPunchlistItem();el('punchlistSave').disabled=false;el('punchlistSave').textContent='Save Punchlist';openModal('punchlistModal');
 }
 let editingPunchlistIds=[];
+let complaintHistoryEdit=null,pdiHistoryEdit=null;
 function submitPunchlist(ev){
  ev.preventDefault();
  const main={};
@@ -2413,6 +2414,19 @@ function submitManualPdiRequest(event){
  const payload={'Company':el('manualPdiCompany').value,"Requestor's Name":el('manualPdiName').value.trim(),'J.O':el('manualPdiJO').value.trim(),'S.O':el('manualPdiSO').value.trim(),'Client':el('manualPdiClient').value.trim(),'Date of PDI':el('manualPdiDate').value,'Time':el('manualPdiTime').value,'Representative Name':el('manualPdiRep').value.trim(),'Contact Number':el('manualPdiContact').value.trim(),'Scope of Inspection':el('manualPdiScope').value.trim(),'Comments or Special Request':el('manualPdiComments').value.trim()};
  btn.disabled=true;btn.textContent='Saving…';
  callServer('saveManualPdiRequest',[payload],result=>{btn.disabled=false;btn.textContent='Save';if(!result||result.ok===false){showStatus(false,'Save failed',result&&result.message||'Unable to save manual PDI request.');return}el('manualPdiModal').remove();delete recordCache['PDI Monitoring::'];showStatus(true,'Manual PDI saved',result.message||('Reference No: '+result.referenceNo));loadRecords(false)},err=>{btn.disabled=false;btn.textContent='Save';showStatus(false,'Save failed',err&&err.message||String(err))});
+}
+
+function editPdiRequestFromHistory(rec){
+ const ref=String(rec['PDI Reference No']||'');if(!ref||!rec.editToken){showPublicPdiMessage('This PDI request cannot be edited after its session expires.',false);return;}
+ pdiHistoryEdit={referenceNo:ref,editToken:rec.editToken,record:rec};
+ if(!el('guestPdiWorkspace')||el('guestPdiWorkspace').style.display==='none')openGuestPdiRequest();
+ const formArea=el('guestPdiFormArea'),history=el('pdiRequestHistorySection'),create=el('createGuestPdiButton'),exit=el('guestPdiWorkspace')?.querySelector('.guest-workspace-exit');
+ if(formArea)formArea.style.display='block';if(history)history.style.display='none';if(create)create.style.display='none';if(exit)exit.style.display='';
+ el('pdiRequestEmail').value=rec["Requestor's Email"]||'';el('pdiRequestName').value=rec["Requestor's Name"]||'';el('pdiRequestCompany').value=rec.Company||'';
+ el('pdiRequestJO').value=rec['J.O']||'';el('pdiRequestSO').value=rec['S.O']||'';el('pdiRequestClient').value=rec.Client||'';el('pdiRequestDate').value=rec['Date of PDI']||'';
+ el('pdiRequestTime').value=String(rec.Time||'').slice(0,5);el('pdiRequestRep').value=rec['Representative Name']||'';el('pdiRequestContact').value=rec['Contact Number']||'';
+ el('pdiRequestScope').value=rec['Scope of Inspection']||'';el('pdiRequestComments').value=rec['Comments or Special Request']||rec['Comments or Special Requests']||'';
+ el('publicPdiSubmit').textContent='Save Changes';el('pdiRequestName').focus();formArea?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function formatPdiDisplayDate(value){
@@ -3073,20 +3087,27 @@ function showPublicPdiMessage(message,success){showStatus(!!success,success?'Sub
 function submitPublicPdiForm(event){
  event.preventDefault();const btn=el('publicPdiSubmit');if(btn.disabled)return;
  const payload={
-  "Requestor's Email":el('pdiRequestEmail').value.trim(),
-  "Requestor's Name":el('pdiRequestName').value.trim(),"Company":el('pdiRequestCompany').value,
-  "J.O":el('pdiRequestJO').value.trim(),"S.O":el('pdiRequestSO').value.trim(),
-  "Client":el('pdiRequestClient').value.trim(),"Date of PDI":el('pdiRequestDate').value,
-  "Time":el('pdiRequestTime').value,"Representative Name":el('pdiRequestRep').value.trim(),
-  "Contact Number":el('pdiRequestContact').value.trim(),"Scope of Inspection":el('pdiRequestScope').value.trim(),
-  "Comments or Special Request":el('pdiRequestComments').value.trim()
+  "Requestor's Email":el('pdiRequestEmail').value.trim(),"Requestor's Name":el('pdiRequestName').value.trim(),
+  "Company":el('pdiRequestCompany').value,"J.O":el('pdiRequestJO').value.trim(),"S.O":el('pdiRequestSO').value.trim(),
+  "Client":el('pdiRequestClient').value.trim(),"Date of PDI":el('pdiRequestDate').value,"Time":el('pdiRequestTime').value,
+  "Representative Name":el('pdiRequestRep').value.trim(),"Contact Number":el('pdiRequestContact').value.trim(),
+  "Scope of Inspection":el('pdiRequestScope').value.trim(),"Comments or Special Request":el('pdiRequestComments').value.trim()
  };
- btn.disabled=true;btn.textContent='Submitting…';
- google.script.run.withSuccessHandler(result=>{
-  btn.disabled=false;btn.textContent='Submit PDI Request';
-  if(!result||result.ok===false){showPublicPdiMessage(result&&result.message||'Unable to submit your PDI request.',false);return;}
+ const editing=pdiHistoryEdit;
+ btn.disabled=true;btn.textContent='Saving...';
+ const finish=(result)=>{
+  btn.disabled=false;btn.textContent=editing?'Save Changes':'Submit PDI Request';
+  if(!result||result.ok===false){showPublicPdiMessage(result&&result.message||'Unable to save your PDI request.',false);return}
+  if(editing){
+   const updated={...editing.record,...payload,'PDI Reference No':editing.referenceNo,editToken:editing.editToken};
+   const index=guestPdiHistory.findIndex(x=>String(x['PDI Reference No']||'')===String(editing.referenceNo));if(index>=0)guestPdiHistory[index]=updated;
+   pdiHistoryEdit=null;el('publicPdiForm').reset();btn.textContent='Submit PDI Request';
+   const formArea=el('guestPdiFormArea'),history=el('pdiRequestHistorySection'),create=el('createGuestPdiButton'),exit=el('guestPdiWorkspace')?.querySelector('.guest-workspace-exit');
+   if(formArea)formArea.style.display='none';if(history)history.style.display='flex';if(create)create.style.display='';if(exit)exit.style.display='none';
+   renderGuestPdiHistory();showPublicPdiMessage('Your PDI request has been updated.',true);return;
+  }
   el('publicPdiForm').reset();
-  const saved={...payload,Status:'Pending',Remarks:'Submitted'};guestPdiHistory.unshift(saved);
+  const saved={...payload,'PDI Reference No':result.referenceNo,editToken:result.editToken,Status:'Pending',Remarks:'Submitted'};guestPdiHistory.unshift(saved);
   const workspace=el('guestPdiWorkspace');
   if(workspace&&workspace.style.display!=='none'){
    const formArea=el('guestPdiFormArea'),create=el('createGuestPdiButton'),notice=el('guestPdiNotice');
@@ -3094,9 +3115,9 @@ function submitPublicPdiForm(event){
    if(notice){notice.textContent=result.message||'Your PDI request has been submitted successfully.';notice.className='public-complaint-message success';notice.style.display='block';}
    renderGuestPdiHistory();
   }else showPublicPdiMessage(result.message||'Your PDI request has been submitted successfully.',true);
- }).withFailureHandler(err=>{
-  btn.disabled=false;btn.textContent='Submit PDI Request';showPublicPdiMessage(err&&err.message||String(err),false);
- }).submitPdiRequest(payload);
+ };
+ if(editing)callServer('updatePdiRequest',[payload,editing.referenceNo,editing.editToken],finish,err=>{btn.disabled=false;btn.textContent='Save Changes';showPublicPdiMessage(err&&err.message||String(err),false)});
+ else callServer('submitPdiRequest',[payload],finish,err=>{btn.disabled=false;btn.textContent='Submit PDI Request';showPublicPdiMessage(err&&err.message||String(err),false)});
 }
 function runComplaintServer(method,args){
  return new Promise((resolve,reject)=>{const runner=google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);runner[method].apply(runner,args||[])});
@@ -3155,7 +3176,8 @@ function renderComplaintHistory(records){
  records.forEach(rec=>{
   const tr=document.createElement('tr');
   [rec['Complaint ID']||'—',rec.Date||'—',rec.Client||'—'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value);tr.append(td)});
-  const action=document.createElement('td'),view=document.createElement('button');view.type='button';view.className='small';view.textContent='View Full Complaint';view.onclick=()=>showComplaintHistoryDetails(rec);action.append(view);tr.append(action);body.append(tr);
+  const action=document.createElement('td'),view=button('Full Details','small',()=>showComplaintHistoryDetails(rec)),edit=button('Edit','small primary',()=>editComplaintFromHistory(rec));
+  view.title='View full complaint';edit.title='Edit this complaint';action.append(view,document.createTextNode(' '),edit);tr.append(action);body.append(tr);
  });
  table.append(body);host.append(table);
 }
@@ -3302,11 +3324,14 @@ function openGuestComplaintForm(){
 function renderGuestPdiHistory(){
  const host=el('pdiRequestHistoryBody');if(!host)return;host.innerHTML='';
  if(!guestPdiHistory.length){const p=document.createElement('p');p.className='muted';p.textContent='No PDI requests submitted in this guest session yet.';host.append(p);return}
- const table=document.createElement('table');table.style.cssText='width:100%;min-width:760px;border-collapse:collapse;table-layout:fixed;box-sizing:border-box';
- const colgroup=document.createElement('colgroup');['22%','10%','10%','22%','20%','16%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
+ const table=document.createElement('table');table.style.cssText='width:100%;min-width:820px;border-collapse:collapse;table-layout:fixed;box-sizing:border-box';
+ const colgroup=document.createElement('colgroup');['20%','9%','9%','19%','18%','12%','13%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
  const thead=document.createElement('thead'),hr=document.createElement('tr'),body=document.createElement('tbody');
- ['Requestor Name','J.O','S.O','Client','Date of PDI','Status'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.cssText='display:table-cell;width:auto;padding:10px 6px;text-align:center;vertical-align:middle;background:#edf2f8;color:#233b5d;font-size:11px;white-space:normal;overflow-wrap:anywhere;box-sizing:border-box';hr.append(th)});thead.append(hr);table.append(thead);
- guestPdiHistory.forEach(rec=>{const tr=document.createElement('tr');[rec["Requestor's Name"],rec['J.O'],rec['S.O'],rec.Client,rec['Date of PDI'],rec.Status||'Pending'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value||'—');td.title=td.textContent;td.style.cssText='display:table-cell;padding:10px 6px;text-align:center;vertical-align:middle;border-bottom:1px solid #e4eaf2;font-size:11px;white-space:normal;overflow-wrap:anywhere;box-sizing:border-box';tr.append(td)});body.append(tr)});
+ ['Requestor Name','J.O','S.O','Client','Date of PDI','Status','Action'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.cssText='display:table-cell;width:auto;padding:10px 6px;text-align:center;vertical-align:middle;background:#edf2f8;color:#233b5d;font-size:11px;white-space:normal;overflow-wrap:anywhere;box-sizing:border-box';hr.append(th)});thead.append(hr);table.append(thead);
+ guestPdiHistory.forEach(rec=>{
+  const tr=document.createElement('tr');[rec["Requestor's Name"],rec['J.O'],rec['S.O'],rec.Client,rec['Date of PDI'],rec.Status||'Pending'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value||'—');td.title=td.textContent;td.style.cssText='display:table-cell;padding:10px 6px;text-align:center;vertical-align:middle;border-bottom:1px solid #e4eaf2;font-size:11px;white-space:normal;overflow-wrap:anywhere;box-sizing:border-box';tr.append(td)});
+  const action=document.createElement('td');action.style.cssText='padding:7px;text-align:center;border-bottom:1px solid #e4eaf2';const edit=button('Edit','small primary',()=>editPdiRequestFromHistory(rec));edit.title='Edit this PDI request';action.append(edit);tr.append(action);body.append(tr);
+ });
  table.append(body);host.append(table);
 }
 function openGuestPdiRequest(){
