@@ -1642,10 +1642,33 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
  </div>
 </section>
 <script>
-/* Bind login-screen controls with native listeners instead of inline HTML handlers. */
+/* Bind login-screen controls and wait briefly for the main app script on slower devices. */
 (function(){
   if(window.__qaqcAccessControlsBound)return;
   window.__qaqcAccessControlsBound=true;
+  var pending={};
+  function runWhenReady(name){
+    var attempts=0;
+    if(pending[name])return;
+    pending[name]=true;
+    function check(){
+      var fn=window[name] || (typeof window[name]==='undefined' ? null : window[name]);
+      if(typeof fn==='function'){
+        pending[name]=false;
+        fn();
+        return;
+      }
+      attempts++;
+      if(attempts<200){setTimeout(check,50);return;}
+      pending[name]=false;
+      var notice=document.getElementById('loginNotice');
+      if(notice){
+        notice.textContent='The system did not finish initializing. Please refresh the page and wait until it is fully loaded.';
+        notice.style.display='block';
+      }
+    }
+    check();
+  }
   document.addEventListener('click',function(event){
     var button=event.target&&event.target.closest?event.target.closest('#loginLanding .access-register-toggle, #loginLanding .access-guest-btn'):null;
     if(!button)return;
@@ -1657,20 +1680,17 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
       else {var card=document.getElementById('accessCard');if(card)card.classList.toggle('registration-open');}
       return;
     }
-    if(typeof continueAsGuest==='function')continueAsGuest();
-    else {var notice=document.getElementById('loginNotice');if(notice){notice.textContent='The login page did not finish loading. Please refresh the page.';notice.style.display='block';}}
+    runWhenReady('continueAsGuest');
   },true);
   document.addEventListener('submit',function(event){
     var form=event.target;
     if(!form||!form.matches)return;
     if(form.matches('#departmentLoginForm')){
       event.preventDefault();
-      if(typeof submitLogin==='function')submitLogin();
-      else {var notice=document.getElementById('loginNotice');if(notice){notice.textContent='The login page did not finish loading. Please refresh the page.';notice.style.display='block';}}
+      runWhenReady('submitLogin');
     }else if(form.matches('#departmentRegisterForm')){
       event.preventDefault();
-      if(typeof submitRegistration==='function')submitRegistration();
-      else {var notice=document.getElementById('loginNotice');if(notice){notice.textContent='The registration page did not finish loading. Please refresh the page.';notice.style.display='block';}}
+      runWhenReady('submitRegistration');
     }
   },true);
 })();
