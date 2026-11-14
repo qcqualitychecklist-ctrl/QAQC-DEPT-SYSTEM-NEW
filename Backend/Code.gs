@@ -722,9 +722,10 @@ function savePunchlist_(input){
  let rowIndex=-1;
  if(id)for(let i=1;i<data.length;i++)if(String(data[i][headers.indexOf('Punchlist ID')])===id){rowIndex=i+1;break;}
  const oldRef=rowIndex>0?String(data[rowIndex-1][headers.indexOf('Ref. No.')]||''):'';
+ const oldJO=rowIndex>0?String(data[rowIndex-1][headers.indexOf('J.O')]||'').trim().toUpperCase():'';
  const joKey=String(input['J.O']||'').trim().toUpperCase(),joRefRow=joKey?data.find((row,i)=>i>0&&String(row[headers.indexOf('J.O')]||'').trim().toUpperCase()===joKey):null;
  const joRef=joRefRow?String(joRefRow[headers.indexOf('Ref. No.')]||''):'';
- const rec=Object.assign({},input,{'Punchlist ID':id||('PL-'+Utilities.getUuid().slice(0,8).toUpperCase()),'Ref. No.':joRef||oldRef||('PL-27-'+String(refInfo.next).padStart(3,'0')),'Created At':rowIndex>0?data[rowIndex-1][headers.indexOf('Created At')]:now,'Updated At':now,'Status':String(input.Status||'Open')});
+ const rec=Object.assign({},input,{'Punchlist ID':id||('PL-'+Utilities.getUuid().slice(0,8).toUpperCase()),'Ref. No.':joRef||(oldJO===joKey?oldRef:'')||('PL-27-'+String(refInfo.next).padStart(3,'0')),'Created At':rowIndex>0?data[rowIndex-1][headers.indexOf('Created At')]:now,'Updated At':now,'Status':String(input.Status||'Open')});
  if(!String(rec['J.O']||'').trim())throw new Error('J.O is required.');
  if(!String(rec.Item||'').trim())throw new Error('Item No. is required.');
  if(!String(rec.Qty||'').trim()||!isFinite(Number(rec.Qty))||Number(rec.Qty)<=0)throw new Error('Qty is required and must be greater than zero.');
