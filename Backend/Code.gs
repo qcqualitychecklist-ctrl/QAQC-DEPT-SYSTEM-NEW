@@ -1194,9 +1194,9 @@ function syncRemainingTransferRow_(recordId) {
   for(let i=1;i<data.length;i++)if(String(data[i][ix('Record ID')])===String(recordId)){parentIndex=i;break;}
   if(parentIndex<0)return;
   const parent=data[parentIndex],pool=Number(parent[ix('Allocation Pool Qty')])||Number(parent[ix('Qty')])||0;
-  const allocations=alloc&&alloc.getLastRow()>1?alloc.getDataRange().getValues().slice(1).filter(a=>String(a[10])===String(recordId)):[];
-  const done=allocations.reduce((sum,a)=>sum+(Number(a[4])||0),0),remaining=Math.max(0,pool-done);
-  const now=new Date();
+  const allocationRows=alloc&&alloc.getLastRow()>1?alloc.getDataRange().getValues().slice(1):[];
+  const allocations=allocationRows.filter(a=>String(a[10])===String(recordId));
+  const done=allocations.reduce((sum,a)=>sum+(Number(a[4])||0),0),remaining=Math.max(0,pool-done),now=new Date();
   sh.getRange(parentIndex+1,ix('Qty')+1).setValue(done>0?done:pool);
   sh.getRange(parentIndex+1,ix('Allocation Pool Qty')+1).setValue(pool);
   sh.getRange(parentIndex+1,ix('Done Qty')+1).setValue(done);
@@ -1204,31 +1204,27 @@ function syncRemainingTransferRow_(recordId) {
   sh.getRange(parentIndex+1,ix('Status')+1).setValue(done>0?'Passed':'Ongoing');
   const childRows=[];
   for(let i=1;i<data.length;i++)if(String(data[i][ix('Remaining For Record ID')])===String(recordId))childRows.push(i);
-  let reusable=-1;
-  childRows.forEach(i=>{
-    const childId=String(data[i][ix('Record ID')]),childAlloc=alloc&&alloc.getLastRow()>1?alloc.getDataRange().getValues().slice(1).filter(a=>String(a[10])===childId):[];
-    if(!childAlloc.length&&reusable<0)reusable=i;
-  });
-  if(remaining>0){
-    const target=Array(childRows.length?1:0).fill(0);
-    if(reusable>=0){
-      const rowNo=reusable+1;sh.getRange(rowNo,ix('Qty')+1).setValue(remaining);sh.getRange(rowNo,ix('Allocation Pool Qty')+1).setValue(remaining);
-      sh.getRange(rowNo,ix('Updated At')+1).setValue(now);
-    } else {
-      const child={};headers.forEach((h,j)=>child[h]=parent[j]??'');
-      const childId=Utilities.getUuid();
-      child['Record ID']=childId;child['Created At']=now;child['Updated At']=now;child['Qty']=remaining;child['Allocation Pool Qty']=remaining;child['Remaining For Record ID']=recordId;
-      child['Done Qty']=0;child['Remaining Qty']=remaining;child['QC In Charge']='';child['FGTS No.']='';child['Date Finished']='';child['Status']='Ongoing';child['Reminders']='';
-      sh.appendRow(headers.map(h=>child[h]??''));
-    }
-  } else {
-    for(let k=childRows.length-1;k>=0;k--){
-      const i=childRows[k],childId=String(data[i][ix('Record ID')]),childAlloc=alloc&&alloc.getLastRow()>1?alloc.getDataRange().getValues().slice(1).filter(a=>String(a[10])===childId):[];
-      if(!childAlloc.length)sh.deleteRow(i+1);
-    }
+  const childAllocations=rowIndex=>{const childId=String(data[rowIndex][ix('Record ID')]);return allocationRows.filter(a=>String(a[10])===childId);};
+  if(done<=0||remaining<=0){
+    for(let k=childRows.length-1;k>=0;k--)if(!childAllocations(childRows[k]).length)sh.deleteRow(childRows[k]+1);
+    return;
   }
+  if(childRows.length){
+    const keep=childRows[0],linked=childAllocations(keep);
+    if(!linked.length){
+      sh.getRange(keep+1,ix('Qty')+1).setValue(remaining);
+      sh.getRange(keep+1,ix('Allocation Pool Qty')+1).setValue(remaining);
+      sh.getRange(keep+1,ix('Updated At')+1).setValue(now);
+    }
+    for(let k=childRows.length-1;k>=1;k--)if(!childAllocations(childRows[k]).length)sh.deleteRow(childRows[k]+1);
+    return;
+  }
+  const child={};headers.forEach((h,j)=>child[h]=parent[j]??'');
+  const childId=Utilities.getUuid();
+  child['Record ID']=childId;child['Created At']=now;child['Updated At']=now;child['Qty']=remaining;child['Allocation Pool Qty']=remaining;child['Remaining For Record ID']=recordId;
+  child['Done Qty']=0;child['Remaining Qty']=remaining;child['QC In Charge']='';child['FGTS No.']='';child['Date Finished']='';child['Status']='Ongoing';child['Reminders']='';
+  sh.appendRow(headers.map(h=>child[h]??''));
 }
-
 function getTransferRecords(searchText) {
   const ss=SpreadsheetApp.openById(DATABASE_ID), sh=ss.getSheetByName(TRANSFER_SHEET), allocSh=ss.getSheetByName(ALLOCATION_SHEET);
   if(!sh) return {ok:true,records:[],fields:TRANSFER_HEADERS};
@@ -1253,7 +1249,7 @@ function getTransferRecords(searchText) {
     const allocationRemarks=[...new Set(linked.map(a=>String(a[6]||'').trim()).filter(Boolean))].join(' | ');if(allocationRemarks)obj.Remarks=allocationRemarks;
     if(['Ongoing','Hold','For line up'].includes(String(obj.Status)) && obj['Date Received']){
       const received=new Date(obj['Date Received']); const days=Math.floor((new Date().setHours(0,0,0,0)-received.setHours(0,0,0,0))/86400000);
-      obj.Reminders=days>=REMINDER_AFTER_DAYS?'DELAYED ('+days+' days)':'';
+      obj.Reminders=days>=REMINDER_AFTER_DAYS?'Delayed ('+days+' days)':'';
     } else obj.Reminders='';
     if(!query||Object.values(obj).join(' ').toLowerCase().includes(query))records.push(obj);
   }
@@ -1351,45 +1347,47 @@ function validateTransferEditQuantity_(input,recordId,transferSheet) {
  const normalize=value=>String(value==null?'':value).replace(/\u00a0/g,' ').trim().replace(/\s+/g,' ').toUpperCase();
  const jo=normalize(input['J.O']),item=normalize(input['Item No.']),qty=Number(input.Qty)||0;
  if(!jo||!item)return;
- const source=SpreadsheetApp.openById(JO_SOURCE_ID);
- const sourceSheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
+ const source=SpreadsheetApp.openById(JO_SOURCE_ID),sourceSheet=source.getSheets().find(s=>s.getSheetId()===JO_SOURCE_GID);
  if(!sourceSheet)throw new Error('Could not find J.O Register source sheet.');
  const last=sourceSheet.getLastRow();let original=0;
  if(last>=JO_SOURCE_START_ROW){
-  const matches=sourceSheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,1).createTextFinder(String(input['J.O']).trim()).matchCase(false).matchEntireCell(true).findAll();
-  matches.forEach(cell=>{
-   const row=sourceSheet.getRange(cell.getRow(),1,1,10).getDisplayValues()[0];
+  sourceSheet.getRange(JO_SOURCE_START_ROW,1,last-JO_SOURCE_START_ROW+1,10).getDisplayValues().forEach(row=>{
    if(normalize(row[0])===jo&&normalize(row[8])===item)original+=Number(String(row[3]||'').replace(/,/g,''))||0;
   });
  }
  if(!original)throw new Error('J.O. '+input['J.O']+' / Item '+input['Item No.']+' was not found in the J.O Register.');
- const headers=TRANSFER_HEADERS,joIdx=headers.indexOf('J.O'),itemIdx=headers.indexOf('Item No.'),qtyIdx=headers.indexOf('Qty'),idIdx=headers.indexOf('Record ID');
+ const headers=TRANSFER_HEADERS,joIdx=headers.indexOf('J.O'),itemIdx=headers.indexOf('Item No.'),qtyIdx=headers.indexOf('Qty'),idIdx=headers.indexOf('Record ID'),parentIdx=headers.indexOf('Remaining For Record ID');
+ const rows=transferSheet.getDataRange().getDisplayValues(),family=new Set([String(recordId)]);
+ const current=rows.find((r,i)=>i>0&&String(r[idIdx])===String(recordId));
+ const parentId=current&&parentIdx>=0?String(current[parentIdx]||''):'';
+ if(parentId)family.add(parentId);
+ rows.forEach((r,i)=>{if(i>0&&String(r[parentIdx]||'')===String(recordId))family.add(String(r[idIdx]));});
  let prior=0;
- if(transferSheet.getLastRow()>1){
-  transferSheet.getRange(2,1,transferSheet.getLastRow()-1,headers.length).getDisplayValues().forEach(row=>{
-   if(String(row[idIdx])===String(recordId))return;
-   if(normalize(row[joIdx])===jo&&normalize(row[itemIdx])===item)prior+=Number(String(row[qtyIdx]||'').replace(/,/g,''))||0;
-  });
- }
+ rows.forEach((row,i)=>{
+  if(i===0||family.has(String(row[idIdx]))||family.has(String(row[parentIdx]||'')))return;
+  if(normalize(row[joIdx])===jo&&normalize(row[itemIdx])===item)prior+=Number(String(row[qtyIdx]||'').replace(/,/g,''))||0;
+ });
  if(prior+qty>original)throw new Error('Cannot save edit: total transfer Qty ('+(prior+qty)+') exceeds the original J.O Register Qty ('+original+') for this J.O. and Item No.');
 }
-
 function saveTransfer(input) {
   if(!input)throw new Error('No transfer details received.');
   const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(TRANSFER_SHEET);
   if(!sh)throw new Error('Click Prepare Database first.');
   ensureTransferAllocationColumns_(sh);
-  const qty=Number(input.Qty);
-  if(!isFinite(qty)||qty<=0)throw new Error('Qty must be greater than zero.');
   const id=String(input['Record ID']||''), now=new Date(); let row=-1,old=null;
   if(id){const lastRow=sh.getLastRow();if(lastRow>1){const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(id).matchEntireCell(true).findNext();if(match){row=match.getRow();old=sh.getRange(row,1,1,TRANSFER_HEADERS.length).getValues()[0];}}if(row<0)throw new Error('Transfer record not found. Refresh and try again.');}
+  const qtyText=String(input.Qty==null?'':input.Qty).trim(),qty=qtyText?Number(qtyText):(old?Number(old[13])||0:0);
+  if(!isFinite(qty)||qty<=0)throw new Error('Qty must be greater than zero.');
+  if(old)input.Qty=qty;
   const recordId=id||Utilities.getUuid(),transferId=old?String(old[3]):reserveTransferIds_(1,sh)[0];
   if(old){
     validateTransferEditQuantity_(input,id,sh);
-    const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String),joCol=headers.indexOf('J.O'),itemCol=headers.indexOf('Item No.'),idCol=headers.indexOf('Record ID');
+    const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String),joCol=headers.indexOf('J.O'),itemCol=headers.indexOf('Item No.'),idCol=headers.indexOf('Record ID'),parentCol=headers.indexOf('Remaining For Record ID');
     const norm=v=>String(v||'').trim().replace(/\s+/g,' ').toUpperCase(),newJO=norm(input['J.O']),newItem=norm(input['Item No.']);
-    const all=sh.getDataRange().getValues();
-    if(newJO&&newItem)for(let i=1;i<all.length;i++)if(String(all[i][idCol])!==id&&norm(all[i][joCol])===newJO&&norm(all[i][itemCol])===newItem)throw new Error('This J.O. and Item No. already exist in another transfer record.');
+    const all=sh.getDataRange().getValues(),family=new Set([id]);
+    const parentId=parentCol>=0?String(old[parentCol]||''):'';if(parentId)family.add(parentId);
+    for(let i=1;i<all.length;i++)if(String(all[i][parentCol]||'')===id)family.add(String(all[i][idCol]));
+    if(newJO&&newItem)for(let i=1;i<all.length;i++)if(!family.has(String(all[i][idCol]))&&!family.has(String(all[i][parentCol]||''))&&norm(all[i][joCol])===newJO&&norm(all[i][itemCol])===newItem)throw new Error('This J.O. and Item No. already exist in another transfer record.');
   }
   const linkedAllocations=old?getAllocationRows_(id):[];
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
@@ -1576,6 +1574,10 @@ function saveAllocation(recordId,input) {
   const now=new Date(),aid=id||Utilities.getUuid();
   if(row>0){
     sh.getRange(row,idx('QC In Charge')+1).setValue(qc);sh.getRange(row,idx('Qty')+1).setValue(qty);
+    sh.getRange(row,idx('FGTS No.')+1).setValue(String(input['FGTS No.']||'').trim());
+    sh.getRange(row,idx('Date Finished')+1).setValue(input['Date Finished']||'');
+    sh.getRange(row,idx('Category')+1).setValue(String(input.Category||'').trim());
+    sh.getRange(row,idx('Allocation Remarks')+1).setValue(String(input['Allocation Remarks']||'').trim());
     if(idx('Updated At')>=0)sh.getRange(row,idx('Updated At')+1).setValue(now);
   }else{
     const fgts=String(input['FGTS No.']||'').trim();if(!fgts)throw new Error('FGTS No. is required for a new allocation.');
@@ -1654,12 +1656,12 @@ function syncTransferSummary_(recordId,allocationRows) {
   const fgts=[...new Set(allocs.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
   const finished=latestFinishedDate_(allocs),qty=Number(tr[13])||0;
   sh.getRange(rowIndex,17,1,5).setValues([[done,Math.max(0,qty-done),qc,fgts,finished]]);
-  const allocationRemarks=[...new Set(allocs.map(a=>String(a[6]||'').trim()).filter(Boolean))].join(' | ');if(allocationRemarks)sh.getRange(rowIndex,23).setValue(allocationRemarks);
+  const allocationRemarks=[...new Set(allocs.map(a=>String(a[6]||'').trim()).filter(Boolean))].join(' | ');sh.getRange(rowIndex,23).setValue(allocationRemarks);
   let status=String(tr[15]||''),received=tr[4];
   if(qty>0&&done>=qty){status='Passed';sh.getRange(rowIndex,16).setValue(status);}
   else if(status==='Passed'){status='Ongoing';sh.getRange(rowIndex,16).setValue(status);}
   let reminder='';
-  if(['Ongoing','Hold','For line up'].includes(status)&&received){const d=new Date(received);const days=Math.floor((new Date().setHours(0,0,0,0)-d.setHours(0,0,0,0))/86400000);if(days>=REMINDER_AFTER_DAYS)reminder='DELAYED ('+days+' days)';}
+  if(['Ongoing','Hold','For line up'].includes(status)&&received){const d=new Date(received);const days=Math.floor((new Date().setHours(0,0,0,0)-d.setHours(0,0,0,0))/86400000);if(days>=REMINDER_AFTER_DAYS)reminder='Delayed ('+days+' days)';}
   sh.getRange(rowIndex,24).setValue(reminder);
 }
 
