@@ -1670,7 +1670,7 @@ function saveComplaint_(input){
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
  if(!sh)throw new Error('Click Prepare Database first to create the Complaint Monitoring tab.');
  const headers=ensureComplaintSchema_(sh),data=sh.getDataRange().getValues(),now=new Date();
- const required=['Date','Company','Client','Name of Complainant','Complaint Description'];
+ const required=['Date','Company','Client','J.O','S.O','Complaint Description'];
  required.forEach(h=>{if(!String(input[h]||'').trim())throw new Error(h+' is required.')});
  if(!['GEMCOR','GPI'].includes(String(input.Company||'').trim().toUpperCase()))throw new Error('Company must be GEMCOR or GPI.');
  const qty=String(input.Qty||'').trim();
@@ -1729,7 +1729,7 @@ function submitPublicComplaint(payload,sessionToken){
   if(!payload||!payload.header||!Array.isArray(payload.items)||!payload.items.length)throw new Error('Complete the complaint details and add at least one item.');
   const accountUsername=sessionToken?getComplaintSessionUsername_(sessionToken):'';
   if(sessionToken&&!accountUsername)throw new Error('Your account session expired. Please log in again before submitting.');
-  const h=payload.header,required=['Date','Company','Client','Name of Complainant'];
+  const h=payload.header,required=['Date','Company','Client','S.O'];
   required.forEach(k=>{if(!String(h[k]||'').trim())throw new Error(k+' is required.')});
   const company=String(h.Company||'').trim().toUpperCase();
   if(!['GEMCOR','GPI'].includes(company))throw new Error('Please select GEMCOR or GPI.');
