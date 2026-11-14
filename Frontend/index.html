@@ -1653,11 +1653,11 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
     event.stopPropagation();
     if(button.disabled)return;
     if(button.classList.contains('access-register-toggle')){
-      if(typeof window.toggleRegistration==='function')window.toggleRegistration();
+      if(typeof toggleRegistration==='function')toggleRegistration();
       else {var card=document.getElementById('accessCard');if(card)card.classList.toggle('registration-open');}
       return;
     }
-    if(typeof window.continueAsGuest==='function')window.continueAsGuest();
+    if(typeof continueAsGuest==='function')continueAsGuest();
     else {var notice=document.getElementById('loginNotice');if(notice){notice.textContent='The login page did not finish loading. Please refresh the page.';notice.style.display='block';}}
   },true);
   document.addEventListener('submit',function(event){
@@ -1665,11 +1665,11 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
     if(!form||!form.matches)return;
     if(form.matches('#departmentLoginForm')){
       event.preventDefault();
-      if(typeof window.submitLogin==='function')window.submitLogin();
+      if(typeof submitLogin==='function')submitLogin();
       else {var notice=document.getElementById('loginNotice');if(notice){notice.textContent='The login page did not finish loading. Please refresh the page.';notice.style.display='block';}}
     }else if(form.matches('#departmentRegisterForm')){
       event.preventDefault();
-      if(typeof window.submitRegistration==='function')window.submitRegistration();
+      if(typeof submitRegistration==='function')submitRegistration();
       else {var notice=document.getElementById('loginNotice');if(notice){notice.textContent='The registration page did not finish loading. Please refresh the page.';notice.style.display='block';}}
     }
   },true);
