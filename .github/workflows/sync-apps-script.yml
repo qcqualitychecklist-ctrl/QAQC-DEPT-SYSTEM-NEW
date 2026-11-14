@@ -32,6 +32,20 @@ jobs:
             exit 1
           fi
 
+      - name: Validate frontend JavaScript syntax
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('Frontend/index.html', 'utf8');
+          const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script\\s*>/gi)];
+          if (!scripts.length) throw new Error('No inline scripts found');
+          scripts.forEach((match, index) => {
+            fs.writeFileSync('/tmp/qaqc-inline-' + index + '.js', match[1]);
+            console.log('Checking inline script ' + (index + 1));
+          });
+          NODE
+          for file in /tmp/qaqc-inline-*.js; do node --check "$file"; done
+
       - name: Prepare Apps Script source folder
         run: |
           mkdir -p deploy
