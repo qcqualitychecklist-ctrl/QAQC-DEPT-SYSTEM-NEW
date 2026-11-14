@@ -1573,12 +1573,18 @@ function saveAllocation(recordId,input) {
   if(existingTotal+qty>Number(tr[13]))throw new Error('Total allocated quantity ('+(existingTotal+qty)+') cannot exceed transfer Qty ('+tr[13]+').');
   const now=new Date(),aid=id||Utilities.getUuid();
   if(row>0){
-    sh.getRange(row,idx('QC In Charge')+1).setValue(qc);sh.getRange(row,idx('Qty')+1).setValue(qty);
-    sh.getRange(row,idx('FGTS No.')+1).setValue(String(input['FGTS No.']||'').trim());
-    sh.getRange(row,idx('Date Finished')+1).setValue(input['Date Finished']||'');
-    sh.getRange(row,idx('Category')+1).setValue(String(input.Category||'').trim());
-    sh.getRange(row,idx('Allocation Remarks')+1).setValue(String(input['Allocation Remarks']||'').trim());
-    if(idx('Updated At')>=0)sh.getRange(row,idx('Updated At')+1).setValue(now);
+    const old=rows[row-1];
+    const updated=headers.map((h,i)=>{
+      if(h==='QC In Charge')return qc;
+      if(h==='Qty')return qty;
+      if(h==='FGTS No.')return String(input['FGTS No.']||'').trim();
+      if(h==='Date Finished')return input['Date Finished']||'';
+      if(h==='Category')return String(input.Category||'').trim();
+      if(h==='Allocation Remarks')return String(input['Allocation Remarks']||'').trim();
+      if(h==='Updated At')return now;
+      return old[i];
+    });
+    sh.getRange(row,1,1,headers.length).setValues([updated]);
   }else{
     const fgts=String(input['FGTS No.']||'').trim();if(!fgts)throw new Error('FGTS No. is required for a new allocation.');
     const out=headers.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?tr[3]:h==='Transfer Record ID'?recordId:h==='QC In Charge'?qc:h==='FGTS No.'?fgts:h==='Qty'?qty:h==='Date Finished'?(input['Date Finished']||''):h==='Allocation Remarks'?(input['Allocation Remarks']||''):h==='Created At'?now:h==='Updated At'?now:h==='Category'?(input.Category||''):'');
