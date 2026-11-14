@@ -2449,6 +2449,44 @@ function pdiRequestPrintStyles(){
 .monitoring-confirm-dialog .confirm-message{padding:18px;color:#334155;font-size:13px;line-height:1.55}
 .monitoring-confirm-dialog .actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px 16px;margin:0!important;border-top:1px solid #e2e8f0}
 .monitoring-confirm-dialog .actions button{min-width:76px;font-family:Arial,Helvetica,sans-serif!important;font-size:12px!important;font-weight:700!important}
+
+/* Keep existing Rework and Punchlist column widths aligned after inserting Ref. No. first. */
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(1),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(1){width:100px!important;min-width:100px!important;max-width:100px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(2),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(2){width:100px!important;min-width:100px!important;max-width:100px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(3),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(3){width:80px!important;min-width:80px!important;max-width:80px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(4),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(4){width:80px!important;min-width:80px!important;max-width:80px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(5),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(5){width:120px!important;min-width:120px!important;max-width:120px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(6),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(6){width:75px!important;min-width:75px!important;max-width:75px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(7),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(7){width:140px!important;min-width:140px!important;max-width:140px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(8),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(8){width:55px!important;min-width:55px!important;max-width:55px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(9),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(9){width:100px!important;min-width:100px!important;max-width:100px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(10),#monitoringPanel .tablewrap table.rework-merged-table td.rework-description-cell{width:220px!important;min-width:220px!important;max-width:220px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(11),#monitoringPanel .tablewrap table.rework-merged-table td.rework-category-cell{width:205px!important;min-width:205px!important;max-width:205px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(12),#monitoringPanel .tablewrap table.rework-merged-table td.rework-action-cell{width:220px!important;min-width:220px!important;max-width:220px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(13),#monitoringPanel .tablewrap table.rework-merged-table td.rework-pic-cell{width:180px!important;min-width:180px!important;max-width:180px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(14),#monitoringPanel .tablewrap table.rework-merged-table td.rework-status-cell{width:100px!important;min-width:100px!important;max-width:100px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(15),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(15){width:110px!important;min-width:110px!important;max-width:110px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(16),#monitoringPanel .tablewrap table.rework-merged-table td:nth-child(16){width:90px!important;min-width:90px!important;max-width:90px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(17),#monitoringPanel .tablewrap table.rework-merged-table td.rework-type-cell{width:125px!important;min-width:125px!important;max-width:125px!important}
+#monitoringPanel .tablewrap table.rework-merged-table th:nth-child(18),#monitoringPanel .tablewrap table.rework-merged-table td.actioncell{width:145px!important;min-width:145px!important;max-width:145px!important;white-space:nowrap!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(1),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(1){width:110px!important;min-width:110px!important;max-width:110px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(2),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(2){width:115px!important;min-width:115px!important;max-width:115px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(3),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(3){width:90px!important;min-width:90px!important;max-width:90px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(4),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(4){width:90px!important;min-width:90px!important;max-width:90px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(5),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(5){width:180px!important;min-width:180px!important;max-width:180px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(6),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(6){width:75px!important;min-width:75px!important;max-width:75px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(7),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(7){width:165px!important;min-width:165px!important;max-width:165px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(8),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(8){width:55px!important;min-width:55px!important;max-width:55px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(9),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(9){width:90px!important;min-width:90px!important;max-width:90px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(10),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(10){width:220px!important;min-width:220px!important;max-width:220px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(11),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(11){width:145px!important;min-width:145px!important;max-width:145px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(12),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(12){width:120px!important;min-width:120px!important;max-width:120px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(13),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(13){width:125px!important;min-width:125px!important;max-width:125px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(14),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(14){width:130px!important;min-width:130px!important;max-width:130px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(15),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(15){width:125px!important;min-width:125px!important;max-width:125px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(16),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(16){width:115px!important;min-width:115px!important;max-width:115px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(17),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(17){width:105px!important;min-width:105px!important;max-width:105px!important}
+#monitoringPanel .tablewrap table.punchlist-table th:nth-child(18),#monitoringPanel .tablewrap table.punchlist-table td.punchlist-action-cell{width:165px!important;min-width:165px!important;max-width:165px!important}
 </style>';
 }
 function buildPdiRequestMarkup(rec,logoSrc){
