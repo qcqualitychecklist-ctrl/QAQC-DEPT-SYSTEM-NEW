@@ -22,7 +22,7 @@ const NCR_SHEET = 'NCR Monitoring';
 const COMPLAINT_SHEET = 'Complaint Monitoring';
 const PDI_SHEET = 'PDI Monitoring';
 const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','Person Responsible','Investigation','Status','Created At','Updated At','Items JSON','Attachment URL','Submitted By Username'];
-const PDI_HEADERS = ["Requestor's Email","Requestor's Name",'J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request','QC in Charge','Status','Remarks','PDI Reference No','Date of Request'];
+const PDI_HEADERS = ["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request','QC in Charge','Status','Remarks','PDI Reference No','Date of Request','Request Type'];
 const NCR_HEADERS = ['Reference','Date','Prepared by','Section','Person In Charge','Description of Issue','Corrective Action','Status','Date Closed'];
 const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
 const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
@@ -455,7 +455,7 @@ function getMyComplaintHistory(sessionToken){
 function ensurePdiTrackingColumns_(sh){
  let headers=sh.getRange(1,1,1,Math.max(sh.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
  let schemaChanged=false;
- ['PDI Reference No','Date of Request'].forEach(name=>{
+ ['Company','PDI Reference No','Date of Request','Request Type'].forEach(name=>{
   if(!headers.includes(name)){
    const newCol=sh.getLastColumn()+1;
    sh.getRange(1,newCol).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');
@@ -487,7 +487,7 @@ function ensurePdiTrackingColumns_(sh){
 }
 
 function submitPdiRequest(payload){
- const required=["Requestor's Email","Requestor's Name",'J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection'];
+ const required=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection'];
  if(!payload||typeof payload!=='object')throw new Error('Please complete the PDI request form.');
  required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
  const email=String(payload["Requestor's Email"]).trim();
@@ -502,12 +502,36 @@ function submitPdiRequest(payload){
   const tracking=ensurePdiTrackingColumns_(sh);
   const referenceNo='PDI-27-'+String(tracking.lastSequence+1).padStart(3,'0');
   const requestDate=Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'yyyy-MM-dd');
-  const record=Object.assign({},payload,{'PDI Reference No':referenceNo,'Date of Request':requestDate,'QC in Charge':'',Status:'Pending',Remarks:''});
+  const record=Object.assign({},payload,{'PDI Reference No':referenceNo,'Date of Request':requestDate,'Request Type':'With Request','QC in Charge':'',Status:'Pending',Remarks:''});
   sh.appendRow(tracking.headers.map(h=>record[h]===undefined?'':record[h]));
   try{CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');}catch(e){}
   return {ok:true,referenceNo:referenceNo,message:'Your PDI request has been submitted successfully. Reference No: '+referenceNo};
  }finally{lock.releaseLock();}
 }
+
+function saveManualPdiRequest(payload){
+ const required=['Company',"Requestor's Name",'J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection'];
+ if(!payload||typeof payload!=='object')throw new Error('Please complete the manual PDI request form.');
+ required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
+ if(!['GEMCOR','GPI'].includes(String(payload.Company||'').trim().toUpperCase()))throw new Error('Please select GEMCOR or GPI.');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(payload['Date of PDI']||'')))throw new Error('Please select a valid Date of PDI.');
+ if(!/^\d{2}:\d{2}$/.test(String(payload.Time||'')))throw new Error('Please select a valid inspection time.');
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ try{
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
+  if(!sh)throw new Error('PDI Monitoring database is not prepared. Please contact QA/QC.');
+  const tracking=ensurePdiTrackingColumns_(sh),refCol=tracking.headers.indexOf('PDI Reference No')+1,lastRow=sh.getLastRow();
+  const refs=lastRow>1?sh.getRange(2,refCol,lastRow-1,1).getDisplayValues():[];
+  let sequence=0;refs.forEach(row=>{const m=String(row[0]||'').trim().match(/^XPDI-27-(\d+)$/);if(m)sequence=Math.max(sequence,Number(m[1])||0)});
+  const referenceNo='XPDI-27-'+String(sequence+1).padStart(3,'0');
+  const requestDate=Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'yyyy-MM-dd');
+  const record=Object.assign({},payload,{"Requestor's Email":'','PDI Reference No':referenceNo,'Date of Request':requestDate,'Request Type':'Without Request','QC in Charge':'',Status:'Pending',Remarks:'Manually recorded by QA/QC'});
+  sh.appendRow(tracking.headers.map(h=>record[h]===undefined?'':record[h]));
+  try{CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring')}catch(e){}
+  return {ok:true,referenceNo:referenceNo,message:'Manual PDI request saved as Without Request. Reference No: '+referenceNo};
+ }finally{lock.releaseLock();}
+}
+
 function getPdiRecords_(searchText){
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
  if(!sh)return {ok:true,records:[],fields:PDI_HEADERS};
