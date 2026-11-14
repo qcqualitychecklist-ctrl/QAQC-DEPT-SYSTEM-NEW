@@ -2242,7 +2242,6 @@ function toggleNcrStatus(rec){
  if(current.toLowerCase()==='closed'){
   showDesignedConfirm('Reopen NCR?','Are you sure you want to reopen NCR '+rec.Reference+'? The Date Closed will be cleared.','Yes, Reopen',()=>saveNcrStatus(rec.Reference,'Open',''));
   return;
-  return;
  }
  ncrStatusTarget=rec;
  el('ncrCloseDate').value=new Date().toISOString().slice(0,10);
@@ -2404,7 +2403,7 @@ function openManualPdiRequest(){
  const form=document.createElement('form');form.id='manualPdiForm';form.className='fields';form.style.padding='16px';form.onsubmit=submitManualPdiRequest;
  const field=(label,id,type='text',required=false)=>{const wrap=document.createElement('div');wrap.className='field';const l=document.createElement('label');l.textContent=label+(required?' *':'');let input;if(type==='select'){input=document.createElement('select');['','GEMCOR','GPI'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v||'Select Company';input.append(o)})}else if(type==='textarea'){input=document.createElement('textarea');input.rows=3}else{input=document.createElement('input');input.type=type}input.id=id;input.required=required;wrap.append(l,input);form.append(wrap);return input};
  field('Company','manualPdiCompany','select');field('Requestor Name','manualPdiName');field('J.O','manualPdiJO');field('S.O','manualPdiSO');field('Client','manualPdiClient');field('Date of PDI','manualPdiDate','date');field('Time','manualPdiTime','time');field('Representative Name','manualPdiRep');field('Contact Number','manualPdiContact');field('Scope of Inspection','manualPdiScope','textarea');field('Comments or Special Requests','manualPdiComments','textarea',false);
- const actions=document.createElement('div');actions.className='actions';actions.style.padding='0 16px 16px';actions.style.justifyContent='flex-end';const cancel=button('Close','',()=>modal.remove()),save=button('Save','primary',null);save.type='submit';form.append(actions);actions.append(cancel,save);
+ const actions=document.createElement('div');actions.className='actions';actions.style.padding='0 16px 16px';actions.style.justifyContent='flex-end';const cancel=button('Close','',()=>modal.remove()),save=button('Save','primary',null);cancel.type='button';save.type='submit';form.append(actions);actions.append(cancel,save);
  dialog.append(head,form);modal.append(dialog);document.body.append(modal);
 }
 function submitManualPdiRequest(event){
