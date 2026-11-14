@@ -2266,7 +2266,7 @@ function renderPdiTable(){
   const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];
   c.append(l,n);dashboard.append(c);
  });
- const heads=['Date of Request','Ref. No.','Company','Request Type','Requestor Email','Requestor Name','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Requests','QC in Charge','Status','Remarks','Action'];
+ const heads=['Date of Request','Ref. No.','Requestor Email','Requestor Name','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Requests','QC in Charge','Status','Remarks','Action'];
  const pages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));
  if(tablePage>pages)tablePage=pages;
  const startRow=(tablePage-1)*PAGE_SIZE,rows=shown.slice(startRow,startRow+PAGE_SIZE);
