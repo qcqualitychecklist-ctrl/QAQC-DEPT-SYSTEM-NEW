@@ -2407,7 +2407,7 @@ function pdiRequestPrintStyles(){
  '@media screen{.pdi-request-sheet{box-shadow:0 2px 12px #142b4a22;border:1px solid #dce3ec}}'+
  '@media print{@page{size:A4 portrait;margin:8mm}html,body{width:100%;height:auto;background:#fff}.pdi-request-sheet{max-width:none;margin:0;padding:0;box-shadow:none;border:0;break-inside:avoid;page-break-inside:avoid}.pdi-doc-title,.pdi-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}.pdi-writing-box{break-inside:avoid;page-break-inside:avoid}}'+
  '@media(max-width:720px){.pdi-doc-top{grid-template-columns:1fr 150px}.pdi-doc-logo{width:170px}.pdi-doc-title{font-size:18px}.pdi-meta-grid{gap:5px 12px}.pdi-field label{font-size:10px}.pdi-rep-grid{grid-template-columns:1fr}}'+
- '
+ String.raw`
 /* Monitoring form sizing, modal scroll containment, and confirmation dialogs. */
 .modal .dialog{overscroll-behavior:contain;overscroll-behavior-y:contain}
 #complaintModal .dialog,#complaintHistoryDetailsModal .complaint-history-dialog{width:min(980px,96vw)!important;max-width:980px!important;max-height:88vh!important;overflow:auto!important}
@@ -2487,7 +2487,7 @@ function pdiRequestPrintStyles(){
 #monitoringPanel .tablewrap table.punchlist-table th:nth-child(16),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(16){width:115px!important;min-width:115px!important;max-width:115px!important}
 #monitoringPanel .tablewrap table.punchlist-table th:nth-child(17),#monitoringPanel .tablewrap table.punchlist-table td:nth-child(17){width:105px!important;min-width:105px!important;max-width:105px!important}
 #monitoringPanel .tablewrap table.punchlist-table th:nth-child(18),#monitoringPanel .tablewrap table.punchlist-table td.punchlist-action-cell{width:165px!important;min-width:165px!important;max-width:165px!important}
-</style>';
+</style>`
 }
 function buildPdiRequestMarkup(rec,logoSrc){
  const get=(key)=>String(rec[key]||'');
