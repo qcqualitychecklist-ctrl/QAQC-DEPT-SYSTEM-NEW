@@ -893,6 +893,12 @@ table.ncr-table td.ncr-action-cell button{display:inline-block!important;visibil
 #ncrCloseModal .ncr-close-dialog{width:min(420px,94vw);padding:20px 22px 22px;border-radius:14px}#ncrCloseModal .dialoghead{margin-bottom:20px}#ncrCloseModal .ncr-close-dialog .field{margin-bottom:22px}#ncrCloseModal .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:4px}#ncrCloseModal .ncr-close-dialog form>.field{display:flex;flex-direction:column;align-items:stretch;gap:12px}#ncrCloseModal .ncr-close-dialog .field label{display:block;margin:0;line-height:1.4}#ncrCloseModal .ncr-close-dialog .field input{display:block;margin:0}.ncr-status-toggle{min-width:76px;font-weight:700;border-radius:16px;background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}.ncr-status-toggle.primary{background:#dcfce7;color:#166534;border-color:#86efac}
 .login-landing{position:relative;z-index:1001;isolation:isolate;min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:28px;background:linear-gradient(135deg,#eaf2fc,#f7faff)}
 /* Keep login controls clickable above the app layers using the proven stacking context. */
+/* Keep the access screen above every application layer and receive pointer input. */
+html body #loginLanding{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;min-height:100vh!important;z-index:2147483647!important;isolation:isolate!important;pointer-events:auto!important;}
+html body #loginLanding *{pointer-events:auto!important;}
+html body #loginLanding .access-card{position:relative!important;z-index:1!important;pointer-events:auto!important;}
+html body #qaqcApp{position:relative;z-index:0!important;}
+
 #loginLanding{pointer-events:auto!important}
 #loginLanding .access-card,#loginLanding .access-card *{pointer-events:auto!important}
 .access-card{width:min(1120px,100%);display:grid;grid-template-columns:minmax(300px,.88fr) minmax(420px,1.12fr);gap:22px;background:#fff;border:1px solid #d8e3f2;border-radius:18px;padding:28px;box-shadow:0 18px 55px #142b4a20}
