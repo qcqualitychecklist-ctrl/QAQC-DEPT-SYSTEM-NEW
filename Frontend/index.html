@@ -3142,29 +3142,36 @@ async function uploadComplaintAttachments(files,onProgress){
  }
  return uploaded;
 }
-async function submitPublicComplaintForm(event){
- event.preventDefault();const btn=el('publicComplaintSubmit'),files=[...el('pubAttachment').files],totalBytes=files.reduce((n,f)=>n+f.size,0),maxBytes=200*1024*1024;
+async async function submitPublicComplaintForm(event){
+ event.preventDefault();const btn=el('publicComplaintSubmit'),files=[...el('pubAttachment').files],totalBytes=files.reduce((n,f)=>n+f.size,0),maxBytes=200*1024*1024,editing=complaintHistoryEdit;
  if(totalBytes>maxBytes){showPublicComplaintMessage('The combined size of all attachments must not exceed 200 MB.',false);return}
  const allowed=/^(image\/(jpeg|png|gif|webp)|video\/(mp4|quicktime|webm))$/;
  const invalid=files.find(f=>!allowed.test(f.type));if(invalid){showPublicComplaintMessage('Only JPG, PNG, GIF, WEBP, MP4, MOV, and WEBM files are allowed.',false);return}
  const items=[...el('publicComplaintItems').children].map(row=>{const x={};row.querySelectorAll('input,textarea').forEach(i=>x[i.dataset.key]=i.value.trim());return x});
  if(!items.length||items.some(x=>!x.Item||!x['Complaint Description'])){showPublicComplaintMessage('Please enter an Item and its Complaint Description for every item row.',false);return}
- const header={Date:el('pubDate').value,Company:el('pubCompany').value,Client:el('pubClient').value,'Name of Complainant':el('pubName').value,'J.O':el('pubJO').value,'S.O':el('pubSO').value},payload={header,items};
+ const header={Date:el('pubDate').value,Company:el('pubCompany').value,Client:el('pubClient').value,'Name of Complainant':el('pubName').value,'J.O':el('pubJO').value,'S.O':el('pubSO').value},payload={header,items,recordId:editing?editing.id:''};
  const user=window.qaqcCurrentUser,accountUser=!!(user&&user.username&&user.role!=='Guest Access'),token=accountUser?qaqcAuthToken:'';
  btn.disabled=true;
  try{
   let attachments=[];
   if(files.length){btn.textContent='Uploading attachments 0%';attachments=await uploadComplaintAttachments(files,p=>btn.textContent='Uploading attachments '+p+'%');}
-  payload.attachments=attachments;btn.textContent='Submitting complaint...';
-  const r=await runComplaintServer('submitPublicComplaint',[payload,token]);
-  btn.disabled=false;btn.textContent='Submit Complaint';
-  if(!r||!r.ok){showPublicComplaintMessage(r&&r.message||'Unable to submit complaint. Please try again.',false);return}
-  const localRecord={'Complaint ID':r.recordId,...header,Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Items JSON':JSON.stringify(items),'Attachment URL':r.attachmentUrl||'','Attachments JSON':JSON.stringify(attachments)};
+  payload.attachments=attachments;btn.textContent=editing?'Saving Changes...':'Submitting complaint...';
+  const r=editing?await runComplaintServer('updatePublicComplaint',[payload,token,editing.editToken||'']):await runComplaintServer('submitPublicComplaint',[payload,token]);
+  btn.disabled=false;btn.textContent=editing?'Save Changes':'Submit Complaint';
+  if(!r||!r.ok){showPublicComplaintMessage(r&&r.message||'Unable to save complaint. Please try again.',false);return}
+  const previous=editing&&editing.record||{};
+  const localRecord={'Complaint ID':r.recordId||payload.recordId,...header,Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Items JSON':JSON.stringify(items),'Attachment URL':previous['Attachment URL']||r.attachmentUrl||'','Attachments JSON':previous['Attachments JSON']||JSON.stringify(attachments),editToken:editing?editing.editToken:r.editToken};
   el('publicComplaintForm').reset();el('publicComplaintItems').innerHTML='';addPublicComplaintItem();const today=new Date(),localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);el('pubDate').value=localDate;
   const workspace=el('guestComplainWorkspace'),formArea=el('guestComplainFormArea'),create=el('createGuestComplainButton'),notice=el('guestComplaintNotice');
+  if(editing){
+   complaintHistoryEdit=null;
+   if(accountUser)loadComplaintHistory();else{const index=guestComplaintHistory.findIndex(x=>String(x['Complaint ID'])===String(localRecord['Complaint ID']));if(index>=0)guestComplaintHistory[index]=localRecord;renderComplaintHistory(guestComplaintHistory);}
+   if(formArea)formArea.style.display='none';if(el('complaintHistorySection'))el('complaintHistorySection').style.display='flex';if(create)create.style.display='';const exit=workspace?.querySelector('.guest-workspace-exit');if(exit)exit.style.display='none';
+   showGuestComplaintToast('Complaint updated: '+localRecord['Complaint ID']);return;
+  }
   if(workspace){if(!accountUser){guestComplaintHistory.unshift(localRecord);renderComplaintHistory(guestComplaintHistory)}if(formArea)formArea.style.display='none';if(create)create.style.display='';if(notice)notice.style.display='none';showGuestComplaintToast('Reference No.: '+r.recordId);if(accountUser)loadComplaintHistory();}
   else showPublicComplaintMessage('Your complaint has been successfully submitted! Reference No.: '+r.recordId,true);
- }catch(err){btn.disabled=false;btn.textContent='Submit Complaint';showPublicComplaintMessage(err&&err.message||String(err),false)}
+ }catch(err){btn.disabled=false;btn.textContent=editing?'Save Changes':'Submit Complaint';showPublicComplaintMessage(err&&err.message||String(err),false)}
 }
 function renderComplaintHistory(records){
  const host=el('complaintHistoryBody');if(!host)return;host.innerHTML='';
@@ -3301,6 +3308,21 @@ function continueAsGuest(){
  switchPage('Transfer Monitoring');
  checkStatus();
 }
+function editComplaintFromHistory(rec){
+ const id=String(rec['Complaint ID']||'');if(!id){showPublicComplaintMessage('Complaint reference is missing.',false);return}
+ const user=window.qaqcCurrentUser,accountUser=!!(user&&user.username&&user.role!=='Guest Access');
+ if(!accountUser&&!rec.editToken){showPublicComplaintMessage('This complaint can no longer be edited after the guest session expires.',false);return}
+ complaintHistoryEdit={id:id,editToken:rec.editToken||'',record:rec};
+ if(!el('guestComplainWorkspace')||el('guestComplainWorkspace').style.display==='none')openGuestComplaintForm();
+ const workspace=el('guestComplainWorkspace'),formArea=el('guestComplainFormArea'),history=el('complaintHistorySection'),create=el('createGuestComplainButton'),exit=workspace?.querySelector('.guest-workspace-exit');
+ if(formArea)formArea.style.display='block';if(history)history.style.display='none';if(create)create.style.display='none';if(exit)exit.style.display='';
+ el('publicComplaintForm').reset();el('pubDate').value=rec.Date||'';el('pubCompany').value=rec.Company||'';el('pubClient').value=rec.Client||'';el('pubName').value=rec['Name of Complainant']||'';el('pubJO').value=rec['J.O']||'';el('pubSO').value=rec['S.O']||'';
+ const host=el('publicComplaintItems');host.innerHTML='';let items=[];try{items=JSON.parse(rec['Items JSON']||'[]')}catch(e){}
+ if(!items.length)items=[{Item:rec.Item||'','Panel Name':rec['Panel Name']||'',Qty:rec.Qty||'','Complaint Description':rec['Complaint Description']||''}];
+ items.forEach(item=>addPublicComplaintItem(item));el('pubAttachment').value='';el('publicComplaintSubmit').textContent='Save Changes';
+ formArea?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 function openGuestComplaintForm(){
  const app=el('qaqcApp'),page=el('publicComplaintPage'),main=document.querySelector('#qaqcApp main');if(!app||!page||!main)return;
  const pdiWorkspace=el('guestPdiWorkspace');if(pdiWorkspace)pdiWorkspace.style.display='none';
