@@ -3222,7 +3222,7 @@ async function uploadComplaintAttachments(files,onProgress){
  }
  return uploaded;
 }
-async async function submitPublicComplaintForm(event){
+async function submitPublicComplaintForm(event){
  event.preventDefault();const btn=el('publicComplaintSubmit'),files=[...el('pubAttachment').files],totalBytes=files.reduce((n,f)=>n+f.size,0),maxBytes=200*1024*1024,editing=complaintHistoryEdit;
  if(totalBytes>maxBytes){showPublicComplaintMessage('The combined size of all attachments must not exceed 200 MB.',false);return}
  const allowed=/^(image\/(jpeg|png|gif|webp)|video\/(mp4|quicktime|webm))$/;
