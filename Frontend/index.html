@@ -1612,14 +1612,14 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
   <section class="access-login">
    <div class="access-section-title">Department Login</div>
    <p class="access-note">Sign in using your registered QAQC account.</p>
-   <form id="departmentLoginForm">
+   <form id="departmentLoginForm" method="post" action="javascript:void(0)" onsubmit="event.preventDefault(); event.stopPropagation(); submitLogin(); return false;">
     <label for="loginUsername">Username</label><input id="loginUsername" name="username" autocomplete="username" required placeholder="Enter username">
     <label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Enter password">
     <button class="access-login-btn" type="submit">LOG IN</button>
    </form>
-   <button class="access-register-toggle" type="button">REGISTER NEW ACCOUNT</button>
+   <button class="access-register-toggle" type="button" onclick="toggleRegistration(); return false;">REGISTER NEW ACCOUNT</button>
    <div class="access-or"><span></span>OR<span></span></div>
-   <button class="access-guest-btn" type="button">CONTINUE AS GUEST</button>
+   <button class="access-guest-btn" type="button" onclick="continueAsGuest(); return false;">CONTINUE AS GUEST</button>
    
    <small class="access-note">Guest access is limited to viewing permitted records.</small>
    <div class="access-error" id="loginNotice"></div>
@@ -1627,7 +1627,7 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
   <section class="access-register" id="registrationPanel">
    <div class="access-section-title">Create QAQC Account</div>
    <p class="access-note">Complete the details below to request a registered account.</p>
-   <form id="departmentRegisterForm">
+   <form id="departmentRegisterForm" method="post" action="javascript:void(0)" onsubmit="event.preventDefault(); event.stopPropagation(); submitRegistration(); return false;">
     <div class="access-register-grid">
      <div><label for="registerFullName">Full Name</label><input id="registerFullName" required placeholder="Enter full name" autocomplete="name"></div>
      <div><label for="registerDepartment">Department</label><input id="registerDepartment" required placeholder="Enter department" autocomplete="organization"></div>
