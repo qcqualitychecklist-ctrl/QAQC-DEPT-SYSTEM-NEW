@@ -950,7 +950,7 @@ function saveReworkCase_(input) {
   const allDetailsClosed=detailsInput.length>0&&detailsInput.every(d=>String(d.Status||'Open').trim().toLowerCase()==='closed');
   const caseClosedAt=oldMain&&oldMain[12]?oldMain[12]:'';
   const mainRecord={'Rework ID':caseId,'Created At':oldMain?oldMain[1]:now,'Updated At':now,'Date Issue':input['Date Issue']||'','S.O':input['S.O']||'','J.O':input['J.O']||'','Client Name':input['Client Name']||'','Item no.':(detailsInput[0]&&detailsInput[0]['Item no.'])||input['Item no.']||'','Panel Name':(detailsInput[0]&&detailsInput[0]['Panel Name'])||input['Panel Name']||'','Qty':(detailsInput[0]&&detailsInput[0].Qty)||input.Qty||'','Date Received':oldMain?oldMain[10]:'','QC - in - Charge':String(input['QC - in - Charge']||'').trim(),'Date Finished':caseClosedAt,'Reference':oldMain?String(oldMain[referenceInfo.column-1]||''):referenceInfo.next};
-  const mainOut=REWORK_MAIN_HEADERS.map(h=>mainRecord[h]??'');
+  const mainOut=mainHeaders.map(h=>mainRecord[h]??'');
   const oldDetailRows=details.getLastRow()>1?details.getDataRange().getValues().slice(1):[];
   const oldAssignmentRows=assignments.getLastRow()>1?assignments.getDataRange().getValues().slice(1):[];
   const existingDetails=oldDetailRows.filter(r=>String(r[1])===caseId);
