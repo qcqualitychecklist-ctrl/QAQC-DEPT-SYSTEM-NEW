@@ -213,19 +213,26 @@ function reworkLeadTimeDays_(dateIssue,dateClosed) {
   return start==null||end==null?'':Math.round((end-start)/86400000)+1;
 }
 
-function ensureMonitoringReferenceNumbers_(sheet,headerName,prefix){
- if(!sheet)throw new Error('Monitoring sheet is missing.');
- let headers=sheet.getRange(1,1,1,Math.max(sheet.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
- let index=headers.indexOf(headerName);
- if(index<0){index=sheet.getLastColumn();sheet.getRange(1,index+1).setValue(headerName).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers[index]=headerName;}
- const lastRow=sheet.getLastRow();let max=0;
- if(lastRow>1){
-  const values=sheet.getRange(2,1,lastRow-1,headers.length).getValues();
-  const pattern=new RegExp('^'+prefix+'-27-([0-9]+)$');
-  values.forEach(row=>{const m=String(row[index]||'').trim().match(pattern);if(m)max=Math.max(max,Number(m[1])||0);});
-  values.forEach((row,i)=>{if(String(row[index]||'').trim())return;max++;sheet.getRange(i+2,index+1).setValue(prefix+'-27-'+String(max).padStart(3,'0'));});
- }
- return {index:index,next:max+1};
+function ensureMonitoringReferenceNumbers_(sheet,headerName,prefix,reserveNext){
+ const lock=LockService.getScriptLock();lock.waitLock(15000);
+ try{
+  if(!sheet)throw new Error('Monitoring sheet is missing.');
+  let headers=sheet.getRange(1,1,1,Math.max(sheet.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
+  let index=headers.indexOf(headerName);
+  if(index<0){index=sheet.getLastColumn();sheet.getRange(1,index+1).setValue(headerName).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers[index]=headerName;}
+  const lastRow=sheet.getLastRow();let max=0;
+  if(lastRow>1){
+   const values=sheet.getRange(2,1,lastRow-1,headers.length).getValues();
+   const pattern=new RegExp('^'+prefix+'-27-([0-9]+)$');
+   values.forEach(row=>{const m=String(row[index]||'').trim().match(pattern);if(m)max=Math.max(max,Number(m[1])||0);});
+   values.forEach((row,i)=>{if(String(row[index]||'').trim())return;max++;sheet.getRange(i+2,index+1).setValue(prefix+'-27-'+String(max).padStart(3,'0'));});
+  }
+  const props=PropertiesService.getScriptProperties(),key='qaqc_monitoring_ref_sequence_'+prefix;
+  const stored=Number(props.getProperty(key)||0);
+  const next=Math.max(max+1,stored+1);
+  props.setProperty(key,String(reserveNext?next:Math.max(max,stored)));
+  return {index:index,next:next};
+ }finally{lock.releaseLock();}
 }
 
 function getReworkRecords_(searchText) {
@@ -641,7 +648,7 @@ function savePunchlist_(input){
  if(!input)throw new Error('No punchlist data received.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
  if(!sh)throw new Error('Click Prepare Database first to create the Punchlist Monitoring tab.');
- const refInfo=ensureMonitoringReferenceNumbers_(sh,'Ref. No.','PL');
+ const refInfo=ensureMonitoringReferenceNumbers_(sh,'Ref. No.','PL',!String(input['Punchlist ID']||'').trim());
  const id=String(input['Punchlist ID']||'').trim(),now=new Date(),data=sh.getDataRange().getValues(),headers=data[0].map(String);
  let rowIndex=-1;
  if(id)for(let i=1;i<data.length;i++)if(String(data[i][headers.indexOf('Punchlist ID')])===id){rowIndex=i+1;break;}
@@ -933,7 +940,7 @@ function saveReworkCase_(input) {
   const ss=SpreadsheetApp.openById(DATABASE_ID);
   const main=ss.getSheetByName(REWORK_MAIN_SHEET),details=ss.getSheetByName(REWORK_DETAILS_SHEET),assignments=ss.getSheetByName(REWORK_ASSIGNMENTS_SHEET);
   if(!main||!details||!assignments)throw new Error('Rework database tabs are missing. Use Prepare Database after this feature is deployed.');
-  const refInfo=ensureMonitoringReferenceNumbers_(main,'Ref. No.','RW');
+  const refInfo=ensureMonitoringReferenceNumbers_(main,'Ref. No.','RW',!String(input['Rework ID']||'').trim());
   const mainHeaders=main.getRange(1,1,1,Math.max(main.getLastColumn(),REWORK_MAIN_HEADERS.length)).getDisplayValues()[0].map(v=>String(v||'').trim());
   REWORK_MAIN_HEADERS.forEach((header,i)=>{if(!mainHeaders[i])main.getRange(1,i+1).setValue(header).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');});
   let detailHeader=details.getRange(1,1,1,Math.max(details.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
