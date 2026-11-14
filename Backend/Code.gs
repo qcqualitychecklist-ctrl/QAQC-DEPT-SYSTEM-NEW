@@ -24,12 +24,12 @@ const PDI_SHEET = 'PDI Monitoring';
 const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','Person Responsible','Investigation','Status','Created At','Updated At','Items JSON','Attachment URL','Submitted By Username'];
 const PDI_HEADERS = ["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request','QC in Charge','Status','Remarks','PDI Reference No','Date of Request','Request Type'];
 const NCR_HEADERS = ['Reference','Date','Prepared by','Section','Person In Charge','Description of Issue','Corrective Action','Status','Date Closed'];
-const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status'];
+const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status','Ref. No.'];
 const REWORK_HEADERS = ['Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Description of Rework','Person In-Charge','Concern Section','QC - in - Charge','Date Received','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution'];
 const REWORK_MAIN_SHEET = 'Rework Main';
 const REWORK_DETAILS_SHEET = 'Rework Details';
 const REWORK_ASSIGNMENTS_SHEET = 'Rework Assignments';
-const REWORK_MAIN_HEADERS = ['Rework ID','Created At','Updated At','Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Date Received','QC - in - Charge','Date Finished']; // Date Received is retained only for legacy storage.
+const REWORK_MAIN_HEADERS = ['Rework ID','Created At','Updated At','Date Issue','S.O','J.O','Client Name','Item no.','Panel Name','Qty','Date Received','QC - in - Charge','Date Finished','Ref. No.']; // Reference is appended to preserve all existing column positions.
 const REWORK_DETAILS_HEADERS = ['Detail ID','Rework ID','Created At','Updated At','Description of Rework','QC - in - Charge','Lead Time','Status','Rework or Back Job','Category Issue','Corrective Action / Resolution','Concern Section','Closed At','Date Finished','Item no.','Panel Name','Qty','Item ID'];
 const REWORK_ASSIGNMENT_HEADERS = ['Assignment ID','Detail ID','Person In-Charge','Concern Section','Created At','Updated At'];
 const REWORK_CONCERN_SECTIONS = ['Engineering','Machineries','Fabrication','PC','Busbarring','Final Assy','Warehouse','Wiring'];
@@ -213,13 +213,38 @@ function reworkLeadTimeDays_(dateIssue,dateClosed) {
   return start==null||end==null?'':Math.round((end-start)/86400000)+1;
 }
 
+function ensureMonitoringReferenceNumbers_(sheet,headerName,prefix,reserveNext){
+ const lock=LockService.getScriptLock();lock.waitLock(15000);
+ try{
+  if(!sheet)throw new Error('Monitoring sheet is missing.');
+  let headers=sheet.getRange(1,1,1,Math.max(sheet.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
+  let index=headers.indexOf(headerName);
+  if(index<0){index=sheet.getLastColumn();sheet.getRange(1,index+1).setValue(headerName).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers[index]=headerName;}
+  const lastRow=sheet.getLastRow();let max=0;
+  if(lastRow>1){
+   const values=sheet.getRange(2,1,lastRow-1,headers.length).getValues();
+   const pattern=new RegExp('^'+prefix+'-27-([0-9]+)$');
+   values.forEach(row=>{const m=String(row[index]||'').trim().match(pattern);if(m)max=Math.max(max,Number(m[1])||0);});
+   values.forEach((row,i)=>{if(String(row[index]||'').trim())return;max++;sheet.getRange(i+2,index+1).setValue(prefix+'-27-'+String(max).padStart(3,'0'));});
+  }
+  const props=PropertiesService.getScriptProperties(),key='qaqc_monitoring_ref_sequence_'+prefix;
+  const stored=Number(props.getProperty(key)||0);
+  const next=Math.max(max+1,stored+1);
+  props.setProperty(key,String(reserveNext?next:Math.max(max,stored)));
+  return {index:index,next:next};
+ }finally{lock.releaseLock();}
+}
+
 function getReworkRecords_(searchText) {
   const ss=SpreadsheetApp.openById(DATABASE_ID);
   const main=ss.getSheetByName(REWORK_MAIN_SHEET),details=ss.getSheetByName(REWORK_DETAILS_SHEET),assignments=ss.getSheetByName(REWORK_ASSIGNMENTS_SHEET);
-  if(!main||main.getLastRow()<2)return {ok:true,records:[],fields:REWORK_MAIN_HEADERS};
+  if(!main)return {ok:true,records:[],fields:REWORK_MAIN_HEADERS};
+  const refInfo=ensureMonitoringReferenceNumbers_(main,'Ref. No.','RW');
+  if(main.getLastRow()<2)return {ok:true,records:[],fields:REWORK_MAIN_HEADERS};
   const detailHeaders=details&&details.getLastColumn()>0?details.getRange(1,1,1,details.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()):[];
   const detailIndex=name=>detailHeaders.indexOf(name);
   const mainRows=main.getDataRange().getValues().slice(1);
+  const refIndex=refInfo.index;
   const detailRows=details&&details.getLastRow()>1?details.getDataRange().getValues().slice(1):[];
   const assignmentRows=assignments&&assignments.getLastRow()>1?assignments.getDataRange().getValues().slice(1):[];
   const peopleByDetail=Object.create(null);
@@ -262,7 +287,7 @@ function getReworkRecords_(searchText) {
     const finishedDate=formatCell_(r[12]||(closureDates.length?closureDates[closureDates.length-1]:''));
     const leadTime=allClosed&&finishedDate?reworkLeadTimeDays_(r[3],finishedDate):'';
     const obj={
-      'Rework ID':id,'Created At':formatCell_(r[1]),'Updated At':formatCell_(r[2]),
+      'Rework ID':id,'Ref. No.':String(r[refIndex]||''),'Created At':formatCell_(r[1]),'Updated At':formatCell_(r[2]),
       'Date Issue':formatCell_(r[3]),'S.O':String(r[4]||''),'J.O':String(r[5]||''),
       'Client Name':String(r[6]||''),'Item no.':String(r[7]||''),'Panel Name':String(r[8]||''),
       'Qty':r[9]==null?'':String(r[9]),'Date Received':'',
@@ -349,7 +374,7 @@ function saveComplaint_(input){
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
  if(!sh)throw new Error('Click Prepare Database first to create the Complaint Monitoring tab.');
  const headers=ensureComplaintSchema_(sh),data=sh.getDataRange().getValues(),now=new Date();
- const required=['Date','Company','Client','Name of Complainant','Complaint Description'];
+ const required=['Date','Company','Client','J.O','S.O','Complaint Description'];
  required.forEach(h=>{if(!String(input[h]||'').trim())throw new Error(h+' is required.')});
  if(!['GEMCOR','GPI'].includes(String(input.Company||'').trim().toUpperCase()))throw new Error('Company must be GEMCOR or GPI.');
  const qty=String(input.Qty||'').trim();
@@ -408,7 +433,7 @@ function submitPublicComplaint(payload,sessionToken){
   if(!payload||!payload.header||!Array.isArray(payload.items)||!payload.items.length)throw new Error('Complete the complaint details and add at least one item.');
   const accountUsername=sessionToken?getComplaintSessionUsername_(sessionToken):'';
   if(sessionToken&&!accountUsername)throw new Error('Your account session expired. Please log in again before submitting.');
-  const h=payload.header,required=['Date','Company','Client','Name of Complainant'];
+  const h=payload.header,required=['Date','Company','Client','S.O'];
   required.forEach(k=>{if(!String(h[k]||'').trim())throw new Error(k+' is required.')});
   const company=String(h.Company||'').trim().toUpperCase();
   if(!['GEMCOR','GPI'].includes(company))throw new Error('Please select GEMCOR or GPI.');
@@ -487,7 +512,7 @@ function ensurePdiTrackingColumns_(sh){
 }
 
 function submitPdiRequest(payload){
- const required=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection'];
+ const required=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Scope of Inspection'];
  if(!payload||typeof payload!=='object')throw new Error('Please complete the PDI request form.');
  required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
  const email=String(payload["Requestor's Email"]).trim();
@@ -510,12 +535,10 @@ function submitPdiRequest(payload){
 }
 
 function saveManualPdiRequest(payload){
- const required=['Company',"Requestor's Name",'J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection'];
  if(!payload||typeof payload!=='object')throw new Error('Please complete the manual PDI request form.');
- required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
- if(!['GEMCOR','GPI'].includes(String(payload.Company||'').trim().toUpperCase()))throw new Error('Please select GEMCOR or GPI.');
- if(!/^\d{4}-\d{2}-\d{2}$/.test(String(payload['Date of PDI']||'')))throw new Error('Please select a valid Date of PDI.');
- if(!/^\d{2}:\d{2}$/.test(String(payload.Time||'')))throw new Error('Please select a valid inspection time.');
+ if(String(payload.Company||'').trim()&&!['GEMCOR','GPI'].includes(String(payload.Company).trim().toUpperCase()))throw new Error('Please select GEMCOR or GPI.');
+ if(String(payload['Date of PDI']||'').trim()&&!/^\d{4}-\d{2}-\d{2}$/.test(String(payload['Date of PDI']).trim()))throw new Error('Please enter a valid Date of PDI.');
+ if(String(payload.Time||'').trim()&&!/^\d{2}:\d{2}$/.test(String(payload.Time).trim()))throw new Error('Please enter a valid inspection time.');
  const lock=LockService.getScriptLock();lock.waitLock(20000);
  try{
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
@@ -613,7 +636,9 @@ function getNcrRecords_(searchText){
 
 function getPunchlistRecords_(searchText){
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
- if(!sh||sh.getLastRow()<2)return {ok:true,records:[],fields:PUNCHLIST_HEADERS};
+ if(!sh)return {ok:true,records:[],fields:PUNCHLIST_HEADERS};
+ ensureMonitoringReferenceNumbers_(sh,'Ref. No.','PL');
+ if(sh.getLastRow()<2)return {ok:true,records:[],fields:PUNCHLIST_HEADERS};
  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String);
  const records=sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues().map(row=>{const o={};headers.forEach((h,i)=>o[h]=formatCell_(row[i]));return o;});
  const q=String(searchText||'').trim().toLowerCase();
@@ -623,10 +648,12 @@ function savePunchlist_(input){
  if(!input)throw new Error('No punchlist data received.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
  if(!sh)throw new Error('Click Prepare Database first to create the Punchlist Monitoring tab.');
+ const refInfo=ensureMonitoringReferenceNumbers_(sh,'Ref. No.','PL',!String(input['Punchlist ID']||'').trim());
  const id=String(input['Punchlist ID']||'').trim(),now=new Date(),data=sh.getDataRange().getValues(),headers=data[0].map(String);
  let rowIndex=-1;
  if(id)for(let i=1;i<data.length;i++)if(String(data[i][headers.indexOf('Punchlist ID')])===id){rowIndex=i+1;break;}
- const rec=Object.assign({},input,{'Punchlist ID':id||('PL-'+Utilities.getUuid().slice(0,8).toUpperCase()),'Created At':rowIndex>0?data[rowIndex-1][headers.indexOf('Created At')]:now,'Updated At':now,'Status':String(input.Status||'Open')});
+ const oldRef=rowIndex>0?String(data[rowIndex-1][headers.indexOf('Ref. No.')]||''):'';
+ const rec=Object.assign({},input,{'Punchlist ID':id||('PL-'+Utilities.getUuid().slice(0,8).toUpperCase()),'Ref. No.':oldRef||('PL-27-'+String(refInfo.next).padStart(3,'0')),'Created At':rowIndex>0?data[rowIndex-1][headers.indexOf('Created At')]:now,'Updated At':now,'Status':String(input.Status||'Open')});
  if(!String(rec['J.O']||'').trim()&&!String(rec['S.O']||'').trim())throw new Error('Enter a J.O or S.O number.');
  if(!String(rec['Description of Punchlist']||'').trim())throw new Error('Description of Punchlist is required.');
  if(!['A','B','C'].includes(String(rec.Category||'')))throw new Error('Choose Category A, B, or C.');
@@ -650,6 +677,19 @@ function closePunchlist(id,closedBy,closedDate){
  const set=(name,value)=>{const col=headers.indexOf(name);if(col>=0)sh.getRange(row,col+1).setValue(value)};
  set('Closed By',by);set('Closed Date',date);set('Status','Closed');set('Updated At',new Date());
  invalidateModuleCache_('Punchlist Monitoring');return {ok:true,recordId:key,message:'Punchlist closed.'};
+}
+function reopenPunchlist(id){
+ const key=String(id||'').trim();if(!key)throw new Error('Missing Punchlist ID.');
+ const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PUNCHLIST_SHEET);
+ if(!sh||sh.getLastRow()<2)throw new Error('Punchlist record was not found.');
+ const data=sh.getDataRange().getValues(),headers=data[0].map(String),idCol=headers.indexOf('Punchlist ID');
+ if(idCol<0)throw new Error('Punchlist ID column is missing.');
+ let row=-1;for(let i=1;i<data.length;i++)if(String(data[i][idCol])===key){row=i+1;break;}
+ if(row<0)throw new Error('Punchlist record was not found. Refresh and try again.');
+ ['Closed By','Closed Date'].forEach(name=>{const col=headers.indexOf(name);if(col>=0)sh.getRange(row,col+1).clearContent();});
+ const statusCol=headers.indexOf('Status'),updatedCol=headers.indexOf('Updated At');
+ if(statusCol>=0)sh.getRange(row,statusCol+1).setValue('Open');if(updatedCol>=0)sh.getRange(row,updatedCol+1).setValue(new Date());
+ invalidateModuleCache_('Punchlist Monitoring');return {ok:true,recordId:key,message:'Punchlist reopened.'};
 }
 function deletePunchlistByJO(jo){
  const jobOrder=String(jo||'').trim();if(!jobOrder)throw new Error('Missing J.O. number.');
@@ -900,6 +940,7 @@ function saveReworkCase_(input) {
   const ss=SpreadsheetApp.openById(DATABASE_ID);
   const main=ss.getSheetByName(REWORK_MAIN_SHEET),details=ss.getSheetByName(REWORK_DETAILS_SHEET),assignments=ss.getSheetByName(REWORK_ASSIGNMENTS_SHEET);
   if(!main||!details||!assignments)throw new Error('Rework database tabs are missing. Use Prepare Database after this feature is deployed.');
+  const refInfo=ensureMonitoringReferenceNumbers_(main,'Ref. No.','RW',!String(input['Rework ID']||'').trim());
   const mainHeaders=main.getRange(1,1,1,Math.max(main.getLastColumn(),REWORK_MAIN_HEADERS.length)).getDisplayValues()[0].map(v=>String(v||'').trim());
   REWORK_MAIN_HEADERS.forEach((header,i)=>{if(!mainHeaders[i])main.getRange(1,i+1).setValue(header).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');});
   let detailHeader=details.getRange(1,1,1,Math.max(details.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
@@ -920,7 +961,9 @@ function saveReworkCase_(input) {
   const caseId=id||Utilities.getUuid();
   const allDetailsClosed=detailsInput.length>0&&detailsInput.every(d=>String(d.Status||'Open').trim().toLowerCase()==='closed');
   const caseClosedAt=oldMain&&oldMain[12]?oldMain[12]:'';
-  const mainRecord={'Rework ID':caseId,'Created At':oldMain?oldMain[1]:now,'Updated At':now,'Date Issue':input['Date Issue']||'','S.O':input['S.O']||'','J.O':input['J.O']||'','Client Name':input['Client Name']||'','Item no.':(detailsInput[0]&&detailsInput[0]['Item no.'])||input['Item no.']||'','Panel Name':(detailsInput[0]&&detailsInput[0]['Panel Name'])||input['Panel Name']||'','Qty':(detailsInput[0]&&detailsInput[0].Qty)||input.Qty||'','Date Received':oldMain?oldMain[10]:'','QC - in - Charge':String(input['QC - in - Charge']||'').trim(),'Date Finished':caseClosedAt};
+  const refIndex=mainHeaders.indexOf('Ref. No.');
+  const refNo=oldMain&&refIndex>=0&&oldMain[refIndex]?String(oldMain[refIndex]):'RW-27-'+String(refInfo.next).padStart(3,'0');
+  const mainRecord={'Rework ID':caseId,'Ref. No.':refNo,'Created At':oldMain?oldMain[1]:now,'Updated At':now,'Date Issue':input['Date Issue']||'','S.O':input['S.O']||'','J.O':input['J.O']||'','Client Name':input['Client Name']||'','Item no.':(detailsInput[0]&&detailsInput[0]['Item no.'])||input['Item no.']||'','Panel Name':(detailsInput[0]&&detailsInput[0]['Panel Name'])||input['Panel Name']||'','Qty':(detailsInput[0]&&detailsInput[0].Qty)||input.Qty||'','Date Received':oldMain?oldMain[10]:'','QC - in - Charge':String(input['QC - in - Charge']||'').trim(),'Date Finished':caseClosedAt};
   const mainOut=REWORK_MAIN_HEADERS.map(h=>mainRecord[h]??'');
   const oldDetailRows=details.getLastRow()>1?details.getDataRange().getValues().slice(1):[];
   const oldAssignmentRows=assignments.getLastRow()>1?assignments.getDataRange().getValues().slice(1):[];
@@ -994,6 +1037,7 @@ function toggleReworkDetailStatus(reworkId, detailId) {
   if(targetRow<0)throw new Error('Rework description not found. Refresh and try again.');
   const nextStatus=targetStatus.toLowerCase()==='closed'?'Open':'Closed',now=new Date();
   details.getRange(targetRow,statusCol).setValue(nextStatus);
+  if(nextStatus==='Open')main.getRange(mainRow,13).clearContent();
   details.getRange(targetRow,closedCol).setValue(nextStatus==='Closed'?now:'');
   if(updatedCol)details.getRange(targetRow,updatedCol).setValue(now);
   const updatedRows=details.getDataRange().getValues(),sectionCol=headers.indexOf('Concern Section')+1,finishedCol=headers.indexOf('Date Finished')+1,leadCol=headers.indexOf('Lead Time')+1;
@@ -1002,7 +1046,7 @@ function toggleReworkDetailStatus(reworkId, detailId) {
   const allClosed=sectionRows.length>0&&sectionRows.every(x=>String(x.data[statusCol-1]||'Open').trim().toLowerCase()==='closed');
   const finishedDate=finishedCol?sectionRows.map(x=>x.data[finishedCol-1]).find(Boolean)||'':'';
   const leadTime=allClosed&&finishedDate?reworkLeadTimeDays_(dateIssue,finishedDate):'';
-  sectionRows.forEach(x=>{if(leadCol)details.getRange(x.row,leadCol).setValue(leadTime);});
+  sectionRows.forEach(x=>{if(leadCol)details.getRange(x.row,leadCol).setValue(leadTime);if(!allClosed&&finishedCol)details.getRange(x.row,finishedCol).clearContent();});
   invalidateModuleCache_('Rework Monitoring');
   return {ok:true,status:nextStatus,message:'Description status changed to '+nextStatus+'.'};
 }
@@ -1465,6 +1509,30 @@ function deleteAllocation(recordId,allocationId) {
   for(let i=1;i<rows.length;i++)if(String(rows[i][0])===String(allocationId)&&String(rows[i][recordCol])===String(recordId)){sh.deleteRow(i+1);syncTransferSummary_(recordId);syncRemainingTransferRow_(recordId);syncFGTSTransferAllocations_();
   invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');return {ok:true,message:'Allocation deleted.'};}
   throw new Error('Allocation not found.');
+}
+
+function reopenPassedTransfer(recordId,nextStatus){
+ const id=String(recordId||'').trim(),next=String(nextStatus||'').trim();
+ if(!id||!['Ongoing','For line up'].includes(next))throw new Error('A valid transfer and status are required.');
+ const ss=SpreadsheetApp.openById(DATABASE_ID),transfer=ss.getSheetByName(TRANSFER_SHEET),alloc=ss.getSheetByName(ALLOCATION_SHEET);
+ if(!transfer||!alloc)throw new Error('Transfer or allocation sheet is missing.');
+ ensureTransferAllocationColumns_(transfer);migrateAllocationRecordIds_(transfer,alloc);
+ const headers=transfer.getRange(1,1,1,transfer.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()),ix=name=>headers.indexOf(name);
+ const values=transfer.getDataRange().getValues();let parentRow=-1,parent=null;
+ for(let i=1;i<values.length;i++)if(String(values[i][ix('Record ID')])===id){parentRow=i+1;parent=values[i];break;}
+ if(parentRow<0)throw new Error('Transfer record not found. Refresh and try again.');
+ if(String(parent[ix('Status')])!=='Passed')throw new Error('This transfer is no longer Passed. Refresh and try again.');
+ const allocationHeaders=alloc.getRange(1,1,1,alloc.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()),allocationRecordCol=allocationHeaders.indexOf('Transfer Record ID');
+ const childIds=new Set([id]);
+ for(let i=1;i<values.length;i++)if(String(values[i][ix('Remaining For Record ID')])===id)childIds.add(String(values[i][ix('Record ID')]));
+ if(alloc.getLastRow()>1){const allocationRows=alloc.getDataRange().getValues();for(let i=allocationRows.length-1;i>=1;i--)if(childIds.has(String(allocationRows[i][allocationRecordCol])))alloc.deleteRow(i+1);}
+ for(let i=values.length-1;i>=1;i--)if(String(values[i][ix('Remaining For Record ID')])===id)transfer.deleteRow(i+1);
+ const pool=Number(parent[ix('Allocation Pool Qty')])||Number(parent[ix('Qty')])||0;
+ const set=(name,value)=>{const col=ix(name);if(col>=0)transfer.getRange(parentRow,col+1).setValue(value);};
+ set('Qty',pool);set('Allocation Pool Qty',pool);set('Done Qty',0);set('Remaining Qty',pool);
+ set('QC In Charge','');set('FGTS No.','');set('Date Finished','');set('Category','');set('Remarks','');set('Status',next);set('Reminders','');
+ syncFGTSTransferAllocations_();invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
+ return {ok:true,recordId:id,status:next,message:'Transfer status updated and its QC allocation details were cleared.'};
 }
 
 function deleteTransfer(recordId) {
