@@ -96,7 +96,7 @@ main{min-width:0;padding:10px 10px 16px;width:100%;max-width:none;margin:0} .int
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(12),#monitoringPanel .tablewrap table.pdi-table td:nth-child(12){width:125px}
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(13),#monitoringPanel .tablewrap table.pdi-table td:nth-child(13){width:100px}
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(14),#monitoringPanel .tablewrap table.pdi-table td:nth-child(14){width:180px}
-.dashboard-cards.pdi-dashboard{grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
+ .dashboard-cards.pdi-dashboard{grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
 @media(max-width:900px){.dashboard-cards.pdi-dashboard{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.dashboard-cards.pdi-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* Compact controls consistently across all monitoring modules. */
@@ -2305,6 +2305,25 @@ function renderPdiTable(){
  el('count').textContent=recordsLoadedFully?(shown.length?(startRow+1)+'–'+Math.min(startRow+PAGE_SIZE,shown.length)+' of '+shown.length+' PDI requests':'0 PDI requests'):(shown.length?'Showing '+(startRow+1)+'–'+Math.min(startRow+PAGE_SIZE,shown.length)+' PDI requests · loading remaining records…':'Loading PDI requests…');
  renderPagination(shown.length);applyMonitoringStatusColumnWidth();
 }
+
+function openManualPdiRequest(){
+ const old=el('manualPdiModal');if(old)old.remove();
+ const modal=document.createElement('div');modal.id='manualPdiModal';modal.className='modal open';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');
+ const dialog=document.createElement('div');dialog.className='dialog';dialog.style.maxWidth='900px';dialog.style.maxHeight='90vh';dialog.style.overflow='auto';
+ const head=document.createElement('div');head.className='dialoghead';const title=document.createElement('h3'),sub=document.createElement('div');title.textContent='Manual PDI Request';sub.className='muted';sub.textContent='Record a PDI inspection when no request form was submitted. This will be tracked as Without Request.';head.append(title,sub);
+ const form=document.createElement('form');form.id='manualPdiForm';form.className='fields';form.style.padding='16px';form.onsubmit=submitManualPdiRequest;
+ const field=(label,id,type='text',required=true)=>{const wrap=document.createElement('div');wrap.className='field';const l=document.createElement('label');l.textContent=label+(required?' *':'');let input;if(type==='select'){input=document.createElement('select');['','GEMCOR','GPI'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v||'Select Company';input.append(o)})}else if(type==='textarea'){input=document.createElement('textarea');input.rows=3}else{input=document.createElement('input');input.type=type}input.id=id;input.required=required;wrap.append(l,input);form.append(wrap);return input};
+ field('Company','manualPdiCompany','select');field('Requestor Name','manualPdiName');field('J.O','manualPdiJO');field('S.O','manualPdiSO');field('Client','manualPdiClient');field('Date of PDI','manualPdiDate','date');field('Time','manualPdiTime','time');field('Representative Name','manualPdiRep');field('Contact Number','manualPdiContact');field('Scope of Inspection','manualPdiScope','textarea');field('Comments or Special Requests','manualPdiComments','textarea',false);
+ const actions=document.createElement('div');actions.className='actions';actions.style.padding='0 16px 16px';actions.style.justifyContent='flex-end';const cancel=button('Cancel','small',()=>modal.remove()),save=button('Save Manual Request','small primary',null);save.type='submit';form.append(actions);actions.append(cancel,save);
+ dialog.append(head,form);modal.append(dialog);document.body.append(modal);
+}
+function submitManualPdiRequest(event){
+ event.preventDefault();const btn=el('manualPdiForm').querySelector('button[type="submit"]');if(btn.disabled)return;
+ const payload={'Company':el('manualPdiCompany').value,"Requestor's Name":el('manualPdiName').value.trim(),'J.O':el('manualPdiJO').value.trim(),'S.O':el('manualPdiSO').value.trim(),'Client':el('manualPdiClient').value.trim(),'Date of PDI':el('manualPdiDate').value,'Time':el('manualPdiTime').value,'Representative Name':el('manualPdiRep').value.trim(),'Contact Number':el('manualPdiContact').value.trim(),'Scope of Inspection':el('manualPdiScope').value.trim(),'Comments or Special Request':el('manualPdiComments').value.trim()};
+ btn.disabled=true;btn.textContent='Saving…';
+ callServer('saveManualPdiRequest',[payload],result=>{btn.disabled=false;btn.textContent='Save Manual Request';if(!result||result.ok===false){showStatus(false,'Save failed',result&&result.message||'Unable to save manual PDI request.');return}el('manualPdiModal').remove();delete recordCache['PDI Monitoring::'];showStatus(true,'Manual PDI saved',result.message||('Reference No: '+result.referenceNo));loadRecords(false)},err=>{btn.disabled=false;btn.textContent='Save Manual Request';showStatus(false,'Save failed',err&&err.message||String(err))});
+}
+
 function formatPdiDisplayDate(value){
   const s=String(value||'').trim(),m=s.match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
   if(!m)return s;
