@@ -566,10 +566,10 @@ function updatePdiRequest(payload,referenceNo,editToken){
  if(!ref||!token||CacheService.getScriptCache().get('qaqc_pdi_edit_'+ref)!==token)throw new Error('This PDI request can no longer be edited from this session.');
  const required=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Scope of Inspection'];
  required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
- if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(payload["Requestor's Email"]).trim()))throw new Error('Please enter a valid requestor email address.');
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(payload["Requestor's Email"]).trim()))throw new Error('Please enter a valid requestor email address.');
  if(!['GEMCOR','GPI'].includes(String(payload.Company).trim().toUpperCase()))throw new Error('Please select GEMCOR or GPI.');
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(payload['Date of PDI']).trim()))throw new Error('Please select a valid Date of PDI.');
- if(!/^\\d{2}:\\d{2}$/.test(String(payload.Time).trim()))throw new Error('Please select a valid inspection time.');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(payload['Date of PDI']).trim()))throw new Error('Please select a valid Date of PDI.');
+ if(!/^\d{2}:\d{2}$/.test(String(payload.Time).trim()))throw new Error('Please select a valid inspection time.');
  const lock=LockService.getScriptLock();lock.waitLock(20000);
  try{
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);if(!sh)throw new Error('PDI Monitoring database is not prepared.');
@@ -693,7 +693,7 @@ function ensurePunchlistReferencesByJO_(sh){
   if(refIndex<0){refIndex=sh.getLastColumn();sh.getRange(1,refIndex+1).setValue('Ref. No.').setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers.push('Ref. No.');}
   const last=sh.getLastRow();if(last<2)return {index:refIndex,next:1};
   const data=sh.getRange(2,1,last-1,sh.getLastColumn()).getValues(),joIndex=headers.indexOf('J.O');
-  let max=0;const pattern=/^PL-27-(\\d+)$/;data.forEach(row=>{const m=String(row[refIndex]||'').trim().match(pattern);if(m)max=Math.max(max,Number(m[1])||0)});
+  let max=0;const pattern=/^PL-27-(\d+)$/;data.forEach(row=>{const m=String(row[refIndex]||'').trim().match(pattern);if(m)max=Math.max(max,Number(m[1])||0)});
   const props=PropertiesService.getScriptProperties(),stored=Number(props.getProperty('qaqc_punchlist_ref_sequence')||0);max=Math.max(max,stored);
   const groups=new Map();
   data.forEach((row,i)=>{const jo=joIndex>=0?String(row[joIndex]||'').trim():'';const key=jo?'JO:'+jo.toUpperCase():'ROW:'+(i+2);if(!groups.has(key))groups.set(key,{rows:[],ref:''});const g=groups.get(key);g.rows.push(i+2);if(!g.ref&&String(row[refIndex]||'').trim())g.ref=String(row[refIndex]).trim();});
@@ -1387,7 +1387,7 @@ function saveTransfer(input) {
   if(old){
     validateTransferEditQuantity_(input,id,sh);
     const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String),joCol=headers.indexOf('J.O'),itemCol=headers.indexOf('Item No.'),idCol=headers.indexOf('Record ID');
-    const norm=v=>String(v||'').trim().replace(/\\s+/g,' ').toUpperCase(),newJO=norm(input['J.O']),newItem=norm(input['Item No.']);
+    const norm=v=>String(v||'').trim().replace(/\s+/g,' ').toUpperCase(),newJO=norm(input['J.O']),newItem=norm(input['Item No.']);
     const all=sh.getDataRange().getValues();
     for(let i=1;i<all.length;i++)if(String(all[i][idCol])!==id&&norm(all[i][joCol])===newJO&&norm(all[i][itemCol])===newItem)throw new Error('This J.O. and Item No. already exist in another transfer record.');
   }
