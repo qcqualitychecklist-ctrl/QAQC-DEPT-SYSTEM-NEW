@@ -1869,7 +1869,7 @@ function submitPunchlist(ev){
    if(di>=idsToDelete.length){
     editingPunchlistIds=[];delete recordCache['Punchlist Monitoring::'];
     showStatus(true,'Punchlist updated',payloads.length+' description(s) saved; '+idsToDelete.length+' removed.');
-    closeModal('punchlistModal');loadRecords(false);return;
+    closeModal('punchlistModal');refreshCurrentModuleQuietly('Punchlist Monitoring');return;
    }
    callServer('deletePunchlist',[idsToDelete[di]],r=>{
     if(!r||r.ok===false){fail('Update partly completed','Saved the edited descriptions, but could not remove one deleted description: '+(r&&r.message||'Unknown error'));return}
@@ -2541,6 +2541,11 @@ function pdiRequestPrintStyles(){
 #dashboardCards .dash-card{min-width:0;max-width:100%;box-sizing:border-box}
 .actions button,.transfer-details-actions button,.complaint-details-actions button{font-size:12px!important}
 .action-confirm-actions button{font-weight:600!important}
+
+#monitoringPanel .tablewrap table.pdi-table th:nth-child(14),#monitoringPanel .tablewrap table.pdi-table td:nth-child(14){width:360px!important;min-width:360px!important;max-width:360px!important;box-sizing:border-box}
+#monitoringPanel .tablewrap table.pdi-table th:nth-child(14){white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important}
+.actions button[type="button"]:not(.danger),.transfer-details-actions button:not(.danger),.complaint-details-actions button:not(.danger){background:#fff!important;color:#334155!important;border:1px solid #cbd5e1!important}
+#complaintHistoryDetailsModal .complaint-history-dialog{width:min(980px,96vw)!important;max-width:980px!important}
 </style>';
 }
 function buildPdiRequestMarkup(rec,logoSrc){
@@ -2703,8 +2708,8 @@ function renderPunchlistTable(){
  el('count').textContent=shown.length?(startRow+1)+'–'+Math.min(startRow+PAGE_SIZE,shown.length)+' of '+shown.length+' punchlist descriptions':'0 punchlist descriptions';renderPagination(shown.length);
  const cell=v=>{const td=document.createElement('td');td.textContent=v==null||v===''?'—':String(v);td.title=td.textContent;return td};
  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;if(recordsLoadedFully){td.className='empty';td.textContent='No punchlist records found.'}else{td.innerHTML='<div class="loading-state"><span class="loading-spinner" aria-hidden="true"></span><span>Loading records, please wait…</span></div>'}tr.append(td);el('tbody').append(tr);return}
- const groups=[];rows.forEach(r=>{const jo=String(r['J.O']||'').trim(),key=jo?'JO¦'+jo:'SO¦'+String(r['S.O']||'').trim()+'¦'+String(r.Client||'').trim();let g=groups[groups.length-1];if(!g||g.key!==key){g={key,items:[]};groups.push(g)}g.items.push(r)});
- groups.forEach(g=>{const itemGroups=[];g.items.forEach(r=>{const itemKey=['Item','Panel Name','Qty','Category'].map(k=>String(r[k]||'').trim()).join('¦');let ig=itemGroups[itemGroups.length-1];if(!ig||ig.key!==itemKey){ig={key:itemKey,items:[]};itemGroups.push(ig)}ig.items.push(r)});
+ const groups=[],groupMap=new Map();rows.forEach(r=>{const jo=String(r['J.O']||'').trim(),key=jo?'JO¦'+jo.toUpperCase():'SO¦'+String(r['S.O']||'').trim()+'¦'+String(r.Client||'').trim();let g=groupMap.get(key);if(!g){g={key,items:[]};groupMap.set(key,g);groups.push(g)}g.items.push(r)});
+ groups.forEach(g=>{const itemGroups=[],itemMap=new Map();g.items.forEach(r=>{const itemKey=['Item','Panel Name','Qty','Category'].map(k=>String(r[k]||'').trim()).join('¦');let ig=itemMap.get(itemKey);if(!ig){ig={key:itemKey,items:[]};itemMap.set(itemKey,ig);itemGroups.push(ig)}ig.items.push(r)});
  itemGroups.forEach(ig=>ig.items.forEach((r,i)=>{const tr=document.createElement('tr');
  if(g.items[0]===r){const refCell=cell(r['Ref. No.']);refCell.rowSpan=g.items.length;refCell.className='punchlist-shared-cell punchlist-ref-cell';tr.append(refCell)}
  if(g.items[0]===r)[['Date Issue','Date Issue'],['J.O','J.O'],['S.O','S.O'],['Client','Client']].forEach(([label,key])=>{const td=cell(r[key]);td.rowSpan=g.items.length;td.className='punchlist-shared-cell';tr.append(td)});
@@ -2799,7 +2804,8 @@ function openEditPunchlistGroup(rec){
 }
 function openEditPunchlist(rec){
  el('punchlistEditId').value=rec['Punchlist ID']||'';el('punchlistEditStatus').value=rec.Status||'Open';const host=el('punchlistEditFields');host.innerHTML='';const defs=[['Date Issue','date'],['J.O','text'],['S.O','text'],['Client','text'],['Item','text'],['Panel Name','text'],['Qty','number'],['Category','select'],['Description of Punchlist','text'],['Concern Section','text'],['Target Date','date'],['Received By','text'],['Received Date','date'],['Closed By','text'],['Closed Date','date']];
- defs.forEach(([name,type])=>{const f=punchlistField(name,type,rec[name]||'',name==='Date Issue'||name==='Client'||name==='Description of Punchlist',name==='Category'?PUNCHLIST_FORM_CATEGORIES:null);f.input.dataset.punchEdit=name;if(name==='Description of Punchlist'||name==='Client')f.box.classList.add('full');host.append(f.box)});openModal('punchlistEditModal');
+ const required=['J.O','Item','Qty','Description of Punchlist','Concern Section'];
+ defs.forEach(([name,type])=>{const f=punchlistField(name,type,rec[name]||'',required.includes(name),name==='Category'?PUNCHLIST_FORM_CATEGORIES:null);f.input.dataset.punchEdit=name;if(name==='Description of Punchlist'||name==='Client')f.box.classList.add('full');host.append(f.box)});openModal('punchlistEditModal');
 }
 function submitEditPunchlist(ev){
  ev.preventDefault();const data={'Punchlist ID':el('punchlistEditId').value,Status:el('punchlistEditStatus').value||'Open'};el('punchlistEditFields').querySelectorAll('[data-punch-edit]').forEach(input=>data[input.dataset.punchEdit]=input.value.trim());const btn=el('punchlistEditSave');btn.disabled=true;
