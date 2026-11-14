@@ -796,6 +796,37 @@ table.ncr-table td.ncr-description{min-width:260px;}
 }
 
 
+
+/* Complaint + PDI modal typography and compact full-width headers. */
+#complaintAssignmentModal .dialog{padding:0!important;overflow:hidden!important;border:1px solid #d9e4f2!important;border-radius:14px!important;background:#f8fafc!important}
+#complaintAssignmentModal .complaint-assignment-head{padding:13px 16px!important;border-radius:0!important}
+#complaintAssignmentModal .complaint-assignment-head h3{font-size:16px!important;line-height:1.25!important;margin:0 0 3px!important}
+#complaintAssignmentModal .complaint-assignment-head .muted{font-size:10px!important;line-height:1.4!important}
+#complaintAssignmentModal .formgrid{padding:14px 16px 8px!important}
+#complaintAssignmentModal .complaint-assignment-actions{padding:10px 16px 14px!important;margin:0!important}
+#complaintAssignmentModal button,#complaintModal button,#complaintHistoryDetailsModal button,#complaintAttachmentsModal button,#pdiRequestViewModal button{font-family:Arial,Helvetica,sans-serif!important;font-weight:700!important;line-height:1.2!important}
+#complaintAssignmentModal button,#complaintHistoryDetailsModal button,#complaintAttachmentsModal button,#pdiRequestViewModal button{font-size:11px!important}
+#complaintModal #complaintSave{font-family:Arial,Helvetica,sans-serif!important;font-size:11px!important;font-weight:700!important}
+#complaintHistoryDetailsModal .complaint-history-dialog{padding:0!important}
+#complaintHistoryDetailsModal .complaint-history-dialog .dialoghead{padding:18px 22px!important}
+#complaintHistoryDetailsModal .complaint-history-dialog .dialoghead h3{font-size:19px!important}
+#complaintHistoryDetailsModal .complaint-view-close{display:none!important}
+#complaintHistoryDetailsModal .complaint-details-actions button{font-family:Arial,Helvetica,sans-serif!important;font-size:11px!important;font-weight:700!important}
+#complaintHistoryDetailsModal .complaint-history-dialog .dialoghead{justify-content:flex-start!important}
+#complaintHistoryDetailsModal .complaint-history-details-body{padding:16px 22px!important}
+#complaintHistoryDetailsModal .complaint-details-actions{padding:12px 22px 18px!important}
+#complaintAttachmentsModal .complaint-attachments-actions button{font-family:Arial,Helvetica,sans-serif!important;font-size:11px!important;font-weight:700!important}
+#complaintModal .actions button{font-family:Arial,Helvetica,sans-serif!important;font-size:11px!important;font-weight:700!important}
+#complaintAssignmentModal .actions button{font-family:Arial,Helvetica,sans-serif!important;font-size:11px!important;font-weight:700!important}
+#complaintAssignmentModal .complaint-assignment-head{width:100%!important;box-sizing:border-box!important}
+#pdiRequestViewModal .pdi-request-view-dialog{padding:0!important;overflow:hidden!important;border:1px solid #d9e4f2!important;border-radius:16px!important;background:#f8fafc!important}
+#pdiRequestViewModal .pdi-request-view-head{width:100%!important;box-sizing:border-box!important;margin:0!important;padding:17px 22px!important;border-radius:0!important}
+#pdiRequestViewModal .pdi-request-preview-body{padding:16px 20px!important;overflow:auto!important;min-height:0!important}
+#pdiRequestViewModal .pdi-request-view-actions{padding:12px 20px 16px!important;margin:0!important;border-top:1px solid #dfe8f2!important;background:#f8fafc!important}
+#pdiRequestViewModal .pdi-request-view-actions button{font-family:Arial,Helvetica,sans-serif!important;font-size:11px!important;font-weight:700!important;line-height:1.2!important}
+.complaint-attachment-icon{width:30px!important;min-width:30px!important;height:27px!important;padding:3px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;font-size:16px!important;line-height:1!important;border-radius:6px!important}
+.complaint-attachment-icon:disabled{opacity:.55!important;cursor:not-allowed!important}
+
 /* Complaint attachments and PDI preview: premium modal headers. */
 #complaintAttachmentsModal .complaint-attachments-dialog{display:flex!important;flex-direction:column!important;padding:0!important;border:1px solid #d9e4f2!important;border-radius:16px!important;overflow:hidden!important;background:#f8fafc!important}#complaintAttachmentsModal .complaint-attachments-body{flex:1 1 auto;min-height:0;overflow:auto;padding:16px}#complaintAttachmentsModal .complaint-attachments-actions{position:sticky;bottom:0;z-index:6;flex:0 0 auto;margin:0;padding:10px 16px!important;background:#fff;border-top:1px solid #d9e4f2;box-shadow:0 -4px 12px #142b4a0d}#complaintAttachmentsModal .complaint-attachments-actions button{min-width:88px;height:32px;padding:7px 14px;font-weight:700;border-radius:7px}
 #complaintAttachmentsModal .complaint-attachments-head,#pdiRequestViewModal .pdi-request-view-head{position:sticky;top:0;z-index:5;margin:0;padding:17px 20px;background:linear-gradient(120deg,#12325a,#245ca7);color:#fff;border-bottom:1px solid #c6d8f0}
@@ -2266,7 +2297,7 @@ function renderPdiTable(){
   const n=document.createElement('div');n.className='dash-value';n.textContent=v[1];
   c.append(l,n);dashboard.append(c);
  });
- const heads=['Date of Request','Ref. No.','Requestor Email','Requestor Name','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Requests','QC in Charge','Status','Remarks','Action'];
+ const heads=['Date of Request','Ref. No.','Company','Requestor Email','Requestor Name','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Requests','QC in Charge','Status','Remarks','Action'];
  const pages=Math.max(1,Math.ceil(shown.length/PAGE_SIZE));
  if(tablePage>pages)tablePage=pages;
  const startRow=(tablePage-1)*PAGE_SIZE,rows=shown.slice(startRow,startRow+PAGE_SIZE);
@@ -2483,7 +2514,7 @@ function renderComplaintTable(){
    if(index===0){
     const responsible=makeCell(rec['Person Responsible']||rec['QC In-Charge']||'',span);tr.append(responsible);
     const investigation=makeCell(rec.Investigation||rec.Cause||'',span);tr.append(investigation);
-    const attachment=makeCell('',span),files=getComplaintAttachments(rec);if(files.length){const viewAttachments=button('View Attachments','small',()=>openComplaintAttachments(rec));viewAttachments.title='View Attachments ('+files.length+')';viewAttachments.setAttribute('aria-label','View Attachments ('+files.length+')');attachment.append(viewAttachments)}else if(rec['Attachment URL']){const viewAttachments=button('View Attachments','small',()=>openComplaintAttachments(rec));viewAttachments.title='View Attachments (1)';viewAttachments.setAttribute('aria-label','View Attachments (1)');attachment.append(viewAttachments)}else attachment.textContent='—';tr.append(attachment);
+    const attachment=makeCell('',span),files=getComplaintAttachments(rec),viewAttachments=button('📎','small',()=>{if(files.length||rec['Attachment URL'])openComplaintAttachments(rec)});viewAttachments.classList.add('complaint-attachment-icon');viewAttachments.title=files.length?'View Attachments ('+files.length+')':'No attachment available';viewAttachments.setAttribute('aria-label',files.length?'View Attachments ('+files.length+')':'No attachment available');viewAttachments.disabled=!(files.length||rec['Attachment URL']);attachment.append(viewAttachments);tr.append(attachment);
     const action=makeCell('',span);action.className='actioncell ncr-action-cell';action.append(button('Full View','small',()=>showComplaintHistoryDetails(rec)),document.createTextNode(' '),button('Person In Charge','small primary',()=>openComplaintAssignment(rec)),document.createTextNode(' '),button('Delete','small danger',()=>{if(!confirm('Delete complaint '+(rec['Complaint ID']||'')+'?'))return;callServer('deleteComplaint',[rec['Complaint ID']],()=>loadRecords(false),e=>showStatus(false,'Delete failed',e.message||String(e)))}));tr.append(action);
    }
    el('tbody').append(tr);
@@ -3074,7 +3105,7 @@ function showComplaintHistoryDetails(rec){
  const modal=document.createElement('div');modal.id='complaintHistoryDetailsModal';modal.className='modal open';
  const dialog=document.createElement('div');dialog.className='dialog complaint-history-dialog';
  const head=document.createElement('div');head.className='dialoghead';
- const titleWrap=document.createElement('div');const h=document.createElement('h3');h.textContent='Complaint Details';const sub=document.createElement('div');sub.className='muted';sub.textContent='Complete saved information for complaint '+String(rec['Complaint ID']||'');titleWrap.append(h,sub);const headClose=document.createElement('button');headClose.type='button';headClose.className='complaint-view-close';headClose.setAttribute('aria-label','Close complaint details');headClose.textContent='✕';headClose.onclick=()=>modal.remove();head.append(titleWrap,headClose);
+ const titleWrap=document.createElement('div');const h=document.createElement('h3');h.textContent='Complaint Details';const sub=document.createElement('div');sub.className='muted';sub.textContent='Complete saved information for complaint '+String(rec['Complaint ID']||'');titleWrap.append(h,sub);head.append(titleWrap);
  const body=document.createElement('div');body.className='complaint-history-details-body';
  const addDetail=(label,value,full)=>{const row=document.createElement('div');row.className='complaint-detail-row'+(full?' full':'');const name=document.createElement('strong'),val=document.createElement('span');name.textContent=label;val.textContent=String(value||'—');row.append(name,val);body.append(row)};
  [['Complaint Ref. No.',rec['Complaint ID']],['Date',rec.Date],['Company',rec.Company],['Client',rec.Client],['Name of Complainant',rec['Name of Complainant']],['J.O',rec['J.O']],['S.O',rec['S.O']]].forEach(x=>addDetail(x[0],x[1],x[2]));
