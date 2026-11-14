@@ -3241,7 +3241,7 @@ async function submitPublicComplaintForm(event){
   if(!r||!r.ok){showPublicComplaintMessage(r&&r.message||'Unable to save complaint. Please try again.',false);return}
   const previous=editing&&editing.record||{};
   const localRecord={'Complaint ID':r.recordId||payload.recordId,...header,Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Items JSON':JSON.stringify(items),'Attachment URL':previous['Attachment URL']||r.attachmentUrl||'','Attachments JSON':previous['Attachments JSON']||JSON.stringify(attachments),editToken:editing?editing.editToken:r.editToken};
-  el('publicComplaintForm').reset();el('publicComplaintItems').innerHTML='';addPublicComplaintItem();const today=new Date(),localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);el('pubDate').value=localDate;
+  el('publicComplaintForm').reset();btn.textContent='Submit Complaint';el('publicComplaintItems').innerHTML='';addPublicComplaintItem();const today=new Date(),localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);el('pubDate').value=localDate;
   const workspace=el('guestComplainWorkspace'),formArea=el('guestComplainFormArea'),create=el('createGuestComplainButton'),notice=el('guestComplaintNotice');
   if(editing){
    complaintHistoryEdit=null;
@@ -3457,6 +3457,8 @@ function openGuestPdiRequest(){
 }
 function returnGuestToWorkspace(type){
  const isPdi=type==='pdi',workspace=el(isPdi?'guestPdiWorkspace':'guestComplainWorkspace');
+ if(isPdi){pdiHistoryEdit=null;el('publicPdiForm')?.reset();if(el('publicPdiSubmit'))el('publicPdiSubmit').textContent='Submit PDI Request';}
+ else{complaintHistoryEdit=null;el('publicComplaintForm')?.reset();if(el('publicComplaintItems')){el('publicComplaintItems').innerHTML='';addPublicComplaintItem();}if(el('publicComplaintSubmit'))el('publicComplaintSubmit').textContent='Submit Complaint';}
  const form=el(isPdi?'guestPdiFormArea':'guestComplainFormArea');
  const create=el(isPdi?'createGuestPdiButton':'createGuestComplainButton');
  if(workspace)workspace.style.display='flex';
