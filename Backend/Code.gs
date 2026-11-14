@@ -462,15 +462,40 @@ function submitPublicComplaint(payload,sessionToken){
   try{
     const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
     if(!sh)throw new Error('Complaint Monitoring database is not prepared yet. Please contact QA/QC.');
-    const id='CMP-'+Utilities.getUuid().slice(0,8).toUpperCase(),now=new Date(),headers=ensureComplaintSchema_(sh);
+    const id='CMP-'+Utilities.getUuid().slice(0,8).toUpperCase(),now=new Date(),headers=ensureComplaintSchema_(sh),editToken=Utilities.getUuid();
     const items=payload.items.map(x=>({Item:String(x.Item||'').trim(), 'Panel Name':String(x['Panel Name']||'').trim(),Qty:String(x.Qty||'').trim(),'Complaint Description':String(x['Complaint Description']||'').trim()}));
     const attachmentUrl=safeAttachments.length?safeAttachments[0].url:'';
     const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl,'Attachments JSON':JSON.stringify(safeAttachments),'Submitted By Username':accountUsername};
     sh.appendRow(headers.map(k=>rec[k]===undefined?'':rec[k]));
+    CacheService.getScriptCache().put('qaqc_complaint_edit_'+id,editToken,21600);
     invalidateComplaintCache_();
-    return {ok:true,recordId:id,attachmentUrl:attachmentUrl,attachments:safeAttachments,message:'Your complaint has been submitted successfully.'};
+    return {ok:true,recordId:id,editToken:editToken,attachmentUrl:attachmentUrl,attachments:safeAttachments,message:'Your complaint has been submitted successfully.'};
   }finally{lock.releaseLock();}
 }
+function updatePublicComplaint(payload,sessionToken,editToken){
+ if(!payload||!payload.header||!Array.isArray(payload.items)||!payload.items.length)throw new Error('Complete the complaint details and add at least one item.');
+ const h=payload.header,id=String(payload.recordId||'').trim(),accountUsername=sessionToken?getComplaintSessionUsername_(sessionToken):'';
+ if(sessionToken&&!accountUsername)throw new Error('Your account session expired. Please log in again before editing.');
+ if(!id)throw new Error('Complaint reference is missing.');
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ try{
+  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);if(!sh)throw new Error('Complaint Monitoring database is not prepared.');
+  const headers=ensureComplaintSchema_(sh),data=sh.getDataRange().getValues(),idCol=headers.indexOf('Complaint ID'),ownerCol=headers.indexOf('Submitted By Username');let row=-1,old=null;
+  for(let i=1;i<data.length;i++)if(String(data[i][idCol]||'').trim()===id){row=i+1;old=data[i];break;}
+  if(row<0)throw new Error('Complaint record not found. Refresh the history and try again.');
+  const owner=ownerCol>=0?String(old[ownerCol]||'').trim():'';
+  if(accountUsername){if(owner.toLowerCase()!==accountUsername.toLowerCase())throw new Error('You can only edit complaints submitted by your account.');}
+  else if(!editToken||CacheService.getScriptCache().get('qaqc_complaint_edit_'+id)!==String(editToken))throw new Error('This complaint can no longer be edited from this session.');
+  ['Date','Company','Client','S.O'].forEach(k=>{if(!String(h[k]||'').trim())throw new Error(k+' is required.');});
+  const company=String(h.Company||'').trim().toUpperCase();if(!['GEMCOR','GPI'].includes(company))throw new Error('Please select GEMCOR or GPI.');
+  if(payload.items.length>30)throw new Error('A maximum of 30 items can be included in one submission.');
+  const items=payload.items.map((x,i)=>{if(!String(x.Item||'').trim()||!String(x['Complaint Description']||'').trim())throw new Error('Item and Complaint Description are required for item row '+(i+1)+'.');if(x.Qty!==''&&x.Qty!=null&&(!isFinite(Number(x.Qty))||Number(x.Qty)<=0))throw new Error('Qty must be greater than zero for item row '+(i+1)+'.');return {Item:String(x.Item||'').trim(),'Panel Name':String(x['Panel Name']||'').trim(),Qty:String(x.Qty||'').trim(),'Complaint Description':String(x['Complaint Description']||'').trim()};});
+  const record={'Date':String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']||'').trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Items JSON':JSON.stringify(items),'Updated At':new Date()};
+  Object.keys(record).forEach(name=>{const col=headers.indexOf(name);if(col>=0)sh.getRange(row,col+1).setValue(record[name]);});
+  invalidateComplaintCache_();return {ok:true,recordId:id,message:'Complaint updated successfully.'};
+ }finally{lock.releaseLock();}
+}
+
 function getMyComplaintHistory(sessionToken){
   const username=getComplaintSessionUsername_(sessionToken);if(!username)throw new Error('Your account session expired. Please log in again to view complaint history.');
   const result=getComplaintRecords_('');return {ok:true,records:(result.records||[]).filter(r=>String(r['Submitted By Username']||'').toLowerCase()===username.toLowerCase())};
@@ -525,12 +550,37 @@ function submitPdiRequest(payload){
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
   if(!sh)throw new Error('PDI Monitoring database is not prepared. Please contact QA/QC.');
   const tracking=ensurePdiTrackingColumns_(sh);
-  const referenceNo='PDI-27-'+String(tracking.lastSequence+1).padStart(3,'0');
+  const referenceNo='PDI-27-'+String(tracking.lastSequence+1).padStart(3,'0'),editToken=Utilities.getUuid();
   const requestDate=Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'yyyy-MM-dd');
   const record=Object.assign({},payload,{'PDI Reference No':referenceNo,'Date of Request':requestDate,'Request Type':'With Request','QC in Charge':'',Status:'Pending',Remarks:''});
   sh.appendRow(tracking.headers.map(h=>record[h]===undefined?'':record[h]));
+  CacheService.getScriptCache().put('qaqc_pdi_edit_'+referenceNo,editToken,21600);
   try{CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');}catch(e){}
-  return {ok:true,referenceNo:referenceNo,message:'Your PDI request has been submitted successfully. Reference No: '+referenceNo};
+  return {ok:true,referenceNo:referenceNo,editToken:editToken,message:'Your PDI request has been submitted successfully. Reference No: '+referenceNo};
+ }finally{lock.releaseLock();}
+}
+
+function updatePdiRequest(payload,referenceNo,editToken){
+ if(!payload||typeof payload!=='object')throw new Error('Please complete the PDI request form.');
+ const ref=String(referenceNo||'').trim(),token=String(editToken||'').trim();
+ if(!ref||!token||CacheService.getScriptCache().get('qaqc_pdi_edit_'+ref)!==token)throw new Error('This PDI request can no longer be edited from this session.');
+ const required=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Scope of Inspection'];
+ required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
+ if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(payload["Requestor's Email"]).trim()))throw new Error('Please enter a valid requestor email address.');
+ if(!['GEMCOR','GPI'].includes(String(payload.Company).trim().toUpperCase()))throw new Error('Please select GEMCOR or GPI.');
+ if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(payload['Date of PDI']).trim()))throw new Error('Please select a valid Date of PDI.');
+ if(!/^\\d{2}:\\d{2}$/.test(String(payload.Time).trim()))throw new Error('Please select a valid inspection time.');
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ try{
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);if(!sh)throw new Error('PDI Monitoring database is not prepared.');
+  const tracking=ensurePdiTrackingColumns_(sh),refCol=tracking.headers.indexOf('PDI Reference No');if(refCol<0)throw new Error('PDI reference column is missing.');
+  const rows=sh.getDataRange().getValues();let row=-1;for(let i=1;i<rows.length;i++)if(String(rows[i][refCol]||'').trim()===ref){row=i+1;break;}
+  if(row<0)throw new Error('PDI request not found. Refresh the history and try again.');
+  const allowed=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request'];
+  allowed.forEach(name=>{const col=tracking.headers.indexOf(name);if(col>=0)sh.getRange(row,col+1).setValue(payload[name]||'');});
+  const col=tracking.headers.indexOf('Updated At');if(col>=0)sh.getRange(row,col+1).setValue(new Date());
+  CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');
+  return {ok:true,referenceNo:ref,message:'PDI request updated successfully.'};
  }finally{lock.releaseLock();}
 }
 
