@@ -3263,7 +3263,7 @@ function renderComplaintHistory(records){
  records.forEach(rec=>{
   const tr=document.createElement('tr');
   [rec['Complaint ID']||'—',rec.Date||'—',rec.Client||'—'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value);tr.append(td)});
-  const action=document.createElement('td'),view=button('Full Details','small',()=>showComplaintHistoryDetails(rec)),edit=button('Edit','small primary',()=>editComplaintFromHistory(rec));
+  const action=document.createElement('td'),view=button('View Full Complaint','small',()=>showComplaintHistoryDetails(rec)),edit=button('Edit','small primary',()=>editComplaintFromHistory(rec));
   view.title='View full complaint';edit.title='Edit this complaint';action.append(view,document.createTextNode(' '),edit);tr.append(action);body.append(tr);
  });
  table.append(body);host.append(table);
