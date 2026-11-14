@@ -684,10 +684,29 @@ function getNcrRecords_(searchText){
  return {ok:true,records:q?records.filter(rec=>Object.values(rec).some(v=>String(v||'').toLowerCase().includes(q))):records,fields:NCR_HEADERS};
 }
 
+function ensurePunchlistReferencesByJO_(sh){
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ try{
+  if(!sh)throw new Error('Punchlist sheet is missing.');
+  let headers=sh.getRange(1,1,1,Math.max(sh.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
+  let refIndex=headers.indexOf('Ref. No.');
+  if(refIndex<0){refIndex=sh.getLastColumn();sh.getRange(1,refIndex+1).setValue('Ref. No.').setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers.push('Ref. No.');}
+  const last=sh.getLastRow();if(last<2)return {index:refIndex,next:1};
+  const data=sh.getRange(2,1,last-1,sh.getLastColumn()).getValues(),joIndex=headers.indexOf('J.O');
+  let max=0;const pattern=/^PL-27-(\\d+)$/;data.forEach(row=>{const m=String(row[refIndex]||'').trim().match(pattern);if(m)max=Math.max(max,Number(m[1])||0)});
+  const props=PropertiesService.getScriptProperties(),stored=Number(props.getProperty('qaqc_punchlist_ref_sequence')||0);max=Math.max(max,stored);
+  const groups=new Map();
+  data.forEach((row,i)=>{const jo=joIndex>=0?String(row[joIndex]||'').trim():'';const key=jo?'JO:'+jo.toUpperCase():'ROW:'+(i+2);if(!groups.has(key))groups.set(key,{rows:[],ref:''});const g=groups.get(key);g.rows.push(i+2);if(!g.ref&&String(row[refIndex]||'').trim())g.ref=String(row[refIndex]).trim();});
+  groups.forEach(g=>{if(!g.ref){max++;g.ref='PL-27-'+String(max).padStart(3,'0');}g.rows.forEach(row=>sh.getRange(row,refIndex+1).setValue(g.ref));});
+  props.setProperty('qaqc_punchlist_ref_sequence',String(max));
+  return {index:refIndex,next:max+1};
+ }finally{lock.releaseLock();}
+}
+
 function getPunchlistRecords_(searchText){
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
  if(!sh)return {ok:true,records:[],fields:PUNCHLIST_HEADERS};
- ensureMonitoringReferenceNumbers_(sh,'Ref. No.','PL');
+ ensurePunchlistReferencesByJO_(sh);
  if(sh.getLastRow()<2)return {ok:true,records:[],fields:PUNCHLIST_HEADERS};
  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String);
  const records=sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues().map(row=>{const o={};headers.forEach((h,i)=>o[h]=formatCell_(row[i]));return o;});
@@ -698,14 +717,19 @@ function savePunchlist_(input){
  if(!input)throw new Error('No punchlist data received.');
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(PUNCHLIST_SHEET);
  if(!sh)throw new Error('Click Prepare Database first to create the Punchlist Monitoring tab.');
- const refInfo=ensureMonitoringReferenceNumbers_(sh,'Ref. No.','PL',!String(input['Punchlist ID']||'').trim());
+ const refInfo=ensurePunchlistReferencesByJO_(sh);
  const id=String(input['Punchlist ID']||'').trim(),now=new Date(),data=sh.getDataRange().getValues(),headers=data[0].map(String);
  let rowIndex=-1;
  if(id)for(let i=1;i<data.length;i++)if(String(data[i][headers.indexOf('Punchlist ID')])===id){rowIndex=i+1;break;}
  const oldRef=rowIndex>0?String(data[rowIndex-1][headers.indexOf('Ref. No.')]||''):'';
- const rec=Object.assign({},input,{'Punchlist ID':id||('PL-'+Utilities.getUuid().slice(0,8).toUpperCase()),'Ref. No.':oldRef||('PL-27-'+String(refInfo.next).padStart(3,'0')),'Created At':rowIndex>0?data[rowIndex-1][headers.indexOf('Created At')]:now,'Updated At':now,'Status':String(input.Status||'Open')});
- if(!String(rec['J.O']||'').trim()&&!String(rec['S.O']||'').trim())throw new Error('Enter a J.O or S.O number.');
- if(!String(rec['Description of Punchlist']||'').trim())throw new Error('Description of Punchlist is required.');
+ const joKey=String(input['J.O']||'').trim().toUpperCase(),joRefRow=joKey?data.find((row,i)=>i>0&&String(row[headers.indexOf('J.O')]||'').trim().toUpperCase()===joKey):null;
+ const joRef=joRefRow?String(joRefRow[headers.indexOf('Ref. No.')]||''):'';
+ const rec=Object.assign({},input,{'Punchlist ID':id||('PL-'+Utilities.getUuid().slice(0,8).toUpperCase()),'Ref. No.':joRef||oldRef||('PL-27-'+String(refInfo.next).padStart(3,'0')),'Created At':rowIndex>0?data[rowIndex-1][headers.indexOf('Created At')]:now,'Updated At':now,'Status':String(input.Status||'Open')});
+ if(!String(rec['J.O']||'').trim())throw new Error('J.O is required.');
+ if(!String(rec.Item||'').trim())throw new Error('Item No. is required.');
+ if(!String(rec.Qty||'').trim()||!isFinite(Number(rec.Qty))||Number(rec.Qty)<=0)throw new Error('Qty is required and must be greater than zero.');
+ if(!String(rec['Description of Punchlist']||'').trim())throw new Error('Punchlist Description is required.');
+ if(!String(rec['Concern Section']||'').trim())throw new Error('Concern Section is required.');
  if(!['A','B','C'].includes(String(rec.Category||'')))throw new Error('Choose Category A, B, or C.');
  if(!['Open','Closed'].includes(String(rec.Status)))throw new Error('Status must be Open or Closed.');
  const out=headers.map(h=>rec[h]===undefined?'':rec[h]);
@@ -1359,7 +1383,13 @@ function saveTransfer(input) {
   const id=String(input['Record ID']||''), now=new Date(); let row=-1,old=null;
   if(id){const lastRow=sh.getLastRow();if(lastRow>1){const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(id).matchEntireCell(true).findNext();if(match){row=match.getRow();old=sh.getRange(row,1,1,TRANSFER_HEADERS.length).getValues()[0];}}if(row<0)throw new Error('Transfer record not found. Refresh and try again.');}
   const recordId=id||Utilities.getUuid(),transferId=old?String(old[3]):reserveTransferIds_(1,sh)[0];
-  if(old)validateTransferEditQuantity_(input,id,sh);
+  if(old){
+    validateTransferEditQuantity_(input,id,sh);
+    const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String),joCol=headers.indexOf('J.O'),itemCol=headers.indexOf('Item No.'),idCol=headers.indexOf('Record ID');
+    const norm=v=>String(v||'').trim().replace(/\\s+/g,' ').toUpperCase(),newJO=norm(input['J.O']),newItem=norm(input['Item No.']);
+    const all=sh.getDataRange().getValues();
+    for(let i=1;i<all.length;i++)if(String(all[i][idCol])!==id&&norm(all[i][joCol])===newJO&&norm(all[i][itemCol])===newItem)throw new Error('This J.O. and Item No. already exist in another transfer record.');
+  }
   const linkedAllocations=old?getAllocationRows_(id):[];
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
   if(alreadyAllocated>qty)throw new Error('The new transfer Qty cannot be less than the already allocated quantity ('+alreadyAllocated+').');
@@ -1535,16 +1565,22 @@ function saveAllocation(recordId,input) {
   const tr=transfer.getDataRange().getValues().find((r,i)=>i>0&&String(r[0])===String(recordId));
   if(!tr)throw new Error('Parent transfer record not found.');
   const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0],idx=name=>headers.indexOf(name);
-  const qc=String(input['QC In Charge']||'').trim(),fgts=String(input['FGTS No.']||'').trim(),qty=Number(input.Qty);
+  const qc=String(input['QC In Charge']||'').trim(),qty=Number(input.Qty),id=String(input['Allocation ID']||'');
   if(!qc)throw new Error('QC In Charge is required.');
-  if(!fgts)throw new Error('FGTS No. is required.');
   if(!isFinite(qty)||qty<=0)throw new Error('Allocation Qty must be greater than zero.');
-  const rows=sh.getDataRange().getValues(),id=String(input['Allocation ID']||'');let row=-1;
+  const rows=sh.getDataRange().getValues();let row=-1;
   if(id){for(let i=1;i<rows.length;i++)if(String(rows[i][idx('Allocation ID')])===id&&String(rows[i][idx('Transfer Record ID')])===String(recordId)){row=i+1;break;}if(row<0)throw new Error('Allocation not found. Refresh and try again.');}
   const existingTotal=rows.slice(1).reduce((sum,r)=>sum+(String(r[idx('Transfer Record ID')])===String(recordId)&&String(r[idx('Allocation ID')])!==id?(Number(r[idx('Qty')])||0):0),0);
   if(existingTotal+qty>Number(tr[13]))throw new Error('Total allocated quantity ('+(existingTotal+qty)+') cannot exceed transfer Qty ('+tr[13]+').');
-  const now=new Date(),aid=id||Utilities.getUuid(),out=headers.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?tr[3]:h==='Transfer Record ID'?recordId:h==='QC In Charge'?qc:h==='FGTS No.'?fgts:h==='Qty'?qty:h==='Date Finished'?(input['Date Finished']||''):h==='Allocation Remarks'?(input['Allocation Remarks']||''):h==='Created At'?(row>0?rows[row-1][idx('Created At')]:now):h==='Updated At'?now:h==='Category'?(input.Category||''):'');
-  if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
+  const now=new Date(),aid=id||Utilities.getUuid();
+  if(row>0){
+    sh.getRange(row,idx('QC In Charge')+1).setValue(qc);sh.getRange(row,idx('Qty')+1).setValue(qty);
+    if(idx('Updated At')>=0)sh.getRange(row,idx('Updated At')+1).setValue(now);
+  }else{
+    const fgts=String(input['FGTS No.']||'').trim();if(!fgts)throw new Error('FGTS No. is required for a new allocation.');
+    const out=headers.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?tr[3]:h==='Transfer Record ID'?recordId:h==='QC In Charge'?qc:h==='FGTS No.'?fgts:h==='Qty'?qty:h==='Date Finished'?(input['Date Finished']||''):h==='Allocation Remarks'?(input['Allocation Remarks']||''):h==='Created At'?now:h==='Updated At'?now:h==='Category'?(input.Category||''):'');
+    sh.appendRow(out);
+  }
   syncTransferSummary_(recordId);syncRemainingTransferRow_(recordId);
   syncFGTSTransferAllocations_();
   invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
