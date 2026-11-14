@@ -1389,7 +1389,7 @@ function saveTransfer(input) {
     const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(String),joCol=headers.indexOf('J.O'),itemCol=headers.indexOf('Item No.'),idCol=headers.indexOf('Record ID');
     const norm=v=>String(v||'').trim().replace(/\s+/g,' ').toUpperCase(),newJO=norm(input['J.O']),newItem=norm(input['Item No.']);
     const all=sh.getDataRange().getValues();
-    for(let i=1;i<all.length;i++)if(String(all[i][idCol])!==id&&norm(all[i][joCol])===newJO&&norm(all[i][itemCol])===newItem)throw new Error('This J.O. and Item No. already exist in another transfer record.');
+    if(newJO&&newItem)for(let i=1;i<all.length;i++)if(String(all[i][idCol])!==id&&norm(all[i][joCol])===newJO&&norm(all[i][itemCol])===newItem)throw new Error('This J.O. and Item No. already exist in another transfer record.');
   }
   const linkedAllocations=old?getAllocationRows_(id):[];
   const alreadyAllocated=linkedAllocations.reduce((sum,a)=>sum+(Number(a[4])||0),0);
