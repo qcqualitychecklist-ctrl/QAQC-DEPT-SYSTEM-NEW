@@ -2750,7 +2750,7 @@ function renderReworkTable(){
   sections.forEach(sectionGroup=>{
    sectionGroup.flat.forEach((entry,sectionIdx)=>{
     const d=entry.detail,idx=caseRowIndex++,tr=document.createElement('tr'),closed=String(d.Status||'').toLowerCase()==='closed';
-    if(idx===0){const refCell=cell(rec['Ref. No.']||'');refCell.rowSpan=caseSpan;tr.append(refCell);const joSo=[rec['J.O'],rec['S.O']].filter(Boolean).join(' / ');[['Date Issue',rec['Date Issue']],['J.O.',rec['J.O']],['S.O.',rec['S.O']],['Client Name',rec['Client Name']]].forEach(([k,v])=>{const td=cell(v);td.rowSpan=caseSpan;tr.append(td)})}
+    if(idx===0){const refCell=cell(rec['Ref. No.']||'','rework-ref-cell');refCell.rowSpan=caseSpan;tr.append(refCell);const joSo=[rec['J.O'],rec['S.O']].filter(Boolean).join(' / ');[['Date Issue',rec['Date Issue']],['J.O.',rec['J.O']],['S.O.',rec['S.O']],['Client Name',rec['Client Name']]].forEach(([k,v])=>{const td=cell(v);td.rowSpan=caseSpan;tr.append(td)})}
     if(singleItemAcrossCase&&idx===0){[['Item no.',d['Item no.']||rec['Item no.']],['Panel Name',d['Panel Name']||rec['Panel Name']],['Qty',d.Qty||rec.Qty]].forEach(([k,v])=>{const td=cell(v,k==='Panel Name'?'rework-item-cell':'rework-item-shared');td.rowSpan=caseSpan;tr.append(td)})}
     else if(!singleItemAcrossCase&&entry.itemIndex===0){[['Item no.',d['Item no.']||rec['Item no.']],['Panel Name',d['Panel Name']||rec['Panel Name']],['Qty',d.Qty||rec.Qty]].forEach(([k,v])=>{const td=cell(v,k==='Panel Name'?'rework-item-cell':'rework-item-shared');td.rowSpan=entry.itemSpan;tr.append(td)})}
     tr.append(cell(d['Concern Section'],'rework-concern-cell'));
