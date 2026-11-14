@@ -2156,7 +2156,7 @@ function bindTransferEditAutofill(){
  [so,client,panel].forEach(input=>{input.readOnly=true;input.classList.add('transfer-auto-field');input.setAttribute('aria-readonly','true');input.placeholder='Auto-filled from J.O. Register';});
  let joTimer=null,itemTimer=null,joToken=0,itemToken=0,lastJo=jo.value.trim().toUpperCase(),lastItem='';
  const lookupItem=()=>{
-  const j=jo.value.trim(),i=item.value.trim(),key=(j+'|'+i).toUpperCase().replace(/\\s+/g,' ');
+  const j=jo.value.trim(),i=item.value.trim(),key=(j+'|'+i).toUpperCase().replace(/\s+/g,' ');
   if(!j||!i||!so.value.trim()){panel.value='';lastItem='';itemToken++;return}
   if(key===lastItem)return;lastItem=key;const token=++itemToken;panel.value='';
   callServer('getTransferItemDetails',[j,so.value.trim(),i],r=>{
@@ -2168,11 +2168,11 @@ function bindTransferEditAutofill(){
   },()=>{if(token===itemToken)lastItem=''});
  };
  const lookupJo=()=>{
-  const value=jo.value.trim(),key=value.toUpperCase().replace(/\\s+/g,' ');
+  const value=jo.value.trim(),key=value.toUpperCase().replace(/\s+/g,' ');
   if(!value){joToken++;so.value='';client.value='';panel.value='';lastJo='';return}
   if(key===lastJo){lookupItem();return}lastJo=key;const token=++joToken;so.value='';client.value='';panel.value='';
   callServer('getTransferJOOptions',[value],r=>{
-   if(token!==joToken||jo.value.trim().toUpperCase().replace(/\\s+/g,' ')!==key)return;
+   if(token!==joToken||jo.value.trim().toUpperCase().replace(/\s+/g,' ')!==key)return;
    const matches=r&&Array.isArray(r.matches)?r.matches:[];
    if(matches.length){so.value=matches[0].so||'';client.value=matches[0].client||'';lastItem='';lookupItem();}
    else{lastJo='';showStatus(false,'J.O. not found','No matching J.O. Number was found in the J.O. Register.');}
