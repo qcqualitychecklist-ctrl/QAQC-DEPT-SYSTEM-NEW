@@ -528,12 +528,7 @@ function submitPdiRequest(payload){
 }
 
 function saveManualPdiRequest(payload){
- const required=['Company',"Requestor's Name",'J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection'];
  if(!payload||typeof payload!=='object')throw new Error('Please complete the manual PDI request form.');
- required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
- if(!['GEMCOR','GPI'].includes(String(payload.Company||'').trim().toUpperCase()))throw new Error('Please select GEMCOR or GPI.');
- if(!/^\d{4}-\d{2}-\d{2}$/.test(String(payload['Date of PDI']||'')))throw new Error('Please select a valid Date of PDI.');
- if(!/^\d{2}:\d{2}$/.test(String(payload.Time||'')))throw new Error('Please select a valid inspection time.');
  const lock=LockService.getScriptLock();lock.waitLock(20000);
  try{
   const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
