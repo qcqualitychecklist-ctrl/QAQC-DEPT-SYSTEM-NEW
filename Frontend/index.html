@@ -1745,6 +1745,22 @@ body.transfer-monitoring-active #monitoringPanel .tablewrap table tbody td:not(.
 <div class="alloc-layout allocation-compact-layout"><section class="panel allocation-entry-panel"><h3 id="allocationFormTitle" class="allocation-form-title" style="display:none">QC Entry</h3><form id="allocationForm" onsubmit="submitAllocation(event)"><input type="hidden" id="allocationId"><div class="fields" id="allocationFields"></div><div id="qcAllocationRows"></div></form><div class="hint" id="allocationQtyHint"></div></section><section class="allocation-table-section"><div class="allocation-table-toolbar"><button type="button" onclick="addQCRow()" id="addQCBtn">＋ Add QC</button></div><div class="alloclist"><table class="allocation-record-table"><thead><tr><th>QC In Charge</th><th>Qty</th><th>Action</th></tr></thead><tbody id="allocationRows"><tr><td colspan="3" class="empty">No allocations yet.</td></tr></tbody></table></div><div class="hint">Done Qty is the total of saved allocations. Allocation quantity cannot exceed the transfer Qty.</div></section></div><div class="actions allocation-dialog-actions"><button type="button" id="allocationClear" onclick="resetAllocationForm()">Clear</button><button type="submit" form="allocationForm" class="primary" id="allocationSave">Save Allocation</button><button type="button" class="primary" onclick="closeModal('allocationModal')">Close</button></div></div></div>
 
 <script>
+/* Bind access-screen controls before app startup code runs.
+   Function declarations below are hoisted within this script. */
+document.addEventListener('click',function(event){
+ const button=event.target&&event.target.closest?event.target.closest('#loginLanding .access-register-toggle, #loginLanding .access-guest-btn'):null;
+ if(!button||button.disabled)return;
+ event.preventDefault();
+ if(button.classList.contains('access-register-toggle')){toggleRegistration();return;}
+ continueAsGuest();
+},true);
+document.addEventListener('submit',function(event){
+ const form=event.target;
+ if(!form||!form.matches)return;
+ if(form.matches('#departmentLoginForm')){event.preventDefault();event.stopPropagation();submitLogin();}
+ else if(form.matches('#departmentRegisterForm')){event.preventDefault();event.stopPropagation();submitRegistration();}
+},true);
+
 const STATUS_OPTIONS=['Ongoing','For line up','Hold'];
 const CATEGORY_OPTIONS=['Accessories','Ats/mts','Busbar/lugs','Cable trays','Cap. Bank panel','Components/breaker','Distribution panel','Ecb/boxes/gutters','Motor control center','Panelboards','Switchgear'];
 const TRANSFER_FIELDS=[
@@ -3392,21 +3408,6 @@ if(monitoringToolbar){
  const actions=monitoringToolbar.querySelector('.actions');
  if(actions){actions.classList.add('monitoring-actions');actions.style.marginTop='0';}
 }
-
-/* Login screen controls are bound in the same script scope as their handlers. */
-document.addEventListener('click',function(event){
- const button=event.target&&event.target.closest?event.target.closest('#loginLanding .access-register-toggle, #loginLanding .access-guest-btn'):null;
- if(!button||button.disabled)return;
- event.preventDefault();
- if(button.classList.contains('access-register-toggle')){toggleRegistration();return;}
- continueAsGuest();
-});
-document.addEventListener('submit',function(event){
- const form=event.target;
- if(!form||!form.matches)return;
- if(form.matches('#departmentLoginForm')){event.preventDefault();submitLogin();}
- else if(form.matches('#departmentRegisterForm')){event.preventDefault();submitRegistration();}
-});
 </script><!-- GitHub Actions deployment trigger: guest complaint navigation -->
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><span class="loading-orbit" aria-hidden="true"></span><span class="loading-title">Loading records…</span></div></div>
 </body></html>
