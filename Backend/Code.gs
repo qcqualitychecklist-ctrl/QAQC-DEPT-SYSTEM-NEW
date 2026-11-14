@@ -367,7 +367,7 @@ function saveComplaint_(input){
  const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
  if(!sh)throw new Error('Click Prepare Database first to create the Complaint Monitoring tab.');
  const headers=ensureComplaintSchema_(sh),data=sh.getDataRange().getValues(),now=new Date();
- const required=['Date','Company','Client','Name of Complainant','Complaint Description'];
+ const required=['Date','Company','Client','J.O','S.O','Complaint Description'];
  required.forEach(h=>{if(!String(input[h]||'').trim())throw new Error(h+' is required.')});
  if(!['GEMCOR','GPI'].includes(String(input.Company||'').trim().toUpperCase()))throw new Error('Company must be GEMCOR or GPI.');
  const qty=String(input.Qty||'').trim();
@@ -1030,6 +1030,7 @@ function toggleReworkDetailStatus(reworkId, detailId) {
   if(targetRow<0)throw new Error('Rework description not found. Refresh and try again.');
   const nextStatus=targetStatus.toLowerCase()==='closed'?'Open':'Closed',now=new Date();
   details.getRange(targetRow,statusCol).setValue(nextStatus);
+  if(nextStatus==='Open')main.getRange(mainRow,13).clearContent();
   details.getRange(targetRow,closedCol).setValue(nextStatus==='Closed'?now:'');
   if(updatedCol)details.getRange(targetRow,updatedCol).setValue(now);
   const updatedRows=details.getDataRange().getValues(),sectionCol=headers.indexOf('Concern Section')+1,finishedCol=headers.indexOf('Date Finished')+1,leadCol=headers.indexOf('Lead Time')+1;
@@ -1522,7 +1523,7 @@ function reopenPassedTransfer(recordId,nextStatus){
  const pool=Number(parent[ix('Allocation Pool Qty')])||Number(parent[ix('Qty')])||0;
  const set=(name,value)=>{const col=ix(name);if(col>=0)transfer.getRange(parentRow,col+1).setValue(value);};
  set('Qty',pool);set('Allocation Pool Qty',pool);set('Done Qty',0);set('Remaining Qty',pool);
- set('QC In Charge','');set('FGTS No.','');set('Date Finished','');set('Category','');set('Status',next);set('Reminders','');
+ set('QC In Charge','');set('FGTS No.','');set('Date Finished','');set('Category','');set('Remarks','');set('Status',next);set('Reminders','');
  syncFGTSTransferAllocations_();invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
  return {ok:true,recordId:id,status:next,message:'Transfer status updated and its QC allocation details were cleared.'};
 }
