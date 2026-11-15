@@ -555,7 +555,7 @@ function ensurePdiTrackingColumns_(sh){
 }
 
 function submitPdiRequest(payload){
- const required=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Scope of Inspection'];
+ const required=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time'];
  if(!payload||typeof payload!=='object')throw new Error('Please complete the PDI request form.');
  required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
  const email=String(payload["Requestor's Email"]).trim();
@@ -582,7 +582,7 @@ function updatePdiRequest(payload,referenceNo,editToken){
  if(!payload||typeof payload!=='object')throw new Error('Please complete the PDI request form.');
  const ref=String(referenceNo||'').trim(),token=String(editToken||'').trim();
  if(!ref||!token||CacheService.getScriptCache().get('qaqc_pdi_edit_'+ref)!==token)throw new Error('This PDI request can no longer be edited from this session.');
- const required=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Scope of Inspection'];
+ const required=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time'];
  required.forEach(k=>{if(!String(payload[k]||'').trim())throw new Error(k+' is required.');});
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(payload["Requestor's Email"]).trim()))throw new Error('Please enter a valid requestor email address.');
  if(!['GEMCOR','GPI'].includes(String(payload.Company).trim().toUpperCase()))throw new Error('Please select GEMCOR or GPI.');
@@ -599,6 +599,27 @@ function updatePdiRequest(payload,referenceNo,editToken){
   const col=tracking.headers.indexOf('Updated At');if(col>=0)sh.getRange(row,col+1).setValue(new Date());
   CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');
   return {ok:true,referenceNo:ref,message:'PDI request updated successfully.'};
+ }finally{lock.releaseLock();}
+}
+
+function updatePdiMonitoringRecord(referenceNo,payload){
+ const ref=String(referenceNo||'').trim();if(!ref||!payload||typeof payload!=='object')throw new Error('Missing PDI reference or update data.');
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ try{
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);if(!sh)throw new Error('PDI Monitoring database is not prepared.');
+  const tracking=ensurePdiTrackingColumns_(sh),headers=tracking.headers,refCol=headers.indexOf('PDI Reference No');
+  if(refCol<0)throw new Error('PDI Reference No column is missing.');
+  const rows=sh.getDataRange().getDisplayValues();let row=-1;
+  for(let i=1;i<rows.length;i++)if(String(rows[i][refCol]||'').trim()===ref){row=i+1;break;}
+  if(row<0)throw new Error('PDI request not found. Refresh and try again.');
+  const allowed=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request','QC in Charge','Status','Remarks'];
+  const email=String(payload["Requestor's Email"]||'').trim();
+  if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('Please enter a valid requestor email address.');
+  if(payload.Company&&!['GEMCOR','GPI'].includes(String(payload.Company).trim().toUpperCase()))throw new Error('Please select GEMCOR or GPI.');
+  allowed.forEach(key=>{const col=headers.indexOf(key);if(col>=0&&Object.prototype.hasOwnProperty.call(payload,key))sh.getRange(row,col+1).setValue(payload[key]||'');});
+  const updatedCol=headers.indexOf('Updated At');if(updatedCol>=0)sh.getRange(row,updatedCol+1).setValue(new Date());
+  CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');
+  return {ok:true,referenceNo:ref,message:'PDI monitoring record updated successfully.'};
  }finally{lock.releaseLock();}
 }
 
