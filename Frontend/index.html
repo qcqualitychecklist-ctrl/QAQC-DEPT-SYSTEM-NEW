@@ -2546,24 +2546,6 @@ function pdiRequestPrintStyles(){
  '@media print{@page{size:A4 portrait;margin:8mm}html,body{width:100%;height:auto;background:#fff}.pdi-request-sheet{max-width:none;margin:0;padding:0;box-shadow:none;border:0;break-inside:avoid;page-break-inside:avoid}.pdi-doc-title,.pdi-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}.pdi-writing-box{break-inside:avoid;page-break-inside:avoid}}'+
  '@media(max-width:720px){.pdi-doc-top{grid-template-columns:1fr 150px}.pdi-doc-logo{width:170px}.pdi-doc-title{font-size:18px}.pdi-meta-grid{gap:5px 12px}.pdi-field label{font-size:10px}.pdi-rep-grid{grid-template-columns:1fr}}'+
  '\n
-/* Complaint-only refinements: balanced item fields and consistent action controls. */
-.public-complaint-item{grid-template-columns:minmax(105px,.78fr) minmax(125px,1fr) minmax(72px,.5fr) minmax(240px,2fr) auto!important}
-.public-complaint-item textarea{height:35px!important;min-height:35px!important;resize:vertical}
-#complaintModal #complaintItems .public-complaint-item{grid-template-columns:minmax(105px,.78fr) minmax(125px,1fr) minmax(72px,.5fr) minmax(240px,2fr) auto!important}
-#complaintModal #complaintItems .public-complaint-item textarea{height:35px!important;min-height:35px!important}
-#complaintModal #complaintSave{width:auto!important;min-width:0!important;max-width:max-content!important;flex:0 0 auto!important;height:36px!important;min-height:36px!important;padding:8px 18px!important;border-radius:999px!important}
-#complaintModal .actions button,#complaintHistoryDetailsModal .complaint-details-actions button{height:36px!important;min-height:36px!important;padding:8px 18px!important;border-radius:999px!important;font-size:12px!important;font-weight:700!important;line-height:1.2!important}
-#complaintHistoryDetailsModal .complaint-details-actions button{min-width:88px!important}
-#complaintModal .actions{gap:9px!important}
-#loginLanding .access-login-btn,#loginLanding .access-register-toggle,#loginLanding .access-register-btn,#loginLanding .access-guest-btn{font-weight:800!important;text-transform:none!important;letter-spacing:0!important}
-.system-account-menu-item>span{width:21px!important;min-width:21px!important;font-size:19px!important}
-.system-account-menu-item>span svg{display:block;width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-@media(max-width:760px){
- .public-complaint-item,#complaintModal #complaintItems .public-complaint-item{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
- .public-complaint-item .public-complaint-field:nth-child(4){grid-column:1/-1}
- .public-complaint-item .public-complaint-remove{grid-column:1/-1}
-}
-
 </style>';
 }
 function buildPdiRequestMarkup(rec,logoSrc){
