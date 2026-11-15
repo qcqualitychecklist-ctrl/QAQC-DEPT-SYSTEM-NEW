@@ -3679,6 +3679,11 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #loginLanding .access-register-btn,
 #loginLanding .access-guest-btn{font-weight:800!important}
 
+
+/* PDI Monitoring only: make the Edit PDI Request title bar span the dialog's full inner width. */
+#pdiMonitoringEditModal .dialog{display:flex!important;flex-direction:column!important;padding:0!important;overflow:hidden!important;border-radius:13px!important}
+#pdiMonitoringEditModal .dialog>.dialoghead{display:flex!important;align-items:center!important;align-self:stretch!important;flex:0 0 auto!important;width:100%!important;box-sizing:border-box!important;margin:0!important;padding:16px 20px!important;border-radius:13px 13px 0 0!important}
+#pdiMonitoringEditModal .dialog>form{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;}
 /* PDI Monitoring-only refinements. */
 #guestPdiWorkspace .pdi-request-history-table{width:100%;min-width:820px;table-layout:fixed;border-collapse:collapse;white-space:nowrap}
 #guestPdiWorkspace .pdi-request-history-table th,#guestPdiWorkspace .pdi-request-history-table td{box-sizing:border-box;padding:10px 12px;border-bottom:1px solid #e4eaf2;vertical-align:middle;text-align:center;white-space:nowrap}
