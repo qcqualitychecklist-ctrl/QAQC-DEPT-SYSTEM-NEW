@@ -2711,9 +2711,7 @@ function printPdiRequest(rec){
  if(!win){showStatus(false,'Print window blocked','Allow pop-ups for this site, then select Print Request again.');return;}
  const doc=win.document;
  doc.open();
- doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(rec,logo?logo.src:'')+'
-
-</body></html>');
+  doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(rec,logo?logo.src:'')+'</body></html>');
  doc.close();
  win.focus();
  win.setTimeout(()=>{win.print();},350);
