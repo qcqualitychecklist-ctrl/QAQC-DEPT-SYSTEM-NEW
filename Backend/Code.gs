@@ -328,7 +328,7 @@ function saveNcr_(input){
  const rec=Object.assign({},input,{Reference:ref,Status:status}),out=headers.map(h=>rec[h]===undefined?'':rec[h]);
  let row=-1;const refCol=headers.indexOf('Reference');
  if(refCol>=0&&String(input.Reference||'').trim())for(let i=1;i<data.length;i++)if(String(data[i][refCol]).trim()===ref){row=i+1;break}
- if(row>0){rec['Complaint Ref. No.']=String(data[row-1][headers.indexOf('Complaint Ref. No.')]||'').trim()||nextComplaintReference_(sh,headers,input.Date);const updated=headers.map(h=>rec[h]===undefined?'':rec[h]);sh.getRange(row,1,1,updated.length).setValues([updated]);}else{rec['Complaint Ref. No.']=nextComplaintReference_(sh,headers,input.Date);sh.appendRow(headers.map(h=>rec[h]===undefined?'':rec[h]));}
+ if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
  invalidateModuleCache_('NCR Monitoring');
  return {ok:true,recordId:ref,message:row>0?'NCR record updated.':'NCR record saved.'};
 }
@@ -408,8 +408,9 @@ function saveComplaint_(input){
  if(!['Open','In Progress','Closed'].includes(status))throw new Error('Invalid complaint status.');
  const id=String(input['Complaint ID']||'').trim()||('CMP-'+Utilities.getUuid().slice(0,8).toUpperCase());
  const rec=Object.assign({},input,{'Complaint ID':id,'Complaint Ref. No.':String(input['Complaint Ref. No.']||'').trim(),Status:status,'Created At':now,'Updated At':now});
- let row=-1;const idCol=headers.indexOf('Complaint ID');
- if(input['Complaint ID']&&idCol>=0)for(let i=1;i<data.length;i++)if(String(data[i][idCol]).trim()===id){row=i+1;rec['Created At']=data[i][headers.indexOf('Created At')]||now;break;}
+ let row=-1;const idCol=headers.indexOf('Complaint ID'),refCol=headers.indexOf('Complaint Ref. No.');
+ if(input['Complaint ID']&&idCol>=0)for(let i=1;i<data.length;i++)if(String(data[i][idCol]).trim()===id){row=i+1;rec['Created At']=data[i][headers.indexOf('Created At')]||now;rec['Complaint Ref. No.']=String(data[i][refCol]||'').trim()||nextComplaintReference_(sh,headers,input.Date);break;}
+ if(row<0)rec['Complaint Ref. No.']=nextComplaintReference_(sh,headers,input.Date);
  const out=headers.map(h=>rec[h]===undefined?'':rec[h]);
  if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
  invalidateComplaintCache_();
@@ -1723,4 +1724,4 @@ function deleteJO(recordId) {
 }
 function formatCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'yyyy-MM-dd');return v==null?'':v;}
 function formatTimeCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'HH:mm');return v==null?'':String(v).trim();}
-function formatPdiTimeCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'h:mm a');const s=String(v==null?'':v).trim(),m=s.match(/^(\d{1,2}):(\d{2})$/);if(!m)return s;const h=Number(m[1]);return ((h%12)||12)+':'+m[2]+' '+(h>=12?'PM':'AM');}
+function formatPdiTimeCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'h:mm a');const s=String(v==null?'':v).trim(),m=s.match(/^(\\d{1,2}):(\\d{2})$/);if(!m)return s;const h=Number(m[1]);return ((h%12)||12)+':'+m[2]+' '+(h>=12?'PM':'AM');}
