@@ -3736,3 +3736,30 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
  #pdiMonitoringEditModal .dialog>form.formgrid>.field[style*="grid-column"]{grid-column:1!important}
 }
 </style>
+
+/* Global visual refresh: replace solid dark-navy surfaces with a brighter radiant blue.
+   Deliberate exceptions: monitoring module headers and monitoring table-record headers retain their existing colors. */
+[style*="background:#142b4a"]:not(#monitoringPanel .tablewrap thead th):not(#monitoringPanel table thead th),
+[style*="background: #142b4a"]:not(#monitoringPanel .tablewrap thead th):not(#monitoringPanel table thead th),
+[style*="background-color:#142b4a"]:not(#monitoringPanel .tablewrap thead th):not(#monitoringPanel table thead th),
+[style*="background-color: #142b4a"]:not(#monitoringPanel .tablewrap thead th):not(#monitoringPanel table thead th),
+.access-section-title,
+.internal-panel,
+.public-complaint-head,
+.pdi-request-head,
+.dialoghead,
+.system-account-trigger{
+  background:linear-gradient(135deg,#347bd8 0%,#2459a9 52%,#173d78 100%)!important;
+  color:#fff!important;
+}
+.dialoghead h1,
+.dialoghead h2,
+.dialoghead h3,
+.dialoghead .muted,
+.public-complaint-head h1,
+.public-complaint-head p,
+.pdi-request-head h1,
+.pdi-request-head p{
+  color:#fff!important;
+}
+
