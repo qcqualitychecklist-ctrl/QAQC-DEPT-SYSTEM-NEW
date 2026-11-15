@@ -2665,7 +2665,7 @@ function renderComplaintTable(){
    if(index===0){
     const responsible=makeCell(rec['Person Responsible']||rec['QC In-Charge']||'',span);tr.append(responsible);
     const investigation=makeCell(rec.Investigation||rec.Cause||'',span);tr.append(investigation);
-    const attachment=makeCell('',span),files=getComplaintAttachments(rec),viewAttachments=button('','small',()=>{if(files.length||rec['Attachment URL'])openComplaintAttachments(rec)});viewAttachments.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.75h8l4 4V21H6z"/><path d="M14 2.75v4.5h4"/></svg>';viewAttachments.classList.add('complaint-attachment-icon');viewAttachments.title=files.length?'View Attachments ('+files.length+')':'No attachment available';viewAttachments.setAttribute('aria-label',files.length?'View Attachments ('+files.length+')':'No attachment available');viewAttachments.disabled=!(files.length||rec['Attachment URL']);attachment.append(viewAttachments);tr.append(attachment);
+    const attachment=makeCell('',span),files=getComplaintAttachments(rec),viewAttachments=button('','small',()=>{if(files.length||rec['Attachment URL'])openComplaintAttachments(rec)});viewAttachments.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 12.5 6.2-6.2a3 3 0 0 1 4.2 4.2l-8.5 8.5a5 5 0 0 1-7.1-7.1l8.5-8.5"/><path d="m7.1 13.9 8.5-8.5"/></svg>';viewAttachments.classList.add('complaint-attachment-icon');viewAttachments.title=files.length?'View Attachments ('+files.length+')':'No attachment available';viewAttachments.setAttribute('aria-label',files.length?'View Attachments ('+files.length+')':'No attachment available');viewAttachments.disabled=!(files.length||rec['Attachment URL']);attachment.append(viewAttachments);tr.append(attachment);
     const action=makeCell('',span);action.className='actioncell ncr-action-cell';action.append(button('Full View','small',()=>showComplaintHistoryDetails(rec)),document.createTextNode(' '),button('Edit','small primary',()=>openComplaintForm(rec)),document.createTextNode(' '),button('Person In Charge','small primary',()=>openComplaintAssignment(rec)),document.createTextNode(' '),button('Delete','small danger',()=>{if(!confirm('Delete complaint '+(rec['Complaint ID']||'')+'?'))return;callServer('deleteComplaint',[rec['Complaint ID']],()=>loadRecords(false),e=>showStatus(false,'Delete failed',e.message||String(e)))}));tr.append(action);
    }
    el('tbody').append(tr);
@@ -3263,7 +3263,7 @@ function renderComplaintHistory(records){
  records.forEach(rec=>{
   const tr=document.createElement('tr');
   [rec['Complaint ID']||'—',rec.Date||'—',rec.Client||'—'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value);tr.append(td)});
-  const action=document.createElement('td'),view=button('Full View','small',()=>showComplaintHistoryDetails(rec)),edit=button('Edit','small primary',()=>editComplaintFromHistory(rec));
+  const action=document.createElement('td'),view=button('Full View','small',()=>showComplaintHistoryDetails(rec)),edit=button('Edit','small',()=>editComplaintFromHistory(rec));
   view.title='View full complaint';edit.title='Edit this complaint';action.append(view,document.createTextNode(' '),edit);tr.append(action);body.append(tr);
  });
  table.append(body);host.append(table);
@@ -3496,15 +3496,17 @@ if(monitoringToolbar){
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading records"><div class="loading-card"><span class="loading-orbit" aria-hidden="true"></span><span class="loading-title">Loading records…</span></div></div>
 <style>
 /* Final Complaint + access UI overrides, placed after legacy module styles. */
-#complaintModal #complaintSave{min-width:0!important;width:auto!important;height:36px!important;padding:8px 18px!important;border-radius:999px!important;flex:0 0 auto!important}
+#complaintModal #complaintSave{min-width:0!important;width:auto!important;height:36px!important;padding:8px 18px!important;border-radius:999px!important;flex:0 0 auto!important;font-size:11px!important;font-weight:400!important}
 #complaintModal .actions button,#complaintHistoryDetailsModal .complaint-details-actions button,#complaintAttachmentsModal .complaint-attachments-actions button{min-width:0!important;height:36px!important;padding:8px 18px!important;border-radius:999px!important;font-size:12px!important;font-weight:700!important;line-height:1.2!important}
-#complaintModal #complaintItems .public-complaint-item,#publicComplaintItems .public-complaint-item{grid-template-columns:minmax(105px,.85fr) minmax(120px,1fr) minmax(65px,.48fr) minmax(230px,2fr) auto!important;align-items:end!important}
+#complaintModal #complaintItems .public-complaint-item,#publicComplaintItems .public-complaint-item{grid-template-columns:minmax(75px,.58fr) minmax(115px,.9fr) minmax(55px,.38fr) minmax(280px,2.4fr) auto!important;align-items:end!important}
 #complaintModal #complaintItems .public-complaint-item textarea,#publicComplaintItems .public-complaint-item textarea{width:100%!important;height:38px!important;min-height:38px!important;max-height:38px!important;resize:none!important;box-sizing:border-box!important}
 #complaintModal .complaint-attachment-icon svg{width:20px!important;height:20px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#complaintHistoryBody button.action-icon-btn.edit-action{background:transparent!important;border-color:transparent!important;box-shadow:none!important;color:#2459a9!important}
+#complaintHistoryBody button.action-icon-btn.edit-action:hover{background:#eef4fc!important;border-color:transparent!important;color:#174f99!important}
 button.action-icon-btn{width:30px!important;min-width:30px!important;height:29px!important;padding:4px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:7px!important}
 button.action-icon-btn svg{width:17px!important;height:17px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;stroke-linecap:round!important;stroke-linejoin:round!important}
 #complaintHistoryDetailsModal .complaint-details-actions{display:flex!important;justify-content:flex-end!important;gap:8px!important}
-.access-login-btn,.access-register-toggle,.access-register-btn,.access-guest-btn{font-weight:700!important;text-transform:none!important;letter-spacing:normal!important}
+.access-section-title,.access-login-btn,.access-register-toggle,.access-register-btn,.access-guest-btn{font-weight:800!important;text-transform:none!important;letter-spacing:normal!important}
 .system-account-menu-icon{width:26px!important;height:26px!important;flex:0 0 26px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
 .system-account-menu-icon svg{width:22px!important;height:22px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
 @media(max-width:760px){#complaintModal #complaintItems .public-complaint-item,#publicComplaintItems .public-complaint-item{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}}
