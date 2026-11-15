@@ -37,7 +37,7 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           const html = fs.readFileSync('Frontend/index.html', 'utf8');
-          const scripts = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)];
+          const scripts = [...html.matchAll(/<script[^>]*>([\\s\\S]*?)<\\/script>/gi)];
           if (!scripts.length) throw new Error('No inline scripts found');
           scripts.forEach((match, index) => {
             fs.writeFileSync('/tmp/qaqc-inline-' + index + '.js', match[1]);
@@ -87,3 +87,5 @@ jobs:
       - name: Update live web app deployment
         working-directory: deploy
         run: npx --yes @google/clasp deploy --deploymentId 'AKfycbxRcTDJJSXCRZhi9DlsWi9oF2V0e1PwU1tizUCuw0prLZzW9eNhqpMKyJrBOnKoACkqig' --description "Auto-deploy from GitHub commit $GITHUB_SHA"
+
+# Manual deployment trigger: keep workflow_dispatch available.
