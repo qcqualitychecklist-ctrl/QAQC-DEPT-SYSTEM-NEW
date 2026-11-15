@@ -397,7 +397,8 @@ body:has(#recordFilters.rework-filterbar){overflow-x:clip}
 #punchlistDetailsModal .dialoghead h3{font-size:22px!important;line-height:1.25;letter-spacing:-.35px;color:#fff;margin:0 0 6px}
 #punchlistDetailsModal .dialoghead .muted{font-size:13px;line-height:1.4;color:#dbeafe}
 #punchlistDetailsModal .dialoghead>button{color:#fff;background:#ffffff18;border:1px solid #ffffff55;border-radius:9px}
-#punchlistDetailsModal #punchlistDetailsBody{display:block!important;padding:18px 24px!important}#punchlistDetailsModal #punchlistDetailsBody>.transfer-details-body{display:grid!important;width:100%;gap:12px;padding:0 0 12px!important}
+#punchlistDetailsModal #punchlistDetailsBody{display:block!important;padding:18px 24px!important}
+#punchlistDetailsModal #punchlistDetailsBody>.transfer-details-body{display:grid!important;width:100%;gap:12px;padding:0 0 12px!important}
 #punchlistDetailsModal #punchlistDetailsBody>.transfer-details-body:first-child{grid-template-columns:repeat(6,minmax(0,1fr))!important}
 #punchlistDetailsModal #punchlistDetailsBody>.transfer-details-body:nth-child(2){grid-template-columns:repeat(3,minmax(0,1fr))!important}
 #punchlistDetailsModal #punchlistDetailsBody>.transfer-details-body>.transfer-detail-field{min-width:0;min-height:76px;padding:14px 15px;border:1px solid #d5e1ef;border-top:3px solid #3976b7;border-radius:10px;background:linear-gradient(180deg,#f8fbff,#eef4fb);box-shadow:0 3px 10px #15375b0c}
@@ -794,6 +795,7 @@ table.ncr-table td.ncr-description{min-width:260px;}
   #dashboardCards.punchlist-dashboard,
   #dashboardCards.ncr-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
+
 
 
 /* Complaint + PDI modal typography and compact full-width headers. */
@@ -1195,7 +1197,8 @@ body.guest-mode #complaintHistoryBody th:last-child{display:table-cell!important
 }
 /* Keep the shared icon-only Edit, Delete, and View controls compact and consistent. */
 #monitoringPanel .tablewrap td.actioncell button.action-icon-btn{
- display:inline-flex!important; align-items:center!important;
+ display:inline-flex!important;
+ align-items:center!important;
  justify-content:center!important;
  vertical-align:middle!important;
 }
@@ -1594,7 +1597,8 @@ body:has(.modal.open){overflow:hidden}
 #punchlistModal .dialog,#punchlistEditModal .dialog,#punchlistDetailsModal .dialog{width:min(980px,96vw)!important;max-width:980px!important;max-height:90vh!important;overscroll-behavior:contain}
 #punchlistDetailsModal .transfer-details-dialog{width:min(980px,96vw)!important;max-width:980px!important}
 #ncrModal .dialog,#ncrDetailsModal .dialog{width:min(980px,96vw)!important;max-width:980px!important;max-height:90vh!important;overscroll-behavior:contain}
-#ncrCloseModal .ncr-close-dialog{width:min(420px,94vw)!important;max-width:420px!important}#ncrCloseSave,#punchlistCloseSave,#reworkFinishedSave{font-family:inherit!important;font-weight:800!important}
+#ncrCloseModal .ncr-close-dialog{width:min(420px,94vw)!important;max-width:420px!important}
+#ncrCloseSave,#punchlistCloseSave,#reworkFinishedSave{font-family:inherit!important;font-weight:800!important}
 #ncrCloseModal .dialoghead,#punchlistCloseModal .dialoghead,#reworkFinishedModal .dialoghead{position:sticky;top:0;z-index:10;padding:16px 20px;background:linear-gradient(120deg,#12325a,#245ca7);color:#fff;border-bottom:1px solid #c6d8f0}
 #ncrCloseModal .dialoghead h3,#punchlistCloseModal .dialoghead h3,#reworkFinishedModal .dialoghead h3{color:#fff;margin:0}
 #ncrCloseModal .dialoghead .muted,#punchlistCloseModal .dialoghead .muted,#reworkFinishedModal .dialoghead .muted{color:#dbeafe}
@@ -1993,7 +1997,8 @@ function loadRecords(useCache=false,silent=false){
  if(useCache&&moduleLoadInFlight[cacheKey]){
   records=modulePartialCache[cacheKey]||[];recordsLoadedFully=false;renderTable();
   if(loading&&!silent)loading.classList.remove('show');
-  return; }
+  return;
+ }
  const token=(moduleLoadTokens[requestedModule]||0)+1;
  moduleLoadTokens[requestedModule]=token;
  if(!useCache){
@@ -2392,7 +2397,8 @@ function submitNcr(ev){
  const data={Reference:el('ncrReference').value.trim(),Date:el('ncrDate').value,'Prepared by':el('ncrPreparedBy').value.trim(),Section:el('ncrSection').value.trim(),'Person In Charge':people.join(', '),'Description of Issue':el('ncrIssue').value.trim(),'Corrective Action':el('ncrAction').value.trim(),Status:el('ncrStatusInput').value,'Date Closed':el('ncrDateClosed').value};
  if(!data.Date||!data['Prepared by']||!data.Section||!people.length||!data['Description of Issue']){showStatus(false,'Required fields','Complete all required fields and add at least one Person In Charge.');return}
  if(data.Status==='Closed'&&!data['Date Closed']){showStatus(false,'Date Closed required','Enter the Date Closed for a closed NCR.');return}
- const btn=el('ncrSave'),editing=!!data.Reference;btn.disabled=true;btn.textContent='Saving...'; callServer('saveRecord',['NCR Monitoring',data],r=>{btn.disabled=false;btn.textContent=editing?'Save Changes':'Save';if(!r||r.ok===false){showStatus(false,'Save failed',r&&r.message||'No confirmation returned.');return}delete recordCache['NCR Monitoring::'];showStatus(true,editing?'NCR updated':'NCR saved',r.message||'NCR record saved.');closeModal('ncrModal');loadRecords(false)},()=>{btn.disabled=false;btn.textContent='Save'});
+ const btn=el('ncrSave'),editing=!!data.Reference;btn.disabled=true;btn.textContent='Saving...';
+ callServer('saveRecord',['NCR Monitoring',data],r=>{btn.disabled=false;btn.textContent=editing?'Save Changes':'Save';if(!r||r.ok===false){showStatus(false,'Save failed',r&&r.message||'No confirmation returned.');return}delete recordCache['NCR Monitoring::'];showStatus(true,editing?'NCR updated':'NCR saved',r.message||'NCR record saved.');closeModal('ncrModal');loadRecords(false)},()=>{btn.disabled=false;btn.textContent='Save'});
 }
 function addComplaintMonitoringItem(item){
  const host=el('complaintItems'),row=document.createElement('div');row.className='public-complaint-item';
@@ -2791,7 +2797,8 @@ function openPunchlistDetails(rec){
   const tbody=document.createElement('tbody');
   rows.forEach(row=>{
    const tr=document.createElement('tr');
-   [row['Description of Punchlist'],row['Concern Section'],row['Received Date'],row['Closed Date'],isClosed(row)?'CLOSED':'IN PROGRESS'].forEach((value,index)=>{    const td=document.createElement('td');td.textContent=value==null||String(value).trim()===''?'—':String(value);td.style.padding='9px 7px';td.style.borderBottom='1px solid var(--line)';td.style.verticalAlign='top';if(index===0){td.style.fontWeight='700';td.style.minWidth='220px'}tr.append(td);
+   [row['Description of Punchlist'],row['Concern Section'],row['Received Date'],row['Closed Date'],isClosed(row)?'CLOSED':'IN PROGRESS'].forEach((value,index)=>{
+    const td=document.createElement('td');td.textContent=value==null||String(value).trim()===''?'—':String(value);td.style.padding='9px 7px';td.style.borderBottom='1px solid var(--line)';td.style.verticalAlign='top';if(index===0){td.style.fontWeight='700';td.style.minWidth='220px'}tr.append(td);
    });
    tbody.append(tr);
   });
@@ -3190,6 +3197,7 @@ function showPublicComplaintMessage(message,success){showStatus(!!success,succes
 function showGuestComplaintToast(message){showStatus(true,'Complaint submitted successfully',message)}
 let guestComplaintHistory=[];
  let guestPdiHistory=[];
+
 function showPublicPdiMessage(message,success){showStatus(!!success,success?'Submitted successfully':'Please check the form',message)}
 function submitPublicPdiForm(event){
  event.preventDefault();const btn=el('publicPdiSubmit');if(btn.disabled)return;
