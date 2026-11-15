@@ -1703,11 +1703,11 @@ body:has(.modal.open){overflow:hidden}
    <form onsubmit="event.preventDefault();submitLogin();">
     <label for="loginUsername">Username</label><input id="loginUsername" name="username" autocomplete="username" required placeholder="Enter username">
     <label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Enter password">
-    <button class="access-login-btn" type="submit">LOG IN</button>
+    <button class="access-login-btn" type="submit">Log in</button>
    </form>
-   <button class="access-register-toggle" type="button" onclick="toggleRegistration()">REGISTER NEW ACCOUNT</button>
+   <button class="access-register-toggle" type="button" onclick="toggleRegistration()">Register New Account</button>
    <div class="access-or"><span></span>OR<span></span></div>
-   <button class="access-guest-btn" type="button" onclick="continueAsGuest()">CONTINUE AS GUEST</button>
+   <button class="access-guest-btn" type="button" onclick="continueAsGuest()">Continue as Guest</button>
    
    <small class="access-note">Guest access is limited to viewing permitted records.</small>
    <div class="access-error" id="loginNotice"></div>
@@ -1724,7 +1724,7 @@ body:has(.modal.open){overflow:hidden}
      <div><label for="registerPassword">Password</label><input id="registerPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters"></div>
      <div style="grid-column:1/-1"><label for="registerConfirmPassword">Confirm Password</label><input id="registerConfirmPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="Re-enter password"></div>
     </div>
-    <button class="access-register-btn" type="submit">CREATE ACCOUNT</button>
+    <button class="access-register-btn" type="submit">Create Account</button>
    </form>
   </section>
  </div>
@@ -1757,7 +1757,7 @@ body:has(.modal.open){overflow:hidden}
    <button type="button" class="system-account-menu-item" role="menuitem" onclick="openAccountInformation()"><span aria-hidden="true">♙</span>Account Information</button>
    <button type="button" class="system-account-menu-item" role="menuitem" onclick="openAccountSettings()"><span aria-hidden="true">⚙</span>Settings</button>
    <div class="system-account-menu-divider"></div>
-   <button type="button" class="system-account-menu-item system-account-logout" role="menuitem" onclick="logoutUser()"><span aria-hidden="true">↪</span>Log Out</button>
+   <button type="button" class="system-account-menu-item system-account-logout" role="menuitem" onclick="logoutUser()"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/><path d="M10 17l5-5-5-5M15 12H3"/></svg></span>Log Out</button>
   </div>
  
  </div></header>
@@ -2544,7 +2544,26 @@ function pdiRequestPrintStyles(){
  '@media screen{.pdi-request-sheet{box-shadow:0 2px 12px #142b4a22;border:1px solid #dce3ec}}'+
  '@media print{@page{size:A4 portrait;margin:8mm}html,body{width:100%;height:auto;background:#fff}.pdi-request-sheet{max-width:none;margin:0;padding:0;box-shadow:none;border:0;break-inside:avoid;page-break-inside:avoid}.pdi-doc-title,.pdi-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}.pdi-writing-box{break-inside:avoid;page-break-inside:avoid}}'+
  '@media(max-width:720px){.pdi-doc-top{grid-template-columns:1fr 150px}.pdi-doc-logo{width:170px}.pdi-doc-title{font-size:18px}.pdi-meta-grid{gap:5px 12px}.pdi-field label{font-size:10px}.pdi-rep-grid{grid-template-columns:1fr}}'+
- '\n</style>';
+ '\n
+/* Complaint-only refinements: balanced item fields and consistent action controls. */
+.public-complaint-item{grid-template-columns:minmax(105px,.78fr) minmax(125px,1fr) minmax(72px,.5fr) minmax(240px,2fr) auto!important}
+.public-complaint-item textarea{height:35px!important;min-height:35px!important;resize:vertical}
+#complaintModal #complaintItems .public-complaint-item{grid-template-columns:minmax(105px,.78fr) minmax(125px,1fr) minmax(72px,.5fr) minmax(240px,2fr) auto!important}
+#complaintModal #complaintItems .public-complaint-item textarea{height:35px!important;min-height:35px!important}
+#complaintModal #complaintSave{width:auto!important;min-width:0!important;max-width:max-content!important;flex:0 0 auto!important;height:36px!important;min-height:36px!important;padding:8px 18px!important;border-radius:999px!important}
+#complaintModal .actions button,#complaintHistoryDetailsModal .complaint-details-actions button{height:36px!important;min-height:36px!important;padding:8px 18px!important;border-radius:999px!important;font-size:12px!important;font-weight:700!important;line-height:1.2!important}
+#complaintHistoryDetailsModal .complaint-details-actions button{min-width:88px!important}
+#complaintModal .actions{gap:9px!important}
+#loginLanding .access-login-btn,#loginLanding .access-register-toggle,#loginLanding .access-register-btn,#loginLanding .access-guest-btn{font-weight:800!important;text-transform:none!important;letter-spacing:0!important}
+.system-account-menu-item>span{width:21px!important;min-width:21px!important;font-size:19px!important}
+.system-account-menu-item>span svg{display:block;width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:760px){
+ .public-complaint-item,#complaintModal #complaintItems .public-complaint-item{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+ .public-complaint-item .public-complaint-field[data-key="Complaint Description"]{grid-column:1/-1}
+ .public-complaint-item .public-complaint-remove{grid-column:1/-1}
+}
+
+</style>';
 }
 function buildPdiRequestMarkup(rec,logoSrc){
  const get=(key)=>String(rec[key]||'');
@@ -2664,8 +2683,8 @@ function renderComplaintTable(){
    if(index===0){
     const responsible=makeCell(rec['Person Responsible']||rec['QC In-Charge']||'',span);tr.append(responsible);
     const investigation=makeCell(rec.Investigation||rec.Cause||'',span);tr.append(investigation);
-    const attachment=makeCell('',span),files=getComplaintAttachments(rec),viewAttachments=button('','small',()=>{if(files.length||rec['Attachment URL'])openComplaintAttachments(rec)});viewAttachments.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.4 6.5-9.5 6.5S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>';viewAttachments.classList.add('complaint-attachment-icon');viewAttachments.title=files.length?'View Attachments ('+files.length+')':'No attachment available';viewAttachments.setAttribute('aria-label',files.length?'View Attachments ('+files.length+')':'No attachment available');viewAttachments.disabled=!(files.length||rec['Attachment URL']);attachment.append(viewAttachments);tr.append(attachment);
-    const action=makeCell('',span);action.className='actioncell ncr-action-cell';action.append(button('Full View','small',()=>showComplaintHistoryDetails(rec)),document.createTextNode(' '),button('Person In Charge','small primary',()=>openComplaintAssignment(rec)),document.createTextNode(' '),button('Delete','small danger',()=>{if(!confirm('Delete complaint '+(rec['Complaint ID']||'')+'?'))return;callServer('deleteComplaint',[rec['Complaint ID']],()=>loadRecords(false),e=>showStatus(false,'Delete failed',e.message||String(e)))}));tr.append(action);
+    const attachment=makeCell('',span),files=getComplaintAttachments(rec),viewAttachments=button('','small',()=>{if(files.length||rec['Attachment URL'])openComplaintAttachments(rec)});viewAttachments.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v6h5M9 13h7M9 17h7"/></svg>';viewAttachments.classList.add('complaint-attachment-icon');viewAttachments.title=files.length?'View Attachments ('+files.length+')':'No attachment available';viewAttachments.setAttribute('aria-label',files.length?'View Attachments ('+files.length+')':'No attachment available');viewAttachments.disabled=!(files.length||rec['Attachment URL']);attachment.append(viewAttachments);tr.append(attachment);
+    const action=makeCell('',span);action.className='actioncell ncr-action-cell';action.append(button('Full View','small',()=>showComplaintHistoryDetails(rec)),document.createTextNode(' '),button('Edit','small primary',()=>openComplaintForm(rec)),document.createTextNode(' '),button('Person In Charge','small primary',()=>openComplaintAssignment(rec)),document.createTextNode(' '),button('Delete','small danger',()=>{if(!confirm('Delete complaint '+(rec['Complaint ID']||'')+'?'))return;callServer('deleteComplaint',[rec['Complaint ID']],()=>loadRecords(false),e=>showStatus(false,'Delete failed',e.message||String(e)))}));tr.append(action);
    }
    el('tbody').append(tr);
   });
@@ -3262,7 +3281,7 @@ function renderComplaintHistory(records){
  records.forEach(rec=>{
   const tr=document.createElement('tr');
   [rec['Complaint ID']||'—',rec.Date||'—',rec.Client||'—'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value);tr.append(td)});
-  const action=document.createElement('td'),view=button('View Full Complaint','small',()=>showComplaintHistoryDetails(rec)),edit=button('Edit','small primary',()=>editComplaintFromHistory(rec));
+  const action=document.createElement('td'),view=button('Full View','small',()=>showComplaintHistoryDetails(rec)),edit=button('Edit','small primary',()=>editComplaintFromHistory(rec));
   view.title='View full complaint';edit.title='Edit this complaint';action.append(view,document.createTextNode(' '),edit);tr.append(action);body.append(tr);
  });
  table.append(body);host.append(table);
