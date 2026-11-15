@@ -623,6 +623,23 @@ function saveManualPdiRequest(payload){
  }finally{lock.releaseLock();}
 }
 
+function deletePdiRequest(referenceNo){
+ const ref=String(referenceNo||'').trim();if(!ref)throw new Error('Missing PDI Reference No.');
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ try{
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
+  if(!sh||sh.getLastRow()<2)throw new Error('PDI request was not found.');
+  const tracking=ensurePdiTrackingColumns_(sh),refCol=tracking.headers.indexOf('PDI Reference No');
+  if(refCol<0)throw new Error('PDI Reference No column is missing.');
+  const rows=sh.getDataRange().getDisplayValues();let row=-1;
+  for(let i=1;i<rows.length;i++)if(String(rows[i][refCol]||'').trim()===ref){row=i+1;break;}
+  if(row<0)throw new Error('PDI request was not found. Refresh and try again.');
+  sh.deleteRow(row);
+  try{CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');}catch(e){}
+  return {ok:true,recordId:ref,message:'PDI request deleted.'};
+ }finally{lock.releaseLock();}
+}
+
 function getPdiRecords_(searchText){
  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);
  if(!sh)return {ok:true,records:[],fields:PDI_HEADERS};
