@@ -1573,18 +1573,22 @@ function saveAllocation(recordId,input) {
   if(existingTotal+qty>Number(tr[13]))throw new Error('Total allocated quantity ('+(existingTotal+qty)+') cannot exceed transfer Qty ('+tr[13]+').');
   const now=new Date(),aid=id||Utilities.getUuid();
   if(row>0){
-    const old=rows[row-1];
-    const updated=headers.map((h,i)=>{
-      if(h==='QC In Charge')return qc;
-      if(h==='Qty')return qty;
-      if(h==='FGTS No.')return String(input['FGTS No.']||'').trim();
-      if(h==='Date Finished')return input['Date Finished']||'';
-      if(h==='Category')return String(input.Category||'').trim();
-      if(h==='Allocation Remarks')return String(input['Allocation Remarks']||'').trim();
-      if(h==='Updated At')return now;
-      return old[i];
+    // Update every editable allocation field by its actual header position.
+    // This avoids a partial-row write silently leaving FGTS/category/date/remarks unchanged.
+    const valuesToSave={
+      'QC In Charge':qc,
+      'Qty':qty,
+      'FGTS No.':String(input['FGTS No.']||'').trim(),
+      'Date Finished':String(input['Date Finished']||'').trim(),
+      'Category':String(input.Category||'').trim(),
+      'Allocation Remarks':String(input['Allocation Remarks']||'').trim(),
+      'Updated At':now
+    };
+    Object.keys(valuesToSave).forEach(name=>{
+      const col=idx(name);
+      if(col<0)throw new Error('Missing allocation column: '+name+'. Please run Prepare Database, then try again.');
+      sh.getRange(row,col+1).setValue(valuesToSave[name]);
     });
-    sh.getRange(row,1,1,headers.length).setValues([updated]);
   }else{
     const fgts=String(input['FGTS No.']||'').trim();if(!fgts)throw new Error('FGTS No. is required for a new allocation.');
     const out=headers.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?tr[3]:h==='Transfer Record ID'?recordId:h==='QC In Charge'?qc:h==='FGTS No.'?fgts:h==='Qty'?qty:h==='Date Finished'?(input['Date Finished']||''):h==='Allocation Remarks'?(input['Allocation Remarks']||''):h==='Created At'?now:h==='Updated At'?now:h==='Category'?(input.Category||''):'');
