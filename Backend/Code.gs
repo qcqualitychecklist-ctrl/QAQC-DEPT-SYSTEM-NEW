@@ -365,7 +365,7 @@ function invalidateComplaintCache_(){try{CacheService.getScriptCache().remove('q
 function complaintYearCode_(value){
  let year=0;
  if(value instanceof Date&&!isNaN(value.getTime()))year=value.getFullYear();
- else{const match=String(value||'').match(/(?:19|20)\\d{2}/);if(match)year=Number(match[0]);}
+ else{const match=String(value||'').match(/(?:19|20)\d{2}/);if(match)year=Number(match[0]);}
  if(!year)year=new Date().getFullYear();
  return String(year).slice(-2);
 }
@@ -374,7 +374,7 @@ function nextComplaintReference_(sh,headers,dateValue){
  let max=0;
  if(sh.getLastRow()>1&&refCol>0){
   const refs=sh.getRange(2,refCol,sh.getLastRow()-1,1).getDisplayValues();
-  refs.forEach(row=>{const m=String(row[0]||'').trim().match(/^CC-(\\d{2})-(\\d+)$/);if(m&&m[1]===yy)max=Math.max(max,Number(m[2])||0);});
+  refs.forEach(row=>{const m=String(row[0]||'').trim().match(/^CC-(\d{2})-(\d+)$/);if(m&&m[1]===yy)max=Math.max(max,Number(m[2])||0);});
  }
  return 'CC-'+yy+'-'+String(max+1).padStart(3,'0');
 }
@@ -387,7 +387,7 @@ function ensureComplaintSchema_(sh){
  if(lastRow>1){
   const refs=sh.getRange(2,refCol,lastRow-1,1).getDisplayValues(),dates=sh.getRange(2,dateCol,lastRow-1,1).getValues();
   const counters={};
-  refs.forEach(row=>{const m=String(row[0]||'').trim().match(/^CC-(\\d{2})-(\\d+)$/);if(m)counters[m[1]]=Math.max(counters[m[1]]||0,Number(m[2])||0);});
+  refs.forEach(row=>{const m=String(row[0]||'').trim().match(/^CC-(\d{2})-(\d+)$/);if(m)counters[m[1]]=Math.max(counters[m[1]]||0,Number(m[2])||0);});
   let changed=false;
   refs.forEach((row,i)=>{if(!String(row[0]||'').trim()){const yy=complaintYearCode_(dates[i][0]);counters[yy]=(counters[yy]||0)+1;row[0]='CC-'+yy+'-'+String(counters[yy]).padStart(3,'0');changed=true;}});
   if(changed)sh.getRange(2,refCol,refs.length,1).setValues(refs);
@@ -1723,4 +1723,4 @@ function deleteJO(recordId) {
 }
 function formatCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'yyyy-MM-dd');return v==null?'':v;}
 function formatTimeCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'HH:mm');return v==null?'':String(v).trim();}
-function formatPdiTimeCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'h:mm a');const s=String(v==null?'':v).trim(),m=s.match(/^(\\d{1,2}):(\\d{2})$/);if(!m)return s;const h=Number(m[1]);return ((h%12)||12)+':'+m[2]+' '+(h>=12?'PM':'AM');}
+function formatPdiTimeCell_(v){if(v instanceof Date)return Utilities.formatDate(v,Session.getScriptTimeZone(),'h:mm a');const s=String(v==null?'':v).trim(),m=s.match(/^(\d{1,2}):(\d{2})$/);if(!m)return s;const h=Number(m[1]);return ((h%12)||12)+':'+m[2]+' '+(h>=12?'PM':'AM');}
