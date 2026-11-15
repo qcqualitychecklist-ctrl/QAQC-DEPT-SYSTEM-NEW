@@ -614,7 +614,7 @@ table.ncr-table td.ncr-description{min-width:260px;}
 #ncrModal .allocation-form-head button{border-radius:9px;background:#edf5ff;color:#2459a9;border-color:#c8dcf7;font-weight:700}
 #ncrModal .ncr-pic-row{padding:10px;border:1px solid #dce6f2;border-radius:10px;background:#f8fbff}
 #ncrModal .actions{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;gap:10px;margin:18px -24px -24px;padding:14px 24px;background:#ffffffef;border-top:1px solid #dfe8f2;backdrop-filter:blur(8px)}
-#ncrModal #ncrSave{min-width:145px;border-radius:10px;background:#1d5eb7;font-weight:800}
+#ncrModal #ncrSave{min-width:0;width:auto;flex:0 0 auto;padding:9px 18px;border-radius:999px;background:#1d5eb7;font-weight:800}
 @media(max-width:760px){#ncrModal .dialoghead{padding:16px}#ncrModal #ncrForm{padding:14px}#ncrModal .fields{grid-template-columns:1fr 1fr;padding:0}#ncrModal .actions{margin:16px -14px -14px;padding:12px 14px}}
 @media(max-width:520px){#ncrModal .fields{grid-template-columns:1fr}#ncrModal .ncr-dialog{width:96vw}}
 
@@ -2319,7 +2319,7 @@ function toggleNcrStatus(rec){
  if(!rec||!rec.Reference)return;
  const current=String(rec.Status||'Open').trim();
  if(current.toLowerCase()==='closed'){
-  showDesignedConfirm('Reopen NCR?','Are you sure you want to reopen NCR '+rec.Reference+'? The Date Closed will be cleared.','Yes, Reopen',()=>saveNcrStatus(rec.Reference,'Open',''));
+  showDesignedConfirm('Reopen NCR?','Are you sure you want to reopen NCR '+rec.Reference+'? The Date Closed will be cleared.','Yes',()=>saveNcrStatus(rec.Reference,'Open',''));
   return;
  }
  ncrStatusTarget=rec;
