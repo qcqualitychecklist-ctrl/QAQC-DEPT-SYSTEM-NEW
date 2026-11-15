@@ -1712,7 +1712,7 @@ body:has(.modal.open){overflow:hidden}
     <div class="pdi-request-field"><label for="pdiRequestContact">Contact Number</label><input id="pdiRequestContact" type="tel" maxlength="40" placeholder="Enter contact number"></div>
    </div></section>
    <section class="pdi-request-section"><h2>Inspection Details</h2><div class="pdi-request-grid">
-    <div class="pdi-request-field full"><label for="pdiRequestScope">Scope of Inspection *</label><textarea id="pdiRequestScope" required maxlength="3000" placeholder="Describe the items, equipment, or scope to be inspected"></textarea></div>
+    <div class="pdi-request-field full"><label for="pdiRequestScope">Scope of Inspection</label><textarea id="pdiRequestScope" maxlength="3000" placeholder="Describe the items, equipment, or scope to be inspected"></textarea></div>
     <div class="pdi-request-field full"><label for="pdiRequestComments">Comments or Special Request</label><textarea id="pdiRequestComments" maxlength="3000" placeholder="Enter any additional instructions or special requests (optional)"></textarea></div>
    </div></section>
    <div class="pdi-request-actions"><button id="publicPdiSubmit" class="pdi-request-submit" type="submit">Submit PDI Request</button></div>
@@ -3467,13 +3467,13 @@ function openGuestComplaintForm(){
 function renderGuestPdiHistory(){
  const host=el('pdiRequestHistoryBody');if(!host)return;host.innerHTML='';
  if(!guestPdiHistory.length){const p=document.createElement('p');p.className='muted';p.textContent='No PDI requests submitted in this guest session yet.';host.append(p);return}
- const table=document.createElement('table');table.style.cssText='width:100%;min-width:820px;border-collapse:collapse;table-layout:fixed;box-sizing:border-box';
+ const table=document.createElement('table');table.className='pdi-request-history-table';table.style.cssText='width:100%;min-width:820px;border-collapse:collapse;table-layout:fixed;box-sizing:border-box';
  const colgroup=document.createElement('colgroup');['20%','9%','9%','19%','18%','12%','13%'].forEach(width=>{const col=document.createElement('col');col.style.width=width;colgroup.append(col)});table.append(colgroup);
  const thead=document.createElement('thead'),hr=document.createElement('tr'),body=document.createElement('tbody');
- ['Requestor Name','J.O','S.O','Client','Date of PDI','Status','Action'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.cssText='display:table-cell;width:auto;padding:10px 6px;text-align:center;vertical-align:middle;background:#edf2f8;color:#233b5d;font-size:11px;white-space:normal;overflow-wrap:anywhere;box-sizing:border-box';hr.append(th)});thead.append(hr);table.append(thead);
+ ['Requestor Name','J.O','S.O','Client','Date of PDI','Status','Action'].forEach(label=>{const th=document.createElement('th');th.textContent=label;th.style.cssText='display:table-cell;width:auto;padding:10px 6px;text-align:center;vertical-align:middle;background:#edf2f8;color:#233b5d;font-size:11px;font-weight:700;white-space:nowrap;box-sizing:border-box';hr.append(th)});thead.append(hr);table.append(thead);
  guestPdiHistory.forEach(rec=>{
-  const tr=document.createElement('tr');[rec["Requestor's Name"],rec['J.O'],rec['S.O'],rec.Client,rec['Date of PDI'],rec.Status||'Pending'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value||'—');td.title=td.textContent;td.style.cssText='display:table-cell;padding:10px 6px;text-align:center;vertical-align:middle;border-bottom:1px solid #e4eaf2;font-size:11px;white-space:normal;overflow-wrap:anywhere;box-sizing:border-box';tr.append(td)});
-  const action=document.createElement('td');action.style.cssText='padding:7px;text-align:center;border-bottom:1px solid #e4eaf2';const edit=button('Edit','small',()=>editPdiRequestFromHistory(rec));edit.classList.add('complaint-history-edit-btn');edit.title='Edit this PDI request';edit.setAttribute('aria-label','Edit this PDI request');edit.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 4 4 4M4 20l4-.8L19 8a2.8 2.8 0 0 0-4-4L4 15z"/></svg>';action.append(edit);tr.append(action);body.append(tr);
+  const tr=document.createElement('tr');[rec["Requestor's Name"],rec['J.O'],rec['S.O'],rec.Client,rec['Date of PDI'],rec.Status||'Pending'].forEach(value=>{const td=document.createElement('td');td.textContent=String(value||'—');td.title=td.textContent;td.style.cssText='display:table-cell;padding:10px 6px;text-align:center;vertical-align:middle;border-bottom:1px solid #e4eaf2;font-size:11px;white-space:nowrap;box-sizing:border-box';tr.append(td)});
+  const action=document.createElement('td');action.style.cssText='padding:7px;text-align:center;border-bottom:1px solid #e4eaf2';const edit=button('Edit','small',()=>editPdiRequestFromHistory(rec));edit.classList.add('complaint-history-edit-btn');edit.title='Edit this PDI request';edit.setAttribute('aria-label','Edit this PDI request');action.append(edit);tr.append(action);body.append(tr);
  });
  table.append(body);host.append(table);
 }
@@ -3566,8 +3566,17 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #loginLanding .access-guest-btn{font-weight:800!important}
 
 /* PDI Monitoring-only refinements. */
-#guestPdiWorkspace .complaint-history-edit-btn{width:29px!important;height:28px!important;min-width:29px!important;padding:5px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;background:#edf4ff!important;color:#2459a9!important;border:1px solid #c9daf3!important;border-radius:7px!important;box-shadow:none!important;font-size:0!important}
-#guestPdiWorkspace .complaint-history-edit-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#guestPdiWorkspace .pdi-request-history-table{width:100%;min-width:820px;table-layout:fixed;border-collapse:collapse;white-space:nowrap}
+#guestPdiWorkspace .pdi-request-history-table th,#guestPdiWorkspace .pdi-request-history-table td{box-sizing:border-box;padding:10px 12px;border-bottom:1px solid #e4eaf2;vertical-align:middle;text-align:center;white-space:nowrap}
+#guestPdiWorkspace .pdi-request-history-table th{background:#edf2f8;color:#233b5d;font-size:11px;font-weight:700}
+#guestPdiWorkspace .pdi-request-history-table th:nth-child(1),#guestPdiWorkspace .pdi-request-history-table td:nth-child(1){width:20%}
+#guestPdiWorkspace .pdi-request-history-table th:nth-child(2),#guestPdiWorkspace .pdi-request-history-table td:nth-child(2),#guestPdiWorkspace .pdi-request-history-table th:nth-child(3),#guestPdiWorkspace .pdi-request-history-table td:nth-child(3){width:9%}
+#guestPdiWorkspace .pdi-request-history-table th:nth-child(4),#guestPdiWorkspace .pdi-request-history-table td:nth-child(4){width:19%}
+#guestPdiWorkspace .pdi-request-history-table th:nth-child(5),#guestPdiWorkspace .pdi-request-history-table td:nth-child(5){width:18%}
+#guestPdiWorkspace .pdi-request-history-table th:nth-child(6),#guestPdiWorkspace .pdi-request-history-table td:nth-child(6){width:12%}
+#guestPdiWorkspace .pdi-request-history-table th:nth-child(7),#guestPdiWorkspace .pdi-request-history-table td:nth-child(7){width:13%}
+#guestPdiWorkspace .complaint-history-edit-btn{background:#edf4ff!important;color:#2459a9!important;border-color:#c9daf3!important;box-shadow:none!important}
+#guestPdiWorkspace .complaint-history-edit-btn:hover{background:#e2edfc!important}
 #dashboardCards.pdi-dashboard .dash-card.pdi-gpi .dash-value{color:#16a34a!important}
 #dashboardCards.pdi-dashboard .dash-card.pdi-with-request .dash-value{color:#7c3aed!important}
 #pdiRequestViewModal .pdi-request-view-dialog{width:min(980px,96vw)!important;max-width:980px!important;max-height:88vh!important;display:flex!important;flex-direction:column!important;padding:0!important;overflow:hidden!important;border-radius:16px!important}
