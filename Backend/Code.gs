@@ -1230,23 +1230,26 @@ function getTransferRecords(searchText) {
   if(!sh) return {ok:true,records:[],fields:TRANSFER_HEADERS};
   ensureTransferAllocationColumns_(sh);
   if(allocSh&&allocSh.getLastRow()>1)migrateAllocationRecordIds_(sh,allocSh);
-  const vals=sh.getDataRange().getValues(), allocations=allocSh&&allocSh.getLastRow()>1?allocSh.getDataRange().getValues().slice(1):[];
+  const vals=sh.getDataRange().getValues();
+  const allocationHeaders=allocSh&&allocSh.getLastColumn()>0?allocSh.getRange(1,1,1,allocSh.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()):[];
+  const allocationIndex=name=>allocationHeaders.indexOf(name);
+  const allocations=allocSh&&allocSh.getLastRow()>1?allocSh.getDataRange().getValues().slice(1):[];
   const allocationsByRecord=Object.create(null);
-  allocations.forEach(a=>{const id=String(a[10]||'');if(id)(allocationsByRecord[id]||(allocationsByRecord[id]=[])).push(a);});
+  allocations.forEach(a=>{const id=String(a[allocationIndex('Transfer Record ID')]||'');if(id)(allocationsByRecord[id]||(allocationsByRecord[id]=[])).push(a);});
   const query=String(searchText||'').trim().toLowerCase(), records=[];
   for(let i=1;i<vals.length;i++){
     if(!vals[i][0])continue;
     const obj={}; TRANSFER_HEADERS.forEach((h,j)=>obj[h]=h==='Time Received'?formatTimeCell_(vals[i][j]):formatCell_(vals[i][j]));
     const recordId=String(obj['Record ID']||'');
     const linked=allocationsByRecord[recordId]||[];
-    const done=linked.reduce((sum,a)=>sum+(Number(a[4])||0),0);
+    const done=linked.reduce((sum,a)=>sum+(Number(a[allocationIndex('Qty')])||0),0);
     obj['Done Qty']=done;
     obj['Remaining Qty']=Math.max(0,(Number(obj['Qty'])||0)-done);
-    obj['QC In Charge']=[...new Set(linked.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', ');
-    obj['FGTS No.']=[...new Set(linked.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
+    obj['QC In Charge']=[...new Set(linked.map(a=>String(a[allocationIndex('QC In Charge')]||'').trim()).filter(Boolean))].join(', ');
+    obj['FGTS No.']=[...new Set(linked.map(a=>String(a[allocationIndex('FGTS No.')]||'').trim()).filter(Boolean))].join(', ');
     obj['Date Finished']=latestFinishedDate_(linked);
-    obj.Category=[...new Set(linked.map(a=>String(a[9]||'').trim()).filter(Boolean))].join(', ');
-    const allocationRemarks=[...new Set(linked.map(a=>String(a[6]||'').trim()).filter(Boolean))].join(' | ');if(allocationRemarks)obj.Remarks=allocationRemarks;
+    obj.Category=[...new Set(linked.map(a=>String(a[allocationIndex('Category')]||'').trim()).filter(Boolean))].join(', ');
+    const allocationRemarks=[...new Set(linked.map(a=>String(a[allocationIndex('Allocation Remarks')]||'').trim()).filter(Boolean))].join(' | ');if(allocationRemarks)obj.Remarks=allocationRemarks;
     if(['Ongoing','Hold','For line up'].includes(String(obj.Status)) && obj['Date Received']){
       const received=new Date(obj['Date Received']); const days=Math.floor((new Date().setHours(0,0,0,0)-received.setHours(0,0,0,0))/86400000);
       obj.Reminders=days>=REMINDER_AFTER_DAYS?'Delayed ('+days+' days)':'';
@@ -1589,6 +1592,14 @@ function saveAllocation(recordId,input) {
       if(col<0)throw new Error('Missing allocation column: '+name+'. Please run Prepare Database, then try again.');
       sh.getRange(row,col+1).setValue(valuesToSave[name]);
     });
+    SpreadsheetApp.flush();
+    const saved=sh.getRange(row,1,1,headers.length).getValues()[0];
+    Object.keys(valuesToSave).forEach(name=>{
+      const col=idx(name);
+      const expected=valuesToSave[name] instanceof Date?Utilities.formatDate(valuesToSave[name],Session.getScriptTimeZone(),'yyyy-MM-dd'):String(valuesToSave[name]??'');
+      const actual=saved[col] instanceof Date?Utilities.formatDate(saved[col],Session.getScriptTimeZone(),'yyyy-MM-dd'):String(saved[col]??'');
+      if(expected!==actual)throw new Error('The '+name+' change was not confirmed in the allocation record. Please try saving again.');
+    });
   }else{
     const fgts=String(input['FGTS No.']||'').trim();if(!fgts)throw new Error('FGTS No. is required for a new allocation.');
     const out=headers.map(h=>h==='Allocation ID'?aid:h==='Transfer ID'?tr[3]:h==='Transfer Record ID'?recordId:h==='QC In Charge'?qc:h==='FGTS No.'?fgts:h==='Qty'?qty:h==='Date Finished'?(input['Date Finished']||''):h==='Allocation Remarks'?(input['Allocation Remarks']||''):h==='Created At'?now:h==='Updated At'?now:h==='Category'?(input.Category||''):'');
@@ -1661,12 +1672,14 @@ function syncTransferSummary_(recordId,allocationRows) {
   const match=sh.getRange(2,1,lastRow-1,1).createTextFinder(String(recordId)).matchEntireCell(true).findNext();
   if(!match)return;
   const rowIndex=match.getRow(),tr=sh.getRange(rowIndex,1,1,TRANSFER_HEADERS.length).getValues()[0],allocs=Array.isArray(allocationRows)?allocationRows:getAllocationRows_(recordId);
-  const done=allocs.reduce((sum,a)=>sum+(Number(a[4])||0),0);
-  const qc=[...new Set(allocs.map(a=>String(a[2]||'').trim()).filter(Boolean))].join(', ');
-  const fgts=[...new Set(allocs.map(a=>String(a[3]||'').trim()).filter(Boolean))].join(', ');
+  const allocHeaders=allocSh&&allocSh.getLastColumn()>0?allocSh.getRange(1,1,1,allocSh.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()):ALLOCATION_HEADERS;
+  const ai=name=>allocHeaders.indexOf(name);
+  const done=allocs.reduce((sum,a)=>sum+(Number(a[ai('Qty')])||0),0);
+  const qc=[...new Set(allocs.map(a=>String(a[ai('QC In Charge')]||'').trim()).filter(Boolean))].join(', ');
+  const fgts=[...new Set(allocs.map(a=>String(a[ai('FGTS No.')]||'').trim()).filter(Boolean))].join(', ');
   const finished=latestFinishedDate_(allocs),qty=Number(tr[13])||0;
   sh.getRange(rowIndex,17,1,5).setValues([[done,Math.max(0,qty-done),qc,fgts,finished]]);
-  const allocationRemarks=[...new Set(allocs.map(a=>String(a[6]||'').trim()).filter(Boolean))].join(' | ');sh.getRange(rowIndex,23).setValue(allocationRemarks);
+  const allocationRemarks=[...new Set(allocs.map(a=>String(a[ai('Allocation Remarks')]||'').trim()).filter(Boolean))].join(' | ');sh.getRange(rowIndex,23).setValue(allocationRemarks);
   let status=String(tr[15]||''),received=tr[4];
   if(qty>0&&done>=qty){status='Passed';sh.getRange(rowIndex,16).setValue(status);}
   else if(status==='Passed'){status='Ongoing';sh.getRange(rowIndex,16).setValue(status);}
