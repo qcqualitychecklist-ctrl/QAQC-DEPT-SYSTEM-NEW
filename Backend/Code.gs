@@ -21,7 +21,7 @@ const PUNCHLIST_SHEET = 'Punchlist Monitoring';
 const NCR_SHEET = 'NCR Monitoring';
 const COMPLAINT_SHEET = 'Complaint Monitoring';
 const PDI_SHEET = 'PDI Monitoring';
-const COMPLAINT_HEADERS = ['Complaint ID','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','Person Responsible','Investigation','Status','Created At','Updated At','Items JSON','Attachment URL','Submitted By Username'];
+const COMPLAINT_HEADERS = ['Complaint ID','Complaint Ref. No.','Date','Company','Client','Name of Complainant','J.O','S.O','Item','Panel Name','Qty','Complaint Description','Person Responsible','Investigation','Status','Created At','Updated At','Items JSON','Attachment URL','Submitted By Username'];
 const PDI_HEADERS = ["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request','QC in Charge','Status','Remarks','PDI Reference No','Date of Request','Request Type'];
 const NCR_HEADERS = ['Reference','Date','Prepared by','Section','Person In Charge','Description of Issue','Corrective Action','Status','Date Closed'];
 const PUNCHLIST_HEADERS = ['Punchlist ID','Created At','Updated At','Date Issue','J.O','S.O','Client','Item','Panel Name','Qty','Category','Description of Punchlist','Concern Section','Target Date','Received By','Received Date','Closed By','Closed Date','Status','Ref. No.'];
@@ -362,11 +362,28 @@ function deleteNcr(reference){
 }
 
 function invalidateComplaintCache_(){try{CacheService.getScriptCache().remove('qaqc_module_v3_Complaint_Monitoring');}catch(e){}}
+function nextComplaintReference_(sh,headers){
+ const refCol=headers.indexOf('Complaint Ref. No.')+1;
+ let max=0;
+ if(sh.getLastRow()>1&&refCol>0){
+  const refs=sh.getRange(2,refCol,sh.getLastRow()-1,1).getDisplayValues();
+  refs.forEach(row=>{const m=String(row[0]||'').trim().match(/^CC-27-(\d+)$/);if(m)max=Math.max(max,Number(m[1])||0);});
+ }
+ return 'CC-27-'+String(max+1).padStart(3,'0');
+}
 function ensureComplaintSchema_(sh){
  if(!sh||!sh.getLastColumn())throw new Error('Complaint Monitoring database is not prepared yet.');
  const headers=sh.getRange(1,1,1,sh.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim());
  [['QC In-Charge','Person Responsible'],['Cause','Investigation']].forEach(([oldName,newName])=>{const oldIndex=headers.indexOf(oldName),newIndex=headers.indexOf(newName);if(oldIndex>=0&&newIndex<0){sh.getRange(1,oldIndex+1).setValue(newName);headers[oldIndex]=newName;}});
- ['Person Responsible','Investigation','Submitted By Username','Attachments JSON'].forEach(name=>{if(!headers.includes(name)){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers.push(name);}});
+ ['Complaint Ref. No.','Person Responsible','Investigation','Submitted By Username','Attachments JSON'].forEach(name=>{if(!headers.includes(name)){const col=sh.getLastColumn()+1;sh.getRange(1,col).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');headers.push(name);}});
+ const refCol=headers.indexOf('Complaint Ref. No.')+1,lastRow=sh.getLastRow();
+ if(lastRow>1){
+  const refs=sh.getRange(2,refCol,lastRow-1,1).getDisplayValues();
+  let max=0;refs.forEach(row=>{const m=String(row[0]||'').trim().match(/^CC-27-(\d+)$/);if(m)max=Math.max(max,Number(m[1])||0);});
+  let changed=false;
+  refs.forEach(row=>{if(!String(row[0]||'').trim()){max++;row[0]='CC-27-'+String(max).padStart(3,'0');changed=true;}});
+  if(changed)sh.getRange(2,refCol,refs.length,1).setValues(refs);
+ }
  return headers;
 }
 function saveComplaint_(input){
@@ -382,9 +399,10 @@ function saveComplaint_(input){
  const status=String(input.Status||'Open').trim();
  if(!['Open','In Progress','Closed'].includes(status))throw new Error('Invalid complaint status.');
  const id=String(input['Complaint ID']||'').trim()||('CMP-'+Utilities.getUuid().slice(0,8).toUpperCase());
- const rec=Object.assign({},input,{'Complaint ID':id,Status:status,'Created At':now,'Updated At':now});
- let row=-1;const idCol=headers.indexOf('Complaint ID');
- if(input['Complaint ID']&&idCol>=0)for(let i=1;i<data.length;i++)if(String(data[i][idCol]).trim()===id){row=i+1;rec['Created At']=data[i][headers.indexOf('Created At')]||now;break;}
+ const rec=Object.assign({},input,{'Complaint ID':id,'Complaint Ref. No.':String(input['Complaint Ref. No.']||'').trim(),Status:status,'Created At':now,'Updated At':now});
+ let row=-1;const idCol=headers.indexOf('Complaint ID'),refCol=headers.indexOf('Complaint Ref. No.');
+ if(input['Complaint ID']&&idCol>=0)for(let i=1;i<data.length;i++)if(String(data[i][idCol]).trim()===id){row=i+1;rec['Created At']=data[i][headers.indexOf('Created At')]||now;rec['Complaint Ref. No.']=String(data[i][refCol]||'').trim()||nextComplaintReference_(sh,headers);break;}
+ if(row<0)rec['Complaint Ref. No.']=nextComplaintReference_(sh,headers);
  const out=headers.map(h=>rec[h]===undefined?'':rec[h]);
  if(row>0)sh.getRange(row,1,1,out.length).setValues([out]);else sh.appendRow(out);
  invalidateComplaintCache_();
@@ -462,14 +480,14 @@ function submitPublicComplaint(payload,sessionToken){
   try{
     const ss=SpreadsheetApp.openById(DATABASE_ID),sh=ss.getSheetByName(COMPLAINT_SHEET);
     if(!sh)throw new Error('Complaint Monitoring database is not prepared yet. Please contact QA/QC.');
-    const id='CMP-'+Utilities.getUuid().slice(0,8).toUpperCase(),now=new Date(),headers=ensureComplaintSchema_(sh),editToken=Utilities.getUuid();
+    const id='CMP-'+Utilities.getUuid().slice(0,8).toUpperCase(),now=new Date(),headers=ensureComplaintSchema_(sh),referenceNo=nextComplaintReference_(sh,headers),editToken=Utilities.getUuid();
     const items=payload.items.map(x=>({Item:String(x.Item||'').trim(), 'Panel Name':String(x['Panel Name']||'').trim(),Qty:String(x.Qty||'').trim(),'Complaint Description':String(x['Complaint Description']||'').trim()}));
     const attachmentUrl=safeAttachments.length?safeAttachments[0].url:'';
-    const rec={'Complaint ID':id,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl,'Attachments JSON':JSON.stringify(safeAttachments),'Submitted By Username':accountUsername};
+    const rec={'Complaint ID':id,'Complaint Ref. No.':referenceNo,Date:String(h.Date),Company:company,Client:String(h.Client).trim(),'Name of Complainant':String(h['Name of Complainant']).trim(),'J.O':String(h['J.O']||'').trim(),'S.O':String(h['S.O']||'').trim(),Item:items.map(x=>x.Item).join(', '),'Panel Name':items.map(x=>x['Panel Name']).filter(Boolean).join(', '),Qty:items.map(x=>x.Qty).filter(Boolean).join(', '),'Complaint Description':items.map(x=>x.Item+': '+x['Complaint Description']).join(' | '),'Person Responsible':'',Investigation:'',Status:'Open','Created At':now,'Updated At':now,'Items JSON':JSON.stringify(items),'Attachment URL':attachmentUrl,'Attachments JSON':JSON.stringify(safeAttachments),'Submitted By Username':accountUsername};
     sh.appendRow(headers.map(k=>rec[k]===undefined?'':rec[k]));
     CacheService.getScriptCache().put('qaqc_complaint_edit_'+id,editToken,21600);
     invalidateComplaintCache_();
-    return {ok:true,recordId:id,editToken:editToken,attachmentUrl:attachmentUrl,attachments:safeAttachments,message:'Your complaint has been submitted successfully.'};
+    return {ok:true,recordId:id,referenceNo:referenceNo,editToken:editToken,attachmentUrl:attachmentUrl,attachments:safeAttachments,message:'Your complaint has been submitted successfully.'};
   }finally{lock.releaseLock();}
 }
 function updatePublicComplaint(payload,sessionToken,editToken){
