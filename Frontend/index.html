@@ -2538,7 +2538,7 @@ function openEditPdiMonitoring(rec){
  const old=el('pdiMonitoringEditModal');if(old)old.remove();
  const modal=document.createElement('div');modal.id='pdiMonitoringEditModal';modal.className='modal open';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');
  const dialog=document.createElement('div');dialog.className='dialog';dialog.style.cssText='width:min(980px,calc(100vw - 28px));max-width:980px;max-height:88vh;overflow:auto';
- const head=document.createElement('div');head.className='dialoghead';const title=document.createElement('h3');title.textContent='Edit PDI Request — '+ref;head.append(title);
+ const head=document.createElement('div');head.className='dialoghead';head.style.cssText='display:flex;align-items:center;min-height:58px;padding:16px 20px;background:#142b4a;color:#fff;border-radius:10px 10px 0 0';const title=document.createElement('h3');title.textContent='Edit PDI Request — '+ref;title.style.cssText='margin:0;color:#fff;font-size:16px;font-weight:800;line-height:1.3';head.append(title);
  const form=document.createElement('form');form.className='formgrid';form.style.padding='16px';form.style.gridTemplateColumns='repeat(2,minmax(0,1fr))';
  const fields=[
   ["Requestor's Email","email"],["Requestor's Name","text"],['Company','select'],['J.O','text'],['S.O','text'],['Client','text'],
@@ -3269,8 +3269,23 @@ function addPublicComplaintItem(item){
 }
 function showPublicComplaintMessage(message,success){showStatus(!!success,success?'Submitted successfully':'Please check the form',message)}
 function showGuestComplaintToast(message){showStatus(true,'Complaint submitted successfully',message)}
-let guestComplaintHistory=[];
- let guestPdiHistory=[];
+const QAQC_GUEST_COMPLAINT_HISTORY_KEY='qaqc_guest_complaint_history_v1';
+const QAQC_GUEST_PDI_HISTORY_KEY='qaqc_guest_pdi_history_v1';
+function readGuestHistory(key){
+ try{const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value:[]}catch(e){return []}
+}
+function persistGuestHistory(){
+ try{
+  localStorage.setItem(QAQC_GUEST_COMPLAINT_HISTORY_KEY,JSON.stringify(guestComplaintHistory));
+  localStorage.setItem(QAQC_GUEST_PDI_HISTORY_KEY,JSON.stringify(guestPdiHistory));
+ }catch(e){console.warn('Unable to persist guest history in this browser.',e)}
+}
+function clearGuestHistory(){
+ try{localStorage.removeItem(QAQC_GUEST_COMPLAINT_HISTORY_KEY);localStorage.removeItem(QAQC_GUEST_PDI_HISTORY_KEY)}catch(e){}
+ guestComplaintHistory=[];guestPdiHistory=[];
+}
+let guestComplaintHistory=readGuestHistory(QAQC_GUEST_COMPLAINT_HISTORY_KEY);
+let guestPdiHistory=readGuestHistory(QAQC_GUEST_PDI_HISTORY_KEY);
 
 function showPublicPdiMessage(message,success){showStatus(!!success,success?'Submitted successfully':'Please check the form',message)}
 function submitPublicPdiForm(event){
@@ -3290,6 +3305,7 @@ function submitPublicPdiForm(event){
   if(editing){
    const updated={...editing.record,...payload,'PDI Reference No':editing.referenceNo,editToken:editing.editToken};
    const index=guestPdiHistory.findIndex(x=>String(x['PDI Reference No']||'')===String(editing.referenceNo));if(index>=0)guestPdiHistory[index]=updated;
+   persistGuestHistory();
    pdiHistoryEdit=null;el('publicPdiForm').reset();btn.textContent='Submit PDI Request';
    const formArea=el('guestPdiFormArea'),history=el('pdiRequestHistorySection'),create=el('createGuestPdiButton'),exit=el('guestPdiWorkspace')?.querySelector('.guest-workspace-exit');
    if(formArea)formArea.style.display='none';if(history)history.style.display='flex';if(create)create.style.display='';if(exit)exit.style.display='none';
@@ -3302,7 +3318,7 @@ function submitPublicPdiForm(event){
    const formArea=el('guestPdiFormArea'),create=el('createGuestPdiButton'),notice=el('guestPdiNotice');
    if(formArea)formArea.style.display='none';if(create)create.style.display='';
    if(notice){notice.textContent=result.message||'Your PDI request has been submitted successfully.';notice.className='public-complaint-message success';notice.style.display='block';}
-   renderGuestPdiHistory();
+   persistGuestHistory();renderGuestPdiHistory();
   }else showPublicPdiMessage(result.message||'Your PDI request has been submitted successfully.',true);
  };
  if(editing)callServer('updatePdiRequest',[payload,editing.referenceNo,editing.editToken],finish,err=>{btn.disabled=false;btn.textContent='Save Changes';showPublicPdiMessage(err&&err.message||String(err),false)});
@@ -3354,11 +3370,11 @@ async function submitPublicComplaintForm(event){
   const workspace=el('guestComplainWorkspace'),formArea=el('guestComplainFormArea'),create=el('createGuestComplainButton'),notice=el('guestComplaintNotice');
   if(editing){
    complaintHistoryEdit=null;
-   if(accountUser)loadComplaintHistory();else{const index=guestComplaintHistory.findIndex(x=>String(x['Complaint ID'])===String(localRecord['Complaint ID']));if(index>=0)guestComplaintHistory[index]=localRecord;renderComplaintHistory(guestComplaintHistory);}
+   if(accountUser)loadComplaintHistory();else{const index=guestComplaintHistory.findIndex(x=>String(x['Complaint ID'])===String(localRecord['Complaint ID']));if(index>=0)guestComplaintHistory[index]=localRecord;persistGuestHistory();renderComplaintHistory(guestComplaintHistory);}
    if(formArea)formArea.style.display='none';if(el('complaintHistorySection'))el('complaintHistorySection').style.display='flex';if(create)create.style.display='';const exit=workspace?.querySelector('.guest-workspace-exit');if(exit)exit.style.display='none';
    showGuestComplaintToast('Complaint updated: '+localRecord['Complaint ID']);return;
   }
-  if(workspace){if(!accountUser){guestComplaintHistory.unshift(localRecord);renderComplaintHistory(guestComplaintHistory)}if(formArea)formArea.style.display='none';if(create)create.style.display='';if(notice)notice.style.display='none';showGuestComplaintToast('Reference No.: '+r.recordId);if(accountUser)loadComplaintHistory();}
+  if(workspace){if(!accountUser){guestComplaintHistory.unshift(localRecord);persistGuestHistory();renderComplaintHistory(guestComplaintHistory)}if(formArea)formArea.style.display='none';if(create)create.style.display='';if(notice)notice.style.display='none';showGuestComplaintToast('Reference No.: '+r.recordId);if(accountUser)loadComplaintHistory();}
   else showPublicComplaintMessage('Your complaint has been successfully submitted! Reference No.: '+r.recordId,true);
  }catch(err){btn.disabled=false;btn.textContent=editing?'Save Changes':'Submit Complaint';showPublicComplaintMessage(err&&err.message||String(err),false)}
 }
@@ -3517,6 +3533,7 @@ function continueAsGuest(){
 }
 function exitGuestMode(){
  try{localStorage.removeItem(QAQC_GUEST_KEY);}catch(e){}
+ clearGuestHistory();
  window.qaqcCurrentUser=null;qaqcAuthToken='';qaqcLastActivity=0;
  document.body.classList.remove('guest-mode');
  ['guestComplainWorkspace','guestPdiWorkspace'].forEach(id=>{const node=document.getElementById(id);if(node)node.style.display='none';});
@@ -3524,6 +3541,7 @@ function exitGuestMode(){
  if(app)app.style.display='none';if(landing)landing.style.display='';
  closeAccountMenu();
  const notice=document.getElementById('loginNotice');if(notice){notice.textContent='You have exited guest access.';notice.style.display='block';}
+ applyLoginButtonEmphasis();
 }
 function editComplaintFromHistory(rec){
  const id=String(rec['Complaint ID']||'');if(!id){showPublicComplaintMessage('Complaint reference is missing.',false);return}
