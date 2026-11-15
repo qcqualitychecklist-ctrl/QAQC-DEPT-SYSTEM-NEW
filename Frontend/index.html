@@ -3739,10 +3739,10 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 
 /* Global visual refresh: replace solid dark-navy surfaces with a brighter radiant blue.
    Deliberate exceptions: monitoring module headers and monitoring table-record headers retain their existing colors. */
-[style*="background:#142b4a"],
-[style*="background: #142b4a"],
-[style*="background-color:#142b4a"],
-[style*="background-color: #142b4a"],
+[style*="background:#142b4a"]:not(#monitoringPanel .tablewrap thead th):not(#monitoringPanel table thead th),
+[style*="background: #142b4a"]:not(#monitoringPanel .tablewrap thead th):not(#monitoringPanel table thead th),
+[style*="background-color:#142b4a"]:not(#monitoringPanel .tablewrap thead th):not(#monitoringPanel table thead th),
+[style*="background-color: #142b4a"]:not(#monitoringPanel .tablewrap thead th):not(#monitoringPanel table thead th),
 .access-section-title,
 .internal-panel,
 .public-complaint-head,
@@ -3761,11 +3761,5 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 .pdi-request-head h1,
 .pdi-request-head p{
   color:#fff!important;
-}
-/* Keep monitoring section headers and table column headers unchanged. */
-#monitoringPanel .intro,
-#monitoringPanel .tablewrap thead th,
-#monitoringPanel table thead th{
-  background:initial;
 }
 
