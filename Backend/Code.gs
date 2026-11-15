@@ -1474,15 +1474,18 @@ function saveAllocationsBatch(recordId, common, entries) {
   const fgts=String(common['FGTS No.']||'').trim(),category=String(common.Category||'').trim(),remarks=String(common['Allocation Remarks']||'').trim();
   if(!fgts)throw new Error('FGTS No. is required.');
   const rows=sh.getDataRange().getValues();
-  if(!entries.length&&!common['Replace All']){
+  if(!entries.length){
     const matches=[];
-    for(let i=1;i<rows.length;i++)if(String(rows[i][idx('Transfer Record ID')])===String(recordId))matches.push({row:i+1,values:rows[i].slice()});
-    if(!matches.length)throw new Error('Click + Add QC, then enter QC In Charge and Qty for at least one allocation.');
-    const now=new Date();
-    matches.forEach(item=>{sh.getRange(item.row,idx('FGTS No.')+1).setValue(fgts);sh.getRange(item.row,idx('Date Finished')+1).setValue(common['Date Finished']||'');sh.getRange(item.row,idx('Allocation Remarks')+1).setValue(remarks);sh.getRange(item.row,idx('Updated At')+1).setValue(now);sh.getRange(item.row,idx('Category')+1).setValue(category);});
-    syncTransferSummary_(recordId);syncFGTSTransferAllocations_();
-  invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
-    return {ok:true,message:'Allocation details updated.'};
+    for(let i=1;i<rows.length;i++)if(String(rows[i][idx('Transfer Record ID')])===String(recordId))matches.push({row:i+1});
+    if(!matches.length)throw new Error('No saved QC allocations were found for this transfer.');
+    const now=new Date(),commonValues={'FGTS No.':fgts,'Date Finished':String(common['Date Finished']||'').trim(),'Category':category,'Allocation Remarks':remarks,'Updated At':now};
+    Object.keys(commonValues).forEach(name=>{if(idx(name)<0)throw new Error('Missing allocation column: '+name+'. Please run Prepare Database, then try again.');});
+    matches.forEach(item=>Object.keys(commonValues).forEach(name=>sh.getRange(item.row,idx(name)+1).setValue(commonValues[name])));
+    SpreadsheetApp.flush();
+    matches.forEach(item=>{const saved=sh.getRange(item.row,1,1,headers.length).getValues()[0];Object.keys(commonValues).forEach(name=>{const expected=commonValues[name] instanceof Date?Utilities.formatDate(commonValues[name],Session.getScriptTimeZone(),'yyyy-MM-dd'):String(commonValues[name]??'');const actual=saved[idx(name)] instanceof Date?Utilities.formatDate(saved[idx(name)],Session.getScriptTimeZone(),'yyyy-MM-dd'):String(saved[idx(name)]??'');if(expected!==actual)throw new Error('The '+name+' change was not confirmed in the allocation record. Please try saving again.');});});
+    syncTransferSummary_(recordId);syncRemainingTransferRow_(recordId);syncFGTSTransferAllocations_();
+    invalidateModuleCache_('Transfer Monitoring','J.O Register','FGTS Monitoring');
+    return {ok:true,message:'All FGTS / QC allocation details updated.'};
   }
   const cleaned=entries.map(e=>({id:String(e['Allocation ID']||''),qc:String(e['QC In Charge']||'').trim(),qty:Number(e.Qty)}));
   cleaned.forEach(e=>{if(!e.qc)throw new Error('QC In Charge is required for every row.');if(!isFinite(e.qty)||e.qty<=0)throw new Error('Every QC Qty must be greater than zero.');});
