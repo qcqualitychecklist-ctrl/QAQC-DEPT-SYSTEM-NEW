@@ -1700,7 +1700,7 @@ body:has(.modal.open){overflow:hidden}
 #publicPdiPage.pdi-request-page{background:#eef2f7;padding:24px 14px}
 #publicPdiPage .pdi-request-card{max-width:1120px;border:1px solid #111;border-radius:0;box-shadow:0 4px 18px rgba(20,43,74,.09);background:#fff}
 #publicPdiPage .pdi-request-head{padding:14px 18px;background:#fff;color:#111;border-bottom:1px solid #111}
-#publicPdiPage .pdi-request-head h1{font-size:21px;letter-spacing:.1px;text-align:center;margin:0;color:#fff;background:#073b78;padding:13px 10px}
+#publicPdiPage .pdi-request-head h1{font-size:17px;letter-spacing:.1px;text-align:center;margin:0;color:#fff;background:#073b78;padding:13px 10px;flex:1}\n#publicPdiPage .pdi-form-top{display:grid;grid-template-columns:25% 1fr 17%;align-items:stretch;gap:10px}\n#publicPdiPage .pdi-form-brand{display:flex;align-items:center;justify-content:center;gap:7px;color:#073b78;font-size:20px;font-weight:800}\n#publicPdiPage .pdi-form-logo{width:64px;height:42px;object-fit:contain}\n#publicPdiPage .pdi-form-ref{display:flex;flex-direction:column;justify-content:center;align-items:center;border:1px solid #111;padding:5px;font-size:10px}\n#publicPdiPage .pdi-form-ref b{font-size:12px;color:#073b78}
 #publicPdiPage .pdi-request-head p{display:none}
 #publicPdiPage .pdi-request-body{padding:14px 18px 18px;gap:12px;background:#fff}
 #publicPdiPage .pdi-request-section{padding:0;border:1px solid #111;border-radius:0;overflow:hidden;background:#fff}
@@ -1719,13 +1719,13 @@ body:has(.modal.open){overflow:hidden}
 #publicPdiPage .pdi-request-company-row{border:1px solid #111;border-bottom:0;display:grid;grid-template-columns:150px minmax(0,1fr);align-items:center}
 #publicPdiPage .pdi-request-company-row label{font-size:12px;font-weight:700;padding:10px;border-right:1px solid #111}
 #publicPdiPage .pdi-request-company-row select{border:0;background:#fff;padding:10px;min-height:39px}
-@media(max-width:700px){#publicPdiPage.pdi-request-page{padding:8px}#publicPdiPage .pdi-request-head,#publicPdiPage .pdi-request-body{padding:9px}#publicPdiPage .pdi-request-grid{grid-template-columns:1fr}#publicPdiPage .pdi-request-field.full{grid-column:auto}#publicPdiPage .pdi-request-field label{grid-template-columns:1fr;min-width:118px}#publicPdiPage .pdi-request-head h1{font-size:16px}}
+@media(max-width:700px){#publicPdiPage .pdi-form-top{grid-template-columns:1fr}#publicPdiPage .pdi-form-ref{display:none}#publicPdiPage.pdi-request-page{padding:8px}#publicPdiPage .pdi-request-head,#publicPdiPage .pdi-request-body{padding:9px}#publicPdiPage .pdi-request-grid{grid-template-columns:1fr}#publicPdiPage .pdi-request-field.full{grid-column:auto}#publicPdiPage .pdi-request-field label{grid-template-columns:1fr;min-width:118px}#publicPdiPage .pdi-request-head h1{font-size:16px}}
 </style>
 <style id="transfer-monitoring-button-weight-fix">body:has(#dashboardCards.transfer-dashboard) button{font-weight:400!important}body:has(#dashboardCards.transfer-dashboard) .action-confirm-actions button{font-weight:400!important}</style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
  <div class="pdi-request-card">
-  <header class="pdi-request-head"><h1>PRE-DELIVERY INSPECTION REQUEST</h1><p>GEMCOR</p></header>
+  <header class="pdi-request-head"><div class="pdi-form-top"><div class="pdi-form-brand"><img id="pdiFormLogo" class="pdi-form-logo" alt="GEMCOR"><strong>GEMCOR</strong></div><h1>PRE-DELIVERY INSPECTION REQUEST</h1><div class="pdi-form-ref"><span>PDI Request</span><b>REQUEST FORM</b></div></div></header>
   <form id="publicPdiForm" class="pdi-request-body" onsubmit="submitPublicPdiForm(event)">
    <div id="publicPdiMessage" class="pdi-request-message" role="status" aria-live="polite"></div>
    <div class="pdi-request-company-row"><label for="pdiRequestCompany">Company *</label><select id="pdiRequestCompany" required><option value="">Select Company</option><option value="GEMCOR">GEMCOR</option><option value="GPI">GPI</option></select></div>
@@ -1744,20 +1744,6 @@ body:has(.modal.open){overflow:hidden}
    </div></section>
    <section class="pdi-request-section"><h2>Scope of Inspection</h2><div class="pdi-request-grid"><div class="pdi-request-field full"><label for="pdiRequestScope">Scope of Inspection</label><textarea id="pdiRequestScope" maxlength="3000" placeholder="Describe the items, equipment, or scope to be inspected"></textarea></div></div></section>
    <section class="pdi-request-section"><h2>Comments or Special Requests</h2><div class="pdi-request-grid"><div class="pdi-request-field full"><label for="pdiRequestComments">Comments or Special Requests</label><textarea id="pdiRequestComments" maxlength="3000" placeholder="Enter any additional instructions or special requests (optional)"></textarea></div></div></section>
-   <div class="pdi-request-actions"><button id="publicPdiSubmit" class="pdi-request-submit" type="submit">Submit PDI Request</button></div>
-  </form>
- </div>
-</section>
-   <section class="pdi-request-section"><h2>Inspection Schedule</h2><div class="pdi-request-grid">
-    <div class="pdi-request-field"><label for="pdiRequestDate">Date of PDI *</label><input id="pdiRequestDate" type="date" required></div>
-    <div class="pdi-request-field"><label for="pdiRequestTime">Time *</label><input id="pdiRequestTime" type="time" required></div>
-    <div class="pdi-request-field"><label for="pdiRequestRep">Representative Name</label><input id="pdiRequestRep" maxlength="120" placeholder="Enter representative's name"></div>
-    <div class="pdi-request-field"><label for="pdiRequestContact">Contact Number</label><input id="pdiRequestContact" type="tel" maxlength="40" placeholder="Enter contact number"></div>
-   </div></section>
-   <section class="pdi-request-section"><h2>Inspection Details</h2><div class="pdi-request-grid">
-    <div class="pdi-request-field full"><label for="pdiRequestScope">Scope of Inspection</label><textarea id="pdiRequestScope" maxlength="3000" placeholder="Describe the items, equipment, or scope to be inspected"></textarea></div>
-    <div class="pdi-request-field full"><label for="pdiRequestComments">Comments or Special Request</label><textarea id="pdiRequestComments" maxlength="3000" placeholder="Enter any additional instructions or special requests (optional)"></textarea></div>
-   </div></section>
    <div class="pdi-request-actions"><button id="publicPdiSubmit" class="pdi-request-submit" type="submit">Submit PDI Request</button></div>
   </form>
  </div>
@@ -2643,7 +2629,7 @@ function submitManualPdiRequest(event){
 
 function editPdiRequestFromHistory(rec){
  const ref=String(rec['PDI Reference No']||'');if(!ref||!rec.editToken){showPublicPdiMessage('This PDI request cannot be edited after its session expires.',false);return;}
- pdiHistoryEdit={referenceNo:ref,editToken:rec.editToken,record:rec};
+ pdiHistoryEdit={referenceNo:ref,editToken:rec.editToken,record:rec};const logo=document.querySelector('.system-topbar-logo');if(logo&&el('pdiFormLogo'))el('pdiFormLogo').src=logo.src;
  if(!el('guestPdiWorkspace')||el('guestPdiWorkspace').style.display==='none')openGuestPdiRequest();
  const formArea=el('guestPdiFormArea'),history=el('pdiRequestHistorySection'),create=el('createGuestPdiButton'),exit=el('guestPdiWorkspace')?.querySelector('.guest-workspace-exit');
  if(formArea)formArea.style.display='block';if(history)history.style.display='none';if(create)create.style.display='none';if(exit)exit.style.display='';
@@ -3641,7 +3627,7 @@ function openGuestPdiRequest(){
  if(!workspace){
   workspace=document.createElement('section');workspace.id='guestPdiWorkspace';workspace.className='panel';workspace.style.cssText='display:flex;flex-direction:column;gap:16px;min-height:180px';
   const action=document.createElement('div');action.style.cssText='display:flex;justify-content:flex-start;align-items:center';
-  const create=document.createElement('button');create.id='createGuestPdiButton';create.type='button';create.className='primary';create.textContent='＋ Create PDI Request';create.onclick=()=>{const form=el('guestPdiFormArea');if(form)form.style.display='block';const history=el('pdiRequestHistorySection');if(history)history.style.display='none';create.style.display='none';const exit=workspace.querySelector('.guest-workspace-exit');if(exit)exit.style.display='';form?.scrollIntoView({behavior:'smooth',block:'start'})};action.append(create);workspace.append(action);
+  const create=document.createElement('button');create.id='createGuestPdiButton';create.type='button';create.className='primary';create.textContent='＋ Create PDI Request';create.onclick=()=>{const dr=el('pdiRequestDateRequest');if(dr&&!dr.value)dr.value=new Date().toISOString().slice(0,10);const logo=document.querySelector('.system-topbar-logo');if(logo&&el('pdiFormLogo'))el('pdiFormLogo').src=logo.src;const form=el('guestPdiFormArea');if(form)form.style.display='block';const history=el('pdiRequestHistorySection');if(history)history.style.display='none';create.style.display='none';const exit=workspace.querySelector('.guest-workspace-exit');if(exit)exit.style.display='';form?.scrollIntoView({behavior:'smooth',block:'start'})};action.append(create);workspace.append(action);
   const notice=document.createElement('div');notice.id='guestPdiNotice';notice.className='public-complaint-message success';notice.style.display='none';workspace.append(notice);
   const formArea=document.createElement('div');formArea.id='guestPdiFormArea';formArea.style.display='none';formArea.append(page.querySelector('.pdi-request-card'));workspace.append(formArea);
   const history=document.createElement('section');history.id='pdiRequestHistorySection';history.style.cssText='display:flex;flex-direction:column;gap:10px';const title=document.createElement('h3');title.textContent='PDI Request History';title.style.cssText='margin:0;color:#18365d';const wrap=document.createElement('div');wrap.id='pdiRequestHistoryBody';wrap.style.cssText='width:100%;overflow-x:auto';history.append(title,wrap);workspace.append(history);
