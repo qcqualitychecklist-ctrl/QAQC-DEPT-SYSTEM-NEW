@@ -1696,48 +1696,54 @@ body:has(.modal.open){overflow:hidden}
 .actions button[type="button"]:not(.danger),.transfer-details-actions button:not(.danger),.complaint-details-actions button:not(.danger){background:#fff!important;color:#334155!important;border:1px solid #cbd5e1!important}
 #complaintHistoryDetailsModal .complaint-history-dialog{width:min(980px,96vw)!important;max-width:980px!important}
 </style>
-<style id="pdi-request-clean-layout-v1">
-#publicPdiPage.pdi-request-page{background:#f3f6fb;padding:28px 16px}
-#publicPdiPage .pdi-request-card{max-width:980px;border:1px solid #dce5f0;border-radius:14px;box-shadow:0 10px 28px rgba(20,43,74,.08)}
-#publicPdiPage .pdi-request-head{padding:22px 28px;background:#142b4a}
-#publicPdiPage .pdi-request-head h1{font-size:22px;letter-spacing:.2px}
-#publicPdiPage .pdi-request-body{padding:22px 28px;gap:15px}
-#publicPdiPage .pdi-request-section{padding:0;border:1px solid #dce5f0;border-radius:9px;overflow:hidden;background:#fff}
-#publicPdiPage .pdi-request-section h2{margin:0;padding:10px 14px;background:#eaf1fb;border-bottom:1px solid #dce5f0;color:#18365d;font-size:13px;font-weight:750}
-#publicPdiPage .pdi-request-grid{padding:14px;gap:12px 16px}
-#publicPdiPage .pdi-request-field{gap:5px}
-#publicPdiPage .pdi-request-field label{font-size:11px;font-weight:700;color:#34445c}
-#publicPdiPage .pdi-request-field input,#publicPdiPage .pdi-request-field select,#publicPdiPage .pdi-request-field textarea{border:1px solid #cfd9e6;border-radius:6px;padding:9px 10px;font-size:12px;min-height:37px}
-#publicPdiPage .pdi-request-field textarea{min-height:88px}
-#publicPdiPage .pdi-request-field input:focus,#publicPdiPage .pdi-request-field select:focus,#publicPdiPage .pdi-request-field textarea:focus{outline:0;border-color:#3976bd;box-shadow:0 0 0 2px rgba(57,118,189,.12)}
+<style id="pdi-request-clean-layout-v2">
+#publicPdiPage.pdi-request-page{background:#eef2f7;padding:24px 14px}
+#publicPdiPage .pdi-request-card{max-width:1120px;border:1px solid #111;border-radius:0;box-shadow:0 4px 18px rgba(20,43,74,.09);background:#fff}
+#publicPdiPage .pdi-request-head{padding:14px 18px;background:#fff;color:#111;border-bottom:1px solid #111}
+#publicPdiPage .pdi-request-head h1{font-size:17px;letter-spacing:.1px;text-align:center;margin:0;color:#fff;background:#073b78;padding:13px 10px;flex:1}\n#publicPdiPage .pdi-form-top{display:grid;grid-template-columns:25% 1fr 17%;align-items:stretch;gap:10px}\n#publicPdiPage .pdi-form-brand{display:flex;align-items:center;justify-content:center;gap:7px;color:#073b78;font-size:20px;font-weight:800}\n#publicPdiPage .pdi-form-logo{width:64px;height:42px;object-fit:contain}\n#publicPdiPage .pdi-form-ref{display:flex;flex-direction:column;justify-content:center;align-items:center;border:1px solid #111;padding:5px;font-size:10px}\n#publicPdiPage .pdi-form-ref b{font-size:12px;color:#073b78}
+#publicPdiPage .pdi-request-head p{display:none}
+#publicPdiPage .pdi-request-body{padding:14px 18px 18px;gap:12px;background:#fff}
+#publicPdiPage .pdi-request-section{padding:0;border:1px solid #111;border-radius:0;overflow:hidden;background:#fff}
+#publicPdiPage .pdi-request-section h2{margin:0;padding:8px 12px;background:#073b78;border-bottom:1px solid #111;color:#fff;font-size:14px;font-weight:750}
+#publicPdiPage .pdi-request-grid{padding:0;gap:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+#publicPdiPage .pdi-request-field{gap:0;display:grid;grid-template-columns:minmax(118px,36%) minmax(0,1fr);align-items:stretch;border-bottom:1px solid #111;min-width:0}
+#publicPdiPage .pdi-request-field label{font-size:12px;font-weight:700;color:#111;padding:10px 9px;border-right:1px solid #111;display:flex;align-items:center}
+#publicPdiPage .pdi-request-field input,#publicPdiPage .pdi-request-field select,#publicPdiPage .pdi-request-field textarea{border:0!important;border-radius:0!important;padding:9px 10px;font-size:12px;min-height:39px;width:100%;background:#fff;box-shadow:none!important}
+#publicPdiPage .pdi-request-field textarea{min-height:92px;resize:vertical}
+#publicPdiPage .pdi-request-field input:focus,#publicPdiPage .pdi-request-field select:focus,#publicPdiPage .pdi-request-field textarea:focus{outline:2px solid #3976bd;outline-offset:-2px}
+#publicPdiPage .pdi-joso-inputs{display:grid;grid-template-columns:1fr 1fr;min-width:0}\n#publicPdiPage .pdi-joso-inputs input:first-child{border-right:1px solid #111!important}\n#publicPdiPage .pdi-request-field.full{grid-column:1/-1}
+#publicPdiPage .pdi-request-field.full label{min-width:150px}
+#publicPdiPage .pdi-request-field.full textarea{min-height:105px}
 #publicPdiPage .pdi-request-actions{padding-top:2px}
-#publicPdiPage .pdi-request-submit{padding:10px 22px;border-radius:6px;font-size:12px;font-weight:600}
-@media(max-width:650px){#publicPdiPage.pdi-request-page{padding:12px}#publicPdiPage .pdi-request-head,#publicPdiPage .pdi-request-body{padding:17px}#publicPdiPage .pdi-request-grid{padding:12px}}
+#publicPdiPage .pdi-request-submit{padding:10px 22px;border-radius:5px;font-size:12px;font-weight:600}
+#publicPdiPage .pdi-request-company-row{border:1px solid #111;border-bottom:0;display:grid;grid-template-columns:150px minmax(0,1fr);align-items:center}
+#publicPdiPage .pdi-request-company-row label{font-size:12px;font-weight:700;padding:10px;border-right:1px solid #111}
+#publicPdiPage .pdi-request-company-row select{border:0;background:#fff;padding:10px;min-height:39px}
+@media(max-width:700px){#publicPdiPage .pdi-form-top{grid-template-columns:1fr}#publicPdiPage .pdi-form-ref{display:none}#publicPdiPage.pdi-request-page{padding:8px}#publicPdiPage .pdi-request-head,#publicPdiPage .pdi-request-body{padding:9px}#publicPdiPage .pdi-request-grid{grid-template-columns:1fr}#publicPdiPage .pdi-request-field.full{grid-column:auto}#publicPdiPage .pdi-request-field label{grid-template-columns:1fr;min-width:118px}#publicPdiPage .pdi-request-head h1{font-size:16px}}
 </style>
 <style id="transfer-monitoring-button-weight-fix">body:has(#dashboardCards.transfer-dashboard) button{font-weight:400!important}body:has(#dashboardCards.transfer-dashboard) .action-confirm-actions button{font-weight:400!important}</style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
  <div class="pdi-request-card">
-  <header class="pdi-request-head"><h1>PDI Request Form</h1><p>Submit your Pre-Delivery Inspection request to the QA/QC Department. Please provide complete and accurate details.</p></header>
+  <header class="pdi-request-head"><div class="pdi-form-top"><div class="pdi-form-brand"><img id="pdiFormLogo" class="pdi-form-logo" alt="GEMCOR"><strong>GEMCOR</strong></div><h1>PRE-DELIVERY INSPECTION REQUEST</h1><div class="pdi-form-ref"><span>PDI Request</span><b>REQUEST FORM</b></div></div></header>
   <form id="publicPdiForm" class="pdi-request-body" onsubmit="submitPublicPdiForm(event)">
    <div id="publicPdiMessage" class="pdi-request-message" role="status" aria-live="polite"></div>
-   <section class="pdi-request-section"><h2>Requestor Information</h2><div class="pdi-request-grid">
-    <div class="pdi-request-field"><label for="pdiRequestEmail">Requestor's Email *</label><input id="pdiRequestEmail" type="email" required maxlength="160" placeholder="name@company.com"></div>
-    <div class="pdi-request-field"><label for="pdiRequestName">Requestor's Name *</label><input id="pdiRequestName" required maxlength="120" placeholder="Enter your full name"></div><div class="pdi-request-field"><label for="pdiRequestCompany">Company *</label><select id="pdiRequestCompany" required><option value="">Select Company</option><option value="GEMCOR">GEMCOR</option><option value="GPI">GPI</option></select></div>
-    <div class="pdi-request-field"><label for="pdiRequestJO">J.O *</label><input id="pdiRequestJO" required maxlength="80" placeholder="Enter J.O number"></div>
-    <div class="pdi-request-field"><label for="pdiRequestSO">S.O *</label><input id="pdiRequestSO" required maxlength="80" placeholder="Enter S.O number"></div>
-    <div class="pdi-request-field full"><label for="pdiRequestClient">Client *</label><input id="pdiRequestClient" required maxlength="160" placeholder="Enter client name"></div>
-   </div></section>
-   <section class="pdi-request-section"><h2>Inspection Schedule</h2><div class="pdi-request-grid">
+   <div class="pdi-request-company-row"><label for="pdiRequestCompany">Company *</label><select id="pdiRequestCompany" required><option value="">Select Company</option><option value="GEMCOR">GEMCOR</option><option value="GPI">GPI</option></select></div>
+   <section class="pdi-request-section"><div class="pdi-request-grid">
+    <div class="pdi-request-field"><label for="pdiRequestName">Requestor’s Name *</label><input id="pdiRequestName" required maxlength="120" placeholder="Enter your full name"></div>
+    <div class="pdi-request-field"><label for="pdiRequestEmail">Requestor’s Email *</label><input id="pdiRequestEmail" type="email" required maxlength="160" placeholder="name@company.com"></div>
+    <div class="pdi-request-field"><label>S.O / J.O Number *</label><div class="pdi-joso-inputs"><input id="pdiRequestSO" required maxlength="80" placeholder="S.O Number"><input id="pdiRequestJO" required maxlength="80" placeholder="J.O Number"></div></div>
+    <div class="pdi-request-field"><label for="pdiRequestClient">Client Name *</label><input id="pdiRequestClient" required maxlength="160" placeholder="Enter client name"></div>
+    <div class="pdi-request-field"><label for="pdiRequestDateRequest">Date of Request</label><input id="pdiRequestDateRequest" type="date" readonly></div>
     <div class="pdi-request-field"><label for="pdiRequestDate">Date of PDI *</label><input id="pdiRequestDate" type="date" required></div>
-    <div class="pdi-request-field"><label for="pdiRequestTime">Time *</label><input id="pdiRequestTime" type="time" required></div>
+    <div class="pdi-request-field full"><label for="pdiRequestTime">Time of PDI *</label><input id="pdiRequestTime" type="time" required></div>
+   </div></section>
+   <section class="pdi-request-section"><h2>Information of Client Representative Conducting the PDI</h2><div class="pdi-request-grid">
     <div class="pdi-request-field"><label for="pdiRequestRep">Representative Name</label><input id="pdiRequestRep" maxlength="120" placeholder="Enter representative's name"></div>
     <div class="pdi-request-field"><label for="pdiRequestContact">Contact Number</label><input id="pdiRequestContact" type="tel" maxlength="40" placeholder="Enter contact number"></div>
    </div></section>
-   <section class="pdi-request-section"><h2>Inspection Details</h2><div class="pdi-request-grid">
-    <div class="pdi-request-field full"><label for="pdiRequestScope">Scope of Inspection</label><textarea id="pdiRequestScope" maxlength="3000" placeholder="Describe the items, equipment, or scope to be inspected"></textarea></div>
-    <div class="pdi-request-field full"><label for="pdiRequestComments">Comments or Special Request</label><textarea id="pdiRequestComments" maxlength="3000" placeholder="Enter any additional instructions or special requests (optional)"></textarea></div>
-   </div></section>
+   <section class="pdi-request-section"><h2>Scope of Inspection</h2><div class="pdi-request-grid"><div class="pdi-request-field full"><label for="pdiRequestScope">Scope of Inspection</label><textarea id="pdiRequestScope" maxlength="3000" placeholder="Describe the items, equipment, or scope to be inspected"></textarea></div></div></section>
+   <section class="pdi-request-section"><h2>Comments or Special Requests</h2><div class="pdi-request-grid"><div class="pdi-request-field full"><label for="pdiRequestComments">Comments or Special Requests</label><textarea id="pdiRequestComments" maxlength="3000" placeholder="Enter any additional instructions or special requests (optional)"></textarea></div></div></section>
    <div class="pdi-request-actions"><button id="publicPdiSubmit" class="pdi-request-submit" type="submit">Submit PDI Request</button></div>
   </form>
  </div>
@@ -2623,12 +2629,12 @@ function submitManualPdiRequest(event){
 
 function editPdiRequestFromHistory(rec){
  const ref=String(rec['PDI Reference No']||'');if(!ref||!rec.editToken){showPublicPdiMessage('This PDI request cannot be edited after its session expires.',false);return;}
- pdiHistoryEdit={referenceNo:ref,editToken:rec.editToken,record:rec};
+ pdiHistoryEdit={referenceNo:ref,editToken:rec.editToken,record:rec};const logo=document.querySelector('.system-topbar-logo');if(logo&&el('pdiFormLogo'))el('pdiFormLogo').src=logo.src;
  if(!el('guestPdiWorkspace')||el('guestPdiWorkspace').style.display==='none')openGuestPdiRequest();
  const formArea=el('guestPdiFormArea'),history=el('pdiRequestHistorySection'),create=el('createGuestPdiButton'),exit=el('guestPdiWorkspace')?.querySelector('.guest-workspace-exit');
  if(formArea)formArea.style.display='block';if(history)history.style.display='none';if(create)create.style.display='none';if(exit)exit.style.display='';
  el('pdiRequestEmail').value=rec["Requestor's Email"]||'';el('pdiRequestName').value=rec["Requestor's Name"]||'';el('pdiRequestCompany').value=rec.Company||'';
- el('pdiRequestJO').value=rec['J.O']||'';el('pdiRequestSO').value=rec['S.O']||'';el('pdiRequestClient').value=rec.Client||'';el('pdiRequestDate').value=rec['Date of PDI']||'';
+ el('pdiRequestJO').value=rec['J.O']||'';el('pdiRequestSO').value=rec['S.O']||'';el('pdiRequestDateRequest').value=rec['Date of Request']||rec['Date of request']||'';el('pdiRequestClient').value=rec.Client||'';el('pdiRequestDate').value=rec['Date of PDI']||'';
  el('pdiRequestTime').value=String(rec.Time||'').slice(0,5);el('pdiRequestRep').value=rec['Representative Name']||'';el('pdiRequestContact').value=rec['Contact Number']||'';
  el('pdiRequestScope').value=rec['Scope of Inspection']||'';el('pdiRequestComments').value=rec['Comments or Special Request']||rec['Comments or Special Requests']||'';
  el('publicPdiSubmit').textContent='Save Changes';el('pdiRequestName').focus();formArea?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -2659,54 +2665,44 @@ function pdiRequestPrintStyles(){
  return '<style>'+
  '*,*:before,*:after{box-sizing:border-box}'+
  'body{margin:0;background:#fff;color:#111;font:12px Arial,Helvetica,sans-serif}'+
- '.pdi-request-sheet{width:100%;max-width:1120px;margin:0 auto;padding:8px;background:#fff}'+
- '.pdi-doc-top{display:grid;grid-template-columns:minmax(0,1fr) 220px;align-items:end;gap:18px;margin-bottom:10px}'+
- '.pdi-doc-logo{display:block;width:235px;max-width:100%;height:62px;object-fit:contain;object-position:left bottom}'+
- '.pdi-ref{display:flex;align-items:end;gap:8px;font-weight:700;white-space:nowrap;padding-bottom:4px}.pdi-ref-value{flex:1;min-height:19px;border-bottom:1px solid #111;text-align:center;font-weight:800;font-size:14px;color:#142b4a}'+
- '.pdi-doc-title{margin:0 0 10px;padding:7px 8px;background:#80a7e8;border:1px solid #111;text-align:center;font-size:23px;line-height:1.2;font-weight:800}'+
- '.pdi-meta-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 7%;margin-bottom:14px}'+
- '.pdi-meta-col{display:flex;flex-direction:column;gap:3px}.pdi-field{display:flex;align-items:end;gap:7px;min-height:19px;min-width:0}.pdi-field label{flex:0 0 auto;font-weight:700;white-space:nowrap}.pdi-field .pdi-value{flex:1;min-width:30px;min-height:18px;padding:0 3px 1px;border-bottom:1px solid #111;white-space:pre-wrap;overflow-wrap:anywhere;text-align:center}'+
- '.pdi-band{margin:15px 0 0;padding:4px 7px;background:#80a7e8;border:1px solid #111;text-align:center;font-weight:700;font-size:14px;line-height:1.2}'+
- '.pdi-rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 7%;padding:10px 0 5px}'+
- '.pdi-writing-box{min-height:76px;border:1px solid #111;padding:8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4;text-align:center}'+
- '.pdi-writing-box.comments{min-height:70px}'+
- '.pdi-decision-section{margin-top:15px;border:1px solid #111;break-inside:avoid;page-break-inside:avoid}'+
- '.pdi-decision-title{padding:5px 7px;background:#80a7e8;border-bottom:1px solid #111;text-align:center;font-weight:800;font-size:14px}'+
- '.pdi-decision-options{display:flex;justify-content:space-evenly;align-items:center;gap:12px;padding:13px 10px}'+
- '.pdi-decision-option{display:inline-flex;align-items:center;gap:7px;font-weight:800;white-space:nowrap}'+
- '.pdi-checkbox{display:inline-block;width:15px;height:15px;border:1.5px solid #111;background:#fff;flex:0 0 15px}'+
- '@media screen{.pdi-request-sheet{box-shadow:0 2px 12px #142b4a22;border:1px solid #dce3ec}}'+
- '@media print{@page{size:A4 portrait;margin:8mm}html,body{width:100%;height:auto;background:#fff}.pdi-request-sheet{max-width:none;margin:0;padding:0;box-shadow:none;border:0;break-inside:avoid;page-break-inside:avoid}.pdi-doc-title,.pdi-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}.pdi-writing-box{break-inside:avoid;page-break-inside:avoid}}'+
- '@media(max-width:720px){.pdi-decision-options{gap:7px;padding:11px 5px}.pdi-decision-option{font-size:10px;gap:5px}.pdi-checkbox{width:13px;height:13px;flex-basis:13px}}'+
- '@media(max-width:720px){.pdi-doc-top{grid-template-columns:1fr 150px}.pdi-doc-logo{width:170px}.pdi-doc-title{font-size:18px}.pdi-meta-grid{gap:5px 12px}.pdi-field label{font-size:10px}.pdi-rep-grid{grid-template-columns:1fr}}'+
+ '.pdi-request-sheet{width:100%;max-width:1120px;margin:0 auto;padding:8px;background:#fff;border:2px solid #111}'+
+ '.pdi-doc-header{display:grid;grid-template-columns:28% 1fr 21%;align-items:stretch;min-height:74px;border-bottom:2px solid #111}'+
+ '.pdi-doc-brand{display:flex;align-items:center;justify-content:center;padding:8px;border-right:2px solid #111;gap:8px}.pdi-doc-logo{display:block;width:100%;max-width:210px;height:58px;object-fit:contain;object-position:center}.pdi-doc-brand-fallback{font-size:27px;font-weight:800;color:#073b78;letter-spacing:1px}'+
+ '.pdi-doc-title{margin:0;display:flex;align-items:center;justify-content:center;padding:8px;background:#073b78;color:#fff;text-align:center;font-size:21px;line-height:1.15;font-weight:800;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+ '.pdi-ref{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:8px 10px;border-left:2px solid #111;font-weight:700}.pdi-ref-value{font-size:15px;font-weight:800;overflow-wrap:anywhere}'+
+ '.pdi-company-row{display:grid;grid-template-columns:150px 1fr;border-bottom:1px solid #111;min-height:34px}.pdi-company-row strong{padding:9px;border-right:1px solid #111}.pdi-company-row span{padding:9px}'+
+ '.pdi-info-grid{display:grid;grid-template-columns:1fr 1fr;border-left:0;border-top:0}.pdi-info-cell{display:grid;grid-template-columns:minmax(115px,38%) minmax(0,1fr);min-height:34px;border-right:1px solid #111;border-bottom:1px solid #111}.pdi-info-cell:nth-child(2n){border-right:0}.pdi-info-cell label{font-weight:700;padding:8px;border-right:1px solid #111}.pdi-info-cell .pdi-value{padding:8px;min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}.pdi-info-cell.wide{grid-column:1/-1;border-right:0;grid-template-columns:150px 1fr}.pdi-info-cell.wide label{border-right:1px solid #111}'+
+ '.pdi-band{margin:0;padding:7px 10px;background:#073b78;color:#fff;border-bottom:1px solid #111;text-align:left;font-weight:700;font-size:14px;line-height:1.2;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+ '.pdi-rep-grid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #111}.pdi-rep-grid .pdi-field{display:grid;grid-template-columns:minmax(130px,38%) 1fr;min-height:36px;border-right:1px solid #111}.pdi-rep-grid .pdi-field:last-child{border-right:0}.pdi-field label{font-weight:700;padding:9px;border-right:1px solid #111}.pdi-field .pdi-value{padding:9px;overflow-wrap:anywhere;white-space:pre-wrap}'+
+ '.pdi-writing-box{min-height:88px;border-bottom:1px solid #111;padding:9px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4}.pdi-writing-box.comments{min-height:82px}'+
+ '.pdi-decision-section{margin-top:12px;border:1px solid #111;break-inside:avoid;page-break-inside:avoid}.pdi-decision-title{padding:7px;background:#073b78;color:#fff;text-align:center;font-weight:800;font-size:16px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pdi-decision-options{display:flex;justify-content:space-evenly;align-items:center;gap:12px;padding:12px 8px}.pdi-decision-option{display:inline-flex;align-items:center;gap:8px;font-weight:800;white-space:nowrap}.pdi-checkbox{display:inline-block;width:25px;height:25px;border:2px solid #111;background:#fff;flex:0 0 25px}'+
+ '@media screen{.pdi-request-sheet{box-shadow:0 2px 12px #142b4a22}}'+
+ '@media print{@page{size:A4 portrait;margin:8mm}html,body{width:100%;height:auto;background:#fff}.pdi-request-sheet{max-width:none;margin:0;padding:0;box-shadow:none;break-inside:avoid;page-break-inside:avoid}.pdi-doc-title,.pdi-band,.pdi-decision-title{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'+
+ '@media(max-width:720px){.pdi-doc-header{grid-template-columns:1fr}.pdi-doc-brand{border-right:0;border-bottom:1px solid #111}.pdi-ref{border-left:0;border-top:1px solid #111}.pdi-info-grid{grid-template-columns:1fr}.pdi-info-cell,.pdi-info-cell:nth-child(2n){border-right:0}.pdi-info-cell.wide{grid-column:auto}.pdi-rep-grid{grid-template-columns:1fr}.pdi-rep-grid .pdi-field{border-right:0;border-bottom:1px solid #111}.pdi-decision-options{gap:6px}.pdi-decision-option{font-size:10px;gap:5px}.pdi-checkbox{width:18px;height:18px;flex-basis:18px}}'+
  '</style>';
 }
 function buildPdiRequestMarkup(rec,logoSrc){
  const get=(key)=>String(rec[key]||'');
- const joSo=[rec['J.O']?'J.O: '+rec['J.O']:'',rec['S.O']?'S.O: '+rec['S.O']:''].filter(Boolean).join('   |   ');
+ const joSo=[rec['S.O']?'S.O: '+rec['S.O']:'',rec['J.O']?'J.O: '+rec['J.O']:''].filter(Boolean).join('   |   ');
  const ref=rec['PDI Reference No']||rec['Ref no']||rec['Ref No.']||rec['Reference No']||rec['PDI Request No']||'';
  const dateRequest=rec['Date of Request']||rec['Date of request']||'';
- const logo=logoSrc?'<img class="pdi-doc-logo" src="'+escapePdiPrintHtml(logoSrc)+'" alt="GEMCOR">':'<div style="font-size:34px;font-weight:800;color:#123b9a">GEMCOR</div>';
+ const logo=logoSrc?'<img class="pdi-doc-logo" src="'+escapePdiPrintHtml(logoSrc)+'" alt="GEMCOR">':'<div class="pdi-doc-brand-fallback">GEMCOR</div>';
+ const cell=(label,value,wide)=>'<div class="pdi-info-cell'+(wide?' wide':'')+'"><label>'+label+'</label><div class="pdi-value">'+escapePdiPrintHtml(value)+'</div></div>';
  const field=(label,value)=>'<div class="pdi-field"><label>'+label+'</label><div class="pdi-value">'+escapePdiPrintHtml(value)+'</div></div>';
  return '<div class="pdi-request-sheet">'+
-  '<div class="pdi-doc-top"><div>'+logo+'</div><div class="pdi-ref"><span>Ref no:</span><span class="pdi-ref-value">'+escapePdiPrintHtml(ref)+'</span></div></div>'+
-  '<h1 class="pdi-doc-title">PRE-DELIVERY INSPECTION REQUEST</h1>'+
-  '<div class="pdi-meta-grid"><div class="pdi-meta-col">'+
-   field("Requestor's Name",get("Requestor's Name"))+
-   field('Company',get('Company'))+
-   field("Requestor's email",get("Requestor's Email"))+
-   field('S.O/J.O Number',joSo)+
-   field('Client Name',get('Client'))+
-  '</div><div class="pdi-meta-col">'+
-   field('Date of request',formatPdiPrintDate(dateRequest))+
-   field('Date of PDI',formatPdiPrintDate(get('Date of PDI')))+
-   field('Time of PDI',formatPdiDisplayTime(get('Time')))+
-  '</div></div>'+
-  '<div class="pdi-band">Information of Client Representative Conducting the PDI</div>'+
-  '<div class="pdi-rep-grid">'+
-   field('Representative Name',get('Representative Name'))+
-   field('Contact Number',get('Contact Number'))+
+  '<div class="pdi-doc-header"><div class="pdi-doc-brand">'+logo+'</div><h1 class="pdi-doc-title">PRE-DELIVERY INSPECTION REQUEST</h1><div class="pdi-ref"><span>PDI Ref. No.:</span><span class="pdi-ref-value">'+escapePdiPrintHtml(ref)+'</span></div></div>'+
+  '<div class="pdi-company-row"><strong>Company:</strong><span>'+escapePdiPrintHtml(get('Company'))+'</span></div>'+
+  '<div class="pdi-info-grid">'+
+   cell("Requestor’s Name",get("Requestor's Name"))+
+   cell("Requestor’s Email",get("Requestor's Email"))+
+   cell('S.O / J.O Number',joSo)+
+   cell('Client Name',get('Client'))+
+   cell('Date of Request',formatPdiPrintDate(dateRequest))+
+   cell('Date of PDI',formatPdiPrintDate(get('Date of PDI')))+
+   cell('Time of PDI',formatPdiDisplayTime(get('Time')),true)+
   '</div>'+
+  '<div class="pdi-band">Information of Client Representative Conducting the PDI</div>'+
+  '<div class="pdi-rep-grid">'+field('Representative Name',get('Representative Name'))+field('Contact Number',get('Contact Number'))+'</div>'+
   '<div class="pdi-band">Scope of Inspection</div>'+
   '<div class="pdi-writing-box">'+escapePdiPrintHtml(get('Scope of Inspection'))+'</div>'+
   '<div class="pdi-band">Comments or Special Requests</div>'+
@@ -3324,7 +3320,7 @@ function submitPublicPdiForm(event){
  const payload={
   "Requestor's Email":el('pdiRequestEmail').value.trim(),"Requestor's Name":el('pdiRequestName').value.trim(),
   "Company":el('pdiRequestCompany').value,"J.O":el('pdiRequestJO').value.trim(),"S.O":el('pdiRequestSO').value.trim(),
-  "Client":el('pdiRequestClient').value.trim(),"Date of PDI":el('pdiRequestDate').value,"Time":el('pdiRequestTime').value,
+  "Client":el('pdiRequestClient').value.trim(),"Date of Request":el('pdiRequestDateRequest').value||new Date().toISOString().slice(0,10),"Date of PDI":el('pdiRequestDate').value,"Time":el('pdiRequestTime').value,
   "Representative Name":el('pdiRequestRep').value.trim(),"Contact Number":el('pdiRequestContact').value.trim(),
   "Scope of Inspection":el('pdiRequestScope').value.trim(),"Comments or Special Request":el('pdiRequestComments').value.trim()
  };
@@ -3631,7 +3627,7 @@ function openGuestPdiRequest(){
  if(!workspace){
   workspace=document.createElement('section');workspace.id='guestPdiWorkspace';workspace.className='panel';workspace.style.cssText='display:flex;flex-direction:column;gap:16px;min-height:180px';
   const action=document.createElement('div');action.style.cssText='display:flex;justify-content:flex-start;align-items:center';
-  const create=document.createElement('button');create.id='createGuestPdiButton';create.type='button';create.className='primary';create.textContent='＋ Create PDI Request';create.onclick=()=>{const form=el('guestPdiFormArea');if(form)form.style.display='block';const history=el('pdiRequestHistorySection');if(history)history.style.display='none';create.style.display='none';const exit=workspace.querySelector('.guest-workspace-exit');if(exit)exit.style.display='';form?.scrollIntoView({behavior:'smooth',block:'start'})};action.append(create);workspace.append(action);
+  const create=document.createElement('button');create.id='createGuestPdiButton';create.type='button';create.className='primary';create.textContent='＋ Create PDI Request';create.onclick=()=>{const dr=el('pdiRequestDateRequest');if(dr&&!dr.value)dr.value=new Date().toISOString().slice(0,10);const logo=document.querySelector('.system-topbar-logo');if(logo&&el('pdiFormLogo'))el('pdiFormLogo').src=logo.src;const form=el('guestPdiFormArea');if(form)form.style.display='block';const history=el('pdiRequestHistorySection');if(history)history.style.display='none';create.style.display='none';const exit=workspace.querySelector('.guest-workspace-exit');if(exit)exit.style.display='';form?.scrollIntoView({behavior:'smooth',block:'start'})};action.append(create);workspace.append(action);
   const notice=document.createElement('div');notice.id='guestPdiNotice';notice.className='public-complaint-message success';notice.style.display='none';workspace.append(notice);
   const formArea=document.createElement('div');formArea.id='guestPdiFormArea';formArea.style.display='none';formArea.append(page.querySelector('.pdi-request-card'));workspace.append(formArea);
   const history=document.createElement('section');history.id='pdiRequestHistorySection';history.style.cssText='display:flex;flex-direction:column;gap:10px';const title=document.createElement('h3');title.textContent='PDI Request History';title.style.cssText='margin:0;color:#18365d';const wrap=document.createElement('div');wrap.id='pdiRequestHistoryBody';wrap.style.cssText='width:100%;overflow-x:auto';history.append(title,wrap);workspace.append(history);
