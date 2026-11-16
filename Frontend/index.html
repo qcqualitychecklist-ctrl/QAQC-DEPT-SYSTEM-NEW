@@ -2648,7 +2648,7 @@ function editPdiRequestFromHistory(rec){
  const formArea=el('guestPdiFormArea'),history=el('pdiRequestHistorySection'),create=el('createGuestPdiButton'),exit=el('guestPdiWorkspace')?.querySelector('.guest-workspace-exit');
  if(formArea)formArea.style.display='block';if(history)history.style.display='none';if(create)create.style.display='none';if(exit)exit.style.display='';
  el('pdiRequestEmail').value=rec["Requestor's Email"]||'';el('pdiRequestName').value=rec["Requestor's Name"]||'';el('pdiRequestCompany').value=rec.Company||'';
- el('pdiRequestJO').value=rec['J.O']||'';el('pdiRequestSO').value=rec['S.O']||'';el('pdiRequestClient').value=rec.Client||'';el('pdiRequestDate').value=rec['Date of PDI']||'';
+ el('pdiRequestJO').value=rec['J.O']||'';el('pdiRequestSO').value=rec['S.O']||'';el('pdiRequestDateRequest').value=rec['Date of Request']||rec['Date of request']||'';el('pdiRequestClient').value=rec.Client||'';el('pdiRequestDate').value=rec['Date of PDI']||'';
  el('pdiRequestTime').value=String(rec.Time||'').slice(0,5);el('pdiRequestRep').value=rec['Representative Name']||'';el('pdiRequestContact').value=rec['Contact Number']||'';
  el('pdiRequestScope').value=rec['Scope of Inspection']||'';el('pdiRequestComments').value=rec['Comments or Special Request']||rec['Comments or Special Requests']||'';
  el('publicPdiSubmit').textContent='Save Changes';el('pdiRequestName').focus();formArea?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -2679,54 +2679,44 @@ function pdiRequestPrintStyles(){
  return '<style>'+
  '*,*:before,*:after{box-sizing:border-box}'+
  'body{margin:0;background:#fff;color:#111;font:12px Arial,Helvetica,sans-serif}'+
- '.pdi-request-sheet{width:100%;max-width:1120px;margin:0 auto;padding:8px;background:#fff}'+
- '.pdi-doc-top{display:grid;grid-template-columns:minmax(0,1fr) 220px;align-items:end;gap:18px;margin-bottom:10px}'+
- '.pdi-doc-logo{display:block;width:235px;max-width:100%;height:62px;object-fit:contain;object-position:left bottom}'+
- '.pdi-ref{display:flex;align-items:end;gap:8px;font-weight:700;white-space:nowrap;padding-bottom:4px}.pdi-ref-value{flex:1;min-height:19px;border-bottom:1px solid #111;text-align:center;font-weight:800;font-size:14px;color:#142b4a}'+
- '.pdi-doc-title{margin:0 0 10px;padding:7px 8px;background:#80a7e8;border:1px solid #111;text-align:center;font-size:23px;line-height:1.2;font-weight:800}'+
- '.pdi-meta-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 7%;margin-bottom:14px}'+
- '.pdi-meta-col{display:flex;flex-direction:column;gap:3px}.pdi-field{display:flex;align-items:end;gap:7px;min-height:19px;min-width:0}.pdi-field label{flex:0 0 auto;font-weight:700;white-space:nowrap}.pdi-field .pdi-value{flex:1;min-width:30px;min-height:18px;padding:0 3px 1px;border-bottom:1px solid #111;white-space:pre-wrap;overflow-wrap:anywhere;text-align:center}'+
- '.pdi-band{margin:15px 0 0;padding:4px 7px;background:#80a7e8;border:1px solid #111;text-align:center;font-weight:700;font-size:14px;line-height:1.2}'+
- '.pdi-rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 7%;padding:10px 0 5px}'+
- '.pdi-writing-box{min-height:76px;border:1px solid #111;padding:8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4;text-align:center}'+
- '.pdi-writing-box.comments{min-height:70px}'+
- '.pdi-decision-section{margin-top:15px;border:1px solid #111;break-inside:avoid;page-break-inside:avoid}'+
- '.pdi-decision-title{padding:5px 7px;background:#80a7e8;border-bottom:1px solid #111;text-align:center;font-weight:800;font-size:14px}'+
- '.pdi-decision-options{display:flex;justify-content:space-evenly;align-items:center;gap:12px;padding:13px 10px}'+
- '.pdi-decision-option{display:inline-flex;align-items:center;gap:7px;font-weight:800;white-space:nowrap}'+
- '.pdi-checkbox{display:inline-block;width:15px;height:15px;border:1.5px solid #111;background:#fff;flex:0 0 15px}'+
- '@media screen{.pdi-request-sheet{box-shadow:0 2px 12px #142b4a22;border:1px solid #dce3ec}}'+
- '@media print{@page{size:A4 portrait;margin:8mm}html,body{width:100%;height:auto;background:#fff}.pdi-request-sheet{max-width:none;margin:0;padding:0;box-shadow:none;border:0;break-inside:avoid;page-break-inside:avoid}.pdi-doc-title,.pdi-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}.pdi-writing-box{break-inside:avoid;page-break-inside:avoid}}'+
- '@media(max-width:720px){.pdi-decision-options{gap:7px;padding:11px 5px}.pdi-decision-option{font-size:10px;gap:5px}.pdi-checkbox{width:13px;height:13px;flex-basis:13px}}'+
- '@media(max-width:720px){.pdi-doc-top{grid-template-columns:1fr 150px}.pdi-doc-logo{width:170px}.pdi-doc-title{font-size:18px}.pdi-meta-grid{gap:5px 12px}.pdi-field label{font-size:10px}.pdi-rep-grid{grid-template-columns:1fr}}'+
+ '.pdi-request-sheet{width:100%;max-width:1120px;margin:0 auto;padding:8px;background:#fff;border:2px solid #111}'+
+ '.pdi-doc-header{display:grid;grid-template-columns:28% 1fr 21%;align-items:stretch;min-height:74px;border-bottom:2px solid #111}'+
+ '.pdi-doc-brand{display:flex;align-items:center;justify-content:center;padding:8px;border-right:2px solid #111;gap:8px}.pdi-doc-logo{display:block;width:100%;max-width:210px;height:58px;object-fit:contain;object-position:center}.pdi-doc-brand-fallback{font-size:27px;font-weight:800;color:#073b78;letter-spacing:1px}'+
+ '.pdi-doc-title{margin:0;display:flex;align-items:center;justify-content:center;padding:8px;background:#073b78;color:#fff;text-align:center;font-size:21px;line-height:1.15;font-weight:800;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+ '.pdi-ref{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:8px 10px;border-left:2px solid #111;font-weight:700}.pdi-ref-value{font-size:15px;font-weight:800;overflow-wrap:anywhere}'+
+ '.pdi-company-row{display:grid;grid-template-columns:150px 1fr;border-bottom:1px solid #111;min-height:34px}.pdi-company-row strong{padding:9px;border-right:1px solid #111}.pdi-company-row span{padding:9px}'+
+ '.pdi-info-grid{display:grid;grid-template-columns:1fr 1fr;border-left:0;border-top:0}.pdi-info-cell{display:grid;grid-template-columns:minmax(115px,38%) minmax(0,1fr);min-height:34px;border-right:1px solid #111;border-bottom:1px solid #111}.pdi-info-cell:nth-child(2n){border-right:0}.pdi-info-cell label{font-weight:700;padding:8px;border-right:1px solid #111}.pdi-info-cell .pdi-value{padding:8px;min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}.pdi-info-cell.wide{grid-column:1/-1;border-right:0;grid-template-columns:150px 1fr}.pdi-info-cell.wide label{border-right:1px solid #111}'+
+ '.pdi-band{margin:0;padding:7px 10px;background:#073b78;color:#fff;border-bottom:1px solid #111;text-align:left;font-weight:700;font-size:14px;line-height:1.2;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+ '.pdi-rep-grid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #111}.pdi-rep-grid .pdi-field{display:grid;grid-template-columns:minmax(130px,38%) 1fr;min-height:36px;border-right:1px solid #111}.pdi-rep-grid .pdi-field:last-child{border-right:0}.pdi-field label{font-weight:700;padding:9px;border-right:1px solid #111}.pdi-field .pdi-value{padding:9px;overflow-wrap:anywhere;white-space:pre-wrap}'+
+ '.pdi-writing-box{min-height:88px;border-bottom:1px solid #111;padding:9px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4}.pdi-writing-box.comments{min-height:82px}'+
+ '.pdi-decision-section{margin-top:12px;border:1px solid #111;break-inside:avoid;page-break-inside:avoid}.pdi-decision-title{padding:7px;background:#073b78;color:#fff;text-align:center;font-weight:800;font-size:16px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pdi-decision-options{display:flex;justify-content:space-evenly;align-items:center;gap:12px;padding:12px 8px}.pdi-decision-option{display:inline-flex;align-items:center;gap:8px;font-weight:800;white-space:nowrap}.pdi-checkbox{display:inline-block;width:25px;height:25px;border:2px solid #111;background:#fff;flex:0 0 25px}'+
+ '@media screen{.pdi-request-sheet{box-shadow:0 2px 12px #142b4a22}}'+
+ '@media print{@page{size:A4 portrait;margin:8mm}html,body{width:100%;height:auto;background:#fff}.pdi-request-sheet{max-width:none;margin:0;padding:0;box-shadow:none;break-inside:avoid;page-break-inside:avoid}.pdi-doc-title,.pdi-band,.pdi-decision-title{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'+
+ '@media(max-width:720px){.pdi-doc-header{grid-template-columns:1fr}.pdi-doc-brand{border-right:0;border-bottom:1px solid #111}.pdi-ref{border-left:0;border-top:1px solid #111}.pdi-info-grid{grid-template-columns:1fr}.pdi-info-cell,.pdi-info-cell:nth-child(2n){border-right:0}.pdi-info-cell.wide{grid-column:auto}.pdi-rep-grid{grid-template-columns:1fr}.pdi-rep-grid .pdi-field{border-right:0;border-bottom:1px solid #111}.pdi-decision-options{gap:6px}.pdi-decision-option{font-size:10px;gap:5px}.pdi-checkbox{width:18px;height:18px;flex-basis:18px}}'+
  '</style>';
 }
 function buildPdiRequestMarkup(rec,logoSrc){
  const get=(key)=>String(rec[key]||'');
- const joSo=[rec['J.O']?'J.O: '+rec['J.O']:'',rec['S.O']?'S.O: '+rec['S.O']:''].filter(Boolean).join('   |   ');
+ const joSo=[rec['S.O']?'S.O: '+rec['S.O']:'',rec['J.O']?'J.O: '+rec['J.O']:''].filter(Boolean).join('   |   ');
  const ref=rec['PDI Reference No']||rec['Ref no']||rec['Ref No.']||rec['Reference No']||rec['PDI Request No']||'';
  const dateRequest=rec['Date of Request']||rec['Date of request']||'';
- const logo=logoSrc?'<img class="pdi-doc-logo" src="'+escapePdiPrintHtml(logoSrc)+'" alt="GEMCOR">':'<div style="font-size:34px;font-weight:800;color:#123b9a">GEMCOR</div>';
+ const logo=logoSrc?'<img class="pdi-doc-logo" src="'+escapePdiPrintHtml(logoSrc)+'" alt="GEMCOR">':'<div class="pdi-doc-brand-fallback">GEMCOR</div>';
+ const cell=(label,value,wide)=>'<div class="pdi-info-cell'+(wide?' wide':'')+'"><label>'+label+'</label><div class="pdi-value">'+escapePdiPrintHtml(value)+'</div></div>';
  const field=(label,value)=>'<div class="pdi-field"><label>'+label+'</label><div class="pdi-value">'+escapePdiPrintHtml(value)+'</div></div>';
  return '<div class="pdi-request-sheet">'+
-  '<div class="pdi-doc-top"><div>'+logo+'</div><div class="pdi-ref"><span>Ref no:</span><span class="pdi-ref-value">'+escapePdiPrintHtml(ref)+'</span></div></div>'+
-  '<h1 class="pdi-doc-title">PRE-DELIVERY INSPECTION REQUEST</h1>'+
-  '<div class="pdi-meta-grid"><div class="pdi-meta-col">'+
-   field("Requestor's Name",get("Requestor's Name"))+
-   field('Company',get('Company'))+
-   field("Requestor's email",get("Requestor's Email"))+
-   field('S.O/J.O Number',joSo)+
-   field('Client Name',get('Client'))+
-  '</div><div class="pdi-meta-col">'+
-   field('Date of request',formatPdiPrintDate(dateRequest))+
-   field('Date of PDI',formatPdiPrintDate(get('Date of PDI')))+
-   field('Time of PDI',formatPdiDisplayTime(get('Time')))+
-  '</div></div>'+
-  '<div class="pdi-band">Information of Client Representative Conducting the PDI</div>'+
-  '<div class="pdi-rep-grid">'+
-   field('Representative Name',get('Representative Name'))+
-   field('Contact Number',get('Contact Number'))+
+  '<div class="pdi-doc-header"><div class="pdi-doc-brand">'+logo+'</div><h1 class="pdi-doc-title">PRE-DELIVERY INSPECTION REQUEST</h1><div class="pdi-ref"><span>PDI Ref. No.:</span><span class="pdi-ref-value">'+escapePdiPrintHtml(ref)+'</span></div></div>'+
+  '<div class="pdi-company-row"><strong>Company:</strong><span>'+escapePdiPrintHtml(get('Company'))+'</span></div>'+
+  '<div class="pdi-info-grid">'+
+   cell("Requestor’s Name",get("Requestor's Name"))+
+   cell("Requestor’s Email",get("Requestor's Email"))+
+   cell('S.O / J.O Number',joSo)+
+   cell('Client Name',get('Client'))+
+   cell('Date of Request',formatPdiPrintDate(dateRequest))+
+   cell('Date of PDI',formatPdiPrintDate(get('Date of PDI')))+
+   cell('Time of PDI',formatPdiDisplayTime(get('Time')),true)+
   '</div>'+
+  '<div class="pdi-band">Information of Client Representative Conducting the PDI</div>'+
+  '<div class="pdi-rep-grid">'+field('Representative Name',get('Representative Name'))+field('Contact Number',get('Contact Number'))+'</div>'+
   '<div class="pdi-band">Scope of Inspection</div>'+
   '<div class="pdi-writing-box">'+escapePdiPrintHtml(get('Scope of Inspection'))+'</div>'+
   '<div class="pdi-band">Comments or Special Requests</div>'+
@@ -3344,7 +3334,7 @@ function submitPublicPdiForm(event){
  const payload={
   "Requestor's Email":el('pdiRequestEmail').value.trim(),"Requestor's Name":el('pdiRequestName').value.trim(),
   "Company":el('pdiRequestCompany').value,"J.O":el('pdiRequestJO').value.trim(),"S.O":el('pdiRequestSO').value.trim(),
-  "Client":el('pdiRequestClient').value.trim(),"Date of PDI":el('pdiRequestDate').value,"Time":el('pdiRequestTime').value,
+  "Client":el('pdiRequestClient').value.trim(),"Date of Request":el('pdiRequestDateRequest').value||new Date().toISOString().slice(0,10),"Date of PDI":el('pdiRequestDate').value,"Time":el('pdiRequestTime').value,
   "Representative Name":el('pdiRequestRep').value.trim(),"Contact Number":el('pdiRequestContact').value.trim(),
   "Scope of Inspection":el('pdiRequestScope').value.trim(),"Comments or Special Request":el('pdiRequestComments').value.trim()
  };
