@@ -1711,7 +1711,7 @@ body:has(.modal.open){overflow:hidden}
 #publicPdiPage .pdi-request-field input,#publicPdiPage .pdi-request-field select,#publicPdiPage .pdi-request-field textarea{border:0!important;border-radius:0!important;padding:9px 10px;font-size:12px;min-height:39px;width:100%;background:#fff;box-shadow:none!important}
 #publicPdiPage .pdi-request-field textarea{min-height:92px;resize:vertical}
 #publicPdiPage .pdi-request-field input:focus,#publicPdiPage .pdi-request-field select:focus,#publicPdiPage .pdi-request-field textarea:focus{outline:2px solid #3976bd;outline-offset:-2px}
-#publicPdiPage .pdi-request-field.full{grid-column:1/-1}
+#publicPdiPage .pdi-joso-inputs{display:grid;grid-template-columns:1fr 1fr;min-width:0}\n#publicPdiPage .pdi-joso-inputs input:first-child{border-right:1px solid #111!important}\n#publicPdiPage .pdi-request-field.full{grid-column:1/-1}
 #publicPdiPage .pdi-request-field.full label{min-width:150px}
 #publicPdiPage .pdi-request-field.full textarea{min-height:105px}
 #publicPdiPage .pdi-request-actions{padding-top:2px}
@@ -1732,7 +1732,7 @@ body:has(.modal.open){overflow:hidden}
    <section class="pdi-request-section"><div class="pdi-request-grid">
     <div class="pdi-request-field"><label for="pdiRequestName">Requestor’s Name *</label><input id="pdiRequestName" required maxlength="120" placeholder="Enter your full name"></div>
     <div class="pdi-request-field"><label for="pdiRequestEmail">Requestor’s Email *</label><input id="pdiRequestEmail" type="email" required maxlength="160" placeholder="name@company.com"></div>
-    <div class="pdi-request-field"><label for="pdiRequestSO">S.O / J.O Number *</label><input id="pdiRequestSO" required maxlength="80" placeholder="Enter S.O number"></div>
+    <div class="pdi-request-field"><label>S.O / J.O Number *</label><div class="pdi-joso-inputs"><input id="pdiRequestSO" required maxlength="80" placeholder="S.O Number"><input id="pdiRequestJO" required maxlength="80" placeholder="J.O Number"></div></div>
     <div class="pdi-request-field"><label for="pdiRequestClient">Client Name *</label><input id="pdiRequestClient" required maxlength="160" placeholder="Enter client name"></div>
     <div class="pdi-request-field"><label for="pdiRequestDateRequest">Date of Request</label><input id="pdiRequestDateRequest" type="date" readonly></div>
     <div class="pdi-request-field"><label for="pdiRequestDate">Date of PDI *</label><input id="pdiRequestDate" type="date" required></div>
