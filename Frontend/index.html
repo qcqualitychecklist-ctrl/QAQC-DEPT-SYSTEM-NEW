@@ -1695,7 +1695,26 @@ body:has(.modal.open){overflow:hidden}
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(14){white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important}
 .actions button[type="button"]:not(.danger),.transfer-details-actions button:not(.danger),.complaint-details-actions button:not(.danger){background:#fff!important;color:#334155!important;border:1px solid #cbd5e1!important}
 #complaintHistoryDetailsModal .complaint-history-dialog{width:min(980px,96vw)!important;max-width:980px!important}
-</style><style id="transfer-monitoring-button-weight-fix">body:has(#dashboardCards.transfer-dashboard) button{font-weight:400!important}body:has(#dashboardCards.transfer-dashboard) .action-confirm-actions button{font-weight:400!important}</style></head><body>
+</style>
+<style id="pdi-request-clean-layout-v1">
+#publicPdiPage.pdi-request-page{background:#f3f6fb;padding:28px 16px}
+#publicPdiPage .pdi-request-card{max-width:980px;border:1px solid #dce5f0;border-radius:14px;box-shadow:0 10px 28px rgba(20,43,74,.08)}
+#publicPdiPage .pdi-request-head{padding:22px 28px;background:#142b4a}
+#publicPdiPage .pdi-request-head h1{font-size:22px;letter-spacing:.2px}
+#publicPdiPage .pdi-request-body{padding:22px 28px;gap:15px}
+#publicPdiPage .pdi-request-section{padding:0;border:1px solid #dce5f0;border-radius:9px;overflow:hidden;background:#fff}
+#publicPdiPage .pdi-request-section h2{margin:0;padding:10px 14px;background:#eaf1fb;border-bottom:1px solid #dce5f0;color:#18365d;font-size:13px;font-weight:750}
+#publicPdiPage .pdi-request-grid{padding:14px;gap:12px 16px}
+#publicPdiPage .pdi-request-field{gap:5px}
+#publicPdiPage .pdi-request-field label{font-size:11px;font-weight:700;color:#34445c}
+#publicPdiPage .pdi-request-field input,#publicPdiPage .pdi-request-field select,#publicPdiPage .pdi-request-field textarea{border:1px solid #cfd9e6;border-radius:6px;padding:9px 10px;font-size:12px;min-height:37px}
+#publicPdiPage .pdi-request-field textarea{min-height:88px}
+#publicPdiPage .pdi-request-field input:focus,#publicPdiPage .pdi-request-field select:focus,#publicPdiPage .pdi-request-field textarea:focus{outline:0;border-color:#3976bd;box-shadow:0 0 0 2px rgba(57,118,189,.12)}
+#publicPdiPage .pdi-request-actions{padding-top:2px}
+#publicPdiPage .pdi-request-submit{padding:10px 22px;border-radius:6px;font-size:12px;font-weight:600}
+@media(max-width:650px){#publicPdiPage.pdi-request-page{padding:12px}#publicPdiPage .pdi-request-head,#publicPdiPage .pdi-request-body{padding:17px}#publicPdiPage .pdi-request-grid{padding:12px}}
+</style>
+<style id="transfer-monitoring-button-weight-fix">body:has(#dashboardCards.transfer-dashboard) button{font-weight:400!important}body:has(#dashboardCards.transfer-dashboard) .action-confirm-actions button{font-weight:400!important}</style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
  <div class="pdi-request-card">
@@ -2651,8 +2670,14 @@ function pdiRequestPrintStyles(){
  '.pdi-rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 7%;padding:10px 0 5px}'+
  '.pdi-writing-box{min-height:76px;border:1px solid #111;padding:8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4;text-align:center}'+
  '.pdi-writing-box.comments{min-height:70px}'+
+ '.pdi-decision-section{margin-top:15px;border:1px solid #111;break-inside:avoid;page-break-inside:avoid}'+
+ '.pdi-decision-title{padding:5px 7px;background:#80a7e8;border-bottom:1px solid #111;text-align:center;font-weight:800;font-size:14px}'+
+ '.pdi-decision-options{display:flex;justify-content:space-evenly;align-items:center;gap:12px;padding:13px 10px}'+
+ '.pdi-decision-option{display:inline-flex;align-items:center;gap:7px;font-weight:800;white-space:nowrap}'+
+ '.pdi-checkbox{display:inline-block;width:15px;height:15px;border:1.5px solid #111;background:#fff;flex:0 0 15px}'+
  '@media screen{.pdi-request-sheet{box-shadow:0 2px 12px #142b4a22;border:1px solid #dce3ec}}'+
  '@media print{@page{size:A4 portrait;margin:8mm}html,body{width:100%;height:auto;background:#fff}.pdi-request-sheet{max-width:none;margin:0;padding:0;box-shadow:none;border:0;break-inside:avoid;page-break-inside:avoid}.pdi-doc-title,.pdi-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}.pdi-writing-box{break-inside:avoid;page-break-inside:avoid}}'+
+ '@media(max-width:720px){.pdi-decision-options{gap:7px;padding:11px 5px}.pdi-decision-option{font-size:10px;gap:5px}.pdi-checkbox{width:13px;height:13px;flex-basis:13px}}'+
  '@media(max-width:720px){.pdi-doc-top{grid-template-columns:1fr 150px}.pdi-doc-logo{width:170px}.pdi-doc-title{font-size:18px}.pdi-meta-grid{gap:5px 12px}.pdi-field label{font-size:10px}.pdi-rep-grid{grid-template-columns:1fr}}'+
  '</style>';
 }
@@ -2686,6 +2711,11 @@ function buildPdiRequestMarkup(rec,logoSrc){
   '<div class="pdi-writing-box">'+escapePdiPrintHtml(get('Scope of Inspection'))+'</div>'+
   '<div class="pdi-band">Comments or Special Requests</div>'+
   '<div class="pdi-writing-box comments">'+escapePdiPrintHtml(get('Comments or Special Request'))+'</div>'+
+  '<div class="pdi-decision-section"><div class="pdi-decision-title">QA/QC DECISION</div><div class="pdi-decision-options">'+
+   '<span class="pdi-decision-option"><span class="pdi-checkbox"></span> APPROVED</span>'+
+   '<span class="pdi-decision-option"><span class="pdi-checkbox"></span> DECLINED</span>'+
+   '<span class="pdi-decision-option"><span class="pdi-checkbox"></span> RESCHEDULED</span>'+
+  '</div></div>'+
  '</div>';
 }
 function openPdiRequestView(rec){
