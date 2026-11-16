@@ -1696,38 +1696,58 @@ body:has(.modal.open){overflow:hidden}
 .actions button[type="button"]:not(.danger),.transfer-details-actions button:not(.danger),.complaint-details-actions button:not(.danger){background:#fff!important;color:#334155!important;border:1px solid #cbd5e1!important}
 #complaintHistoryDetailsModal .complaint-history-dialog{width:min(980px,96vw)!important;max-width:980px!important}
 </style>
-<style id="pdi-request-clean-layout-v1">
-#publicPdiPage.pdi-request-page{background:#f3f6fb;padding:28px 16px}
-#publicPdiPage .pdi-request-card{max-width:980px;border:1px solid #dce5f0;border-radius:14px;box-shadow:0 10px 28px rgba(20,43,74,.08)}
-#publicPdiPage .pdi-request-head{padding:22px 28px;background:#142b4a}
-#publicPdiPage .pdi-request-head h1{font-size:22px;letter-spacing:.2px}
-#publicPdiPage .pdi-request-body{padding:22px 28px;gap:15px}
-#publicPdiPage .pdi-request-section{padding:0;border:1px solid #dce5f0;border-radius:9px;overflow:hidden;background:#fff}
-#publicPdiPage .pdi-request-section h2{margin:0;padding:10px 14px;background:#eaf1fb;border-bottom:1px solid #dce5f0;color:#18365d;font-size:13px;font-weight:750}
-#publicPdiPage .pdi-request-grid{padding:14px;gap:12px 16px}
-#publicPdiPage .pdi-request-field{gap:5px}
-#publicPdiPage .pdi-request-field label{font-size:11px;font-weight:700;color:#34445c}
-#publicPdiPage .pdi-request-field input,#publicPdiPage .pdi-request-field select,#publicPdiPage .pdi-request-field textarea{border:1px solid #cfd9e6;border-radius:6px;padding:9px 10px;font-size:12px;min-height:37px}
-#publicPdiPage .pdi-request-field textarea{min-height:88px}
-#publicPdiPage .pdi-request-field input:focus,#publicPdiPage .pdi-request-field select:focus,#publicPdiPage .pdi-request-field textarea:focus{outline:0;border-color:#3976bd;box-shadow:0 0 0 2px rgba(57,118,189,.12)}
+<style id="pdi-request-clean-layout-v2">
+#publicPdiPage.pdi-request-page{background:#eef2f7;padding:24px 14px}
+#publicPdiPage .pdi-request-card{max-width:1120px;border:1px solid #111;border-radius:0;box-shadow:0 4px 18px rgba(20,43,74,.09);background:#fff}
+#publicPdiPage .pdi-request-head{padding:14px 18px;background:#fff;color:#111;border-bottom:1px solid #111}
+#publicPdiPage .pdi-request-head h1{font-size:21px;letter-spacing:.1px;text-align:center;margin:0;color:#fff;background:#073b78;padding:13px 10px}
+#publicPdiPage .pdi-request-head p{display:none}
+#publicPdiPage .pdi-request-body{padding:14px 18px 18px;gap:12px;background:#fff}
+#publicPdiPage .pdi-request-section{padding:0;border:1px solid #111;border-radius:0;overflow:hidden;background:#fff}
+#publicPdiPage .pdi-request-section h2{margin:0;padding:8px 12px;background:#073b78;border-bottom:1px solid #111;color:#fff;font-size:14px;font-weight:750}
+#publicPdiPage .pdi-request-grid{padding:0;gap:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+#publicPdiPage .pdi-request-field{gap:0;display:grid;grid-template-columns:minmax(118px,36%) minmax(0,1fr);align-items:stretch;border-bottom:1px solid #111;min-width:0}
+#publicPdiPage .pdi-request-field label{font-size:12px;font-weight:700;color:#111;padding:10px 9px;border-right:1px solid #111;display:flex;align-items:center}
+#publicPdiPage .pdi-request-field input,#publicPdiPage .pdi-request-field select,#publicPdiPage .pdi-request-field textarea{border:0!important;border-radius:0!important;padding:9px 10px;font-size:12px;min-height:39px;width:100%;background:#fff;box-shadow:none!important}
+#publicPdiPage .pdi-request-field textarea{min-height:92px;resize:vertical}
+#publicPdiPage .pdi-request-field input:focus,#publicPdiPage .pdi-request-field select:focus,#publicPdiPage .pdi-request-field textarea:focus{outline:2px solid #3976bd;outline-offset:-2px}
+#publicPdiPage .pdi-request-field.full{grid-column:1/-1}
+#publicPdiPage .pdi-request-field.full label{min-width:150px}
+#publicPdiPage .pdi-request-field.full textarea{min-height:105px}
 #publicPdiPage .pdi-request-actions{padding-top:2px}
-#publicPdiPage .pdi-request-submit{padding:10px 22px;border-radius:6px;font-size:12px;font-weight:600}
-@media(max-width:650px){#publicPdiPage.pdi-request-page{padding:12px}#publicPdiPage .pdi-request-head,#publicPdiPage .pdi-request-body{padding:17px}#publicPdiPage .pdi-request-grid{padding:12px}}
+#publicPdiPage .pdi-request-submit{padding:10px 22px;border-radius:5px;font-size:12px;font-weight:600}
+#publicPdiPage .pdi-request-company-row{border:1px solid #111;border-bottom:0;display:grid;grid-template-columns:150px minmax(0,1fr);align-items:center}
+#publicPdiPage .pdi-request-company-row label{font-size:12px;font-weight:700;padding:10px;border-right:1px solid #111}
+#publicPdiPage .pdi-request-company-row select{border:0;background:#fff;padding:10px;min-height:39px}
+@media(max-width:700px){#publicPdiPage.pdi-request-page{padding:8px}#publicPdiPage .pdi-request-head,#publicPdiPage .pdi-request-body{padding:9px}#publicPdiPage .pdi-request-grid{grid-template-columns:1fr}#publicPdiPage .pdi-request-field.full{grid-column:auto}#publicPdiPage .pdi-request-field label{grid-template-columns:1fr;min-width:118px}#publicPdiPage .pdi-request-head h1{font-size:16px}}
 </style>
 <style id="transfer-monitoring-button-weight-fix">body:has(#dashboardCards.transfer-dashboard) button{font-weight:400!important}body:has(#dashboardCards.transfer-dashboard) .action-confirm-actions button{font-weight:400!important}</style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
  <div class="pdi-request-card">
-  <header class="pdi-request-head"><h1>PDI Request Form</h1><p>Submit your Pre-Delivery Inspection request to the QA/QC Department. Please provide complete and accurate details.</p></header>
+  <header class="pdi-request-head"><h1>PRE-DELIVERY INSPECTION REQUEST</h1><p>GEMCOR</p></header>
   <form id="publicPdiForm" class="pdi-request-body" onsubmit="submitPublicPdiForm(event)">
    <div id="publicPdiMessage" class="pdi-request-message" role="status" aria-live="polite"></div>
-   <section class="pdi-request-section"><h2>Requestor Information</h2><div class="pdi-request-grid">
-    <div class="pdi-request-field"><label for="pdiRequestEmail">Requestor's Email *</label><input id="pdiRequestEmail" type="email" required maxlength="160" placeholder="name@company.com"></div>
-    <div class="pdi-request-field"><label for="pdiRequestName">Requestor's Name *</label><input id="pdiRequestName" required maxlength="120" placeholder="Enter your full name"></div><div class="pdi-request-field"><label for="pdiRequestCompany">Company *</label><select id="pdiRequestCompany" required><option value="">Select Company</option><option value="GEMCOR">GEMCOR</option><option value="GPI">GPI</option></select></div>
-    <div class="pdi-request-field"><label for="pdiRequestJO">J.O *</label><input id="pdiRequestJO" required maxlength="80" placeholder="Enter J.O number"></div>
-    <div class="pdi-request-field"><label for="pdiRequestSO">S.O *</label><input id="pdiRequestSO" required maxlength="80" placeholder="Enter S.O number"></div>
-    <div class="pdi-request-field full"><label for="pdiRequestClient">Client *</label><input id="pdiRequestClient" required maxlength="160" placeholder="Enter client name"></div>
+   <div class="pdi-request-company-row"><label for="pdiRequestCompany">Company *</label><select id="pdiRequestCompany" required><option value="">Select Company</option><option value="GEMCOR">GEMCOR</option><option value="GPI">GPI</option></select></div>
+   <section class="pdi-request-section"><div class="pdi-request-grid">
+    <div class="pdi-request-field"><label for="pdiRequestName">Requestor’s Name *</label><input id="pdiRequestName" required maxlength="120" placeholder="Enter your full name"></div>
+    <div class="pdi-request-field"><label for="pdiRequestEmail">Requestor’s Email *</label><input id="pdiRequestEmail" type="email" required maxlength="160" placeholder="name@company.com"></div>
+    <div class="pdi-request-field"><label for="pdiRequestSO">S.O / J.O Number *</label><input id="pdiRequestSO" required maxlength="80" placeholder="Enter S.O number"></div>
+    <div class="pdi-request-field"><label for="pdiRequestClient">Client Name *</label><input id="pdiRequestClient" required maxlength="160" placeholder="Enter client name"></div>
+    <div class="pdi-request-field"><label for="pdiRequestDateRequest">Date of Request</label><input id="pdiRequestDateRequest" type="date" readonly></div>
+    <div class="pdi-request-field"><label for="pdiRequestDate">Date of PDI *</label><input id="pdiRequestDate" type="date" required></div>
+    <div class="pdi-request-field full"><label for="pdiRequestTime">Time of PDI *</label><input id="pdiRequestTime" type="time" required></div>
    </div></section>
+   <section class="pdi-request-section"><h2>Information of Client Representative Conducting the PDI</h2><div class="pdi-request-grid">
+    <div class="pdi-request-field"><label for="pdiRequestRep">Representative Name</label><input id="pdiRequestRep" maxlength="120" placeholder="Enter representative's name"></div>
+    <div class="pdi-request-field"><label for="pdiRequestContact">Contact Number</label><input id="pdiRequestContact" type="tel" maxlength="40" placeholder="Enter contact number"></div>
+   </div></section>
+   <section class="pdi-request-section"><h2>Scope of Inspection</h2><div class="pdi-request-grid"><div class="pdi-request-field full"><label for="pdiRequestScope">Scope of Inspection</label><textarea id="pdiRequestScope" maxlength="3000" placeholder="Describe the items, equipment, or scope to be inspected"></textarea></div></div></section>
+   <section class="pdi-request-section"><h2>Comments or Special Requests</h2><div class="pdi-request-grid"><div class="pdi-request-field full"><label for="pdiRequestComments">Comments or Special Requests</label><textarea id="pdiRequestComments" maxlength="3000" placeholder="Enter any additional instructions or special requests (optional)"></textarea></div></div></section>
+   <div class="pdi-request-actions"><button id="publicPdiSubmit" class="pdi-request-submit" type="submit">Submit PDI Request</button></div>
+  </form>
+ </div>
+</section>
    <section class="pdi-request-section"><h2>Inspection Schedule</h2><div class="pdi-request-grid">
     <div class="pdi-request-field"><label for="pdiRequestDate">Date of PDI *</label><input id="pdiRequestDate" type="date" required></div>
     <div class="pdi-request-field"><label for="pdiRequestTime">Time *</label><input id="pdiRequestTime" type="time" required></div>
