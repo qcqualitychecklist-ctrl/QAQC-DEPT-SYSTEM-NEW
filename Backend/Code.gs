@@ -523,7 +523,7 @@ function getMyComplaintHistory(sessionToken){
 function ensurePdiTrackingColumns_(sh){
  let headers=sh.getRange(1,1,1,Math.max(sh.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
  let schemaChanged=false;
- ['Company','PDI Reference No','Date of Request','Request Type','Decision Reason','Rescheduled Date','Rescheduled Time'].forEach(name=>{
+ ['Company','PDI Reference No','Date of Request','Request Type',"Requestor's Salutation",'Decision Reason','Rescheduled Date','Rescheduled Time'].forEach(name=>{
   if(!headers.includes(name)){
    const newCol=sh.getLastColumn()+1;
    sh.getRange(1,newCol).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');
@@ -594,7 +594,7 @@ function updatePdiRequest(payload,referenceNo,editToken){
   const tracking=ensurePdiTrackingColumns_(sh),refCol=tracking.headers.indexOf('PDI Reference No');if(refCol<0)throw new Error('PDI reference column is missing.');
   const rows=sh.getDataRange().getValues();let row=-1;for(let i=1;i<rows.length;i++)if(String(rows[i][refCol]||'').trim()===ref){row=i+1;break;}
   if(row<0)throw new Error('PDI request not found. Refresh the history and try again.');
-  const allowed=["Requestor's Email","Requestor's Name",'Company','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request'];
+  const allowed=["Requestor's Email","Requestor's Name","Requestor's Salutation",'Company','J.O','S.O','Client','Date of PDI','Time','Representative Name','Contact Number','Scope of Inspection','Comments or Special Request'];
   allowed.forEach(name=>{const col=tracking.headers.indexOf(name);if(col>=0)sh.getRange(row,col+1).setValue(payload[name]||'');});
   const col=tracking.headers.indexOf('Updated At');if(col>=0)sh.getRange(row,col+1).setValue(new Date());
   CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');
@@ -627,17 +627,20 @@ function updatePdiStatusAndNotify(referenceNo,decisionData,requestHtml){
   if(shouldEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('The requestor email address is invalid.');
   if(shouldEmail&&!String(requestHtml||'').startsWith('<!DOCTYPE html>'))throw new Error('Unable to prepare the PDI Request PDF attachment. Please try again.');
   const jo=get('J.O'),so=get('S.O'),client=get('Client'),qc=String(data.qcInCharge||'').trim();
+  const firstName=(name||'Requestor').trim().split(/\\s+/)[0]||'Requestor';
+  const salutation=String(get("Requestor's Salutation")||'').trim();
+  const greeting='Dear '+(salutation?salutation+' ':'')+firstName+',';
   let subject='',body='';
   if(status==='Approved'){
    subject='PDI Request Approved – '+ref;
-   body='Dear '+(name||'Requestor')+',\n\nGood day!\n\nWe are pleased to inform you that your Pre-Delivery Inspection (PDI) Request has been APPROVED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\nAssigned QC In Charge: '+qc+'\n\nPlease be guided accordingly and coordinate with the assigned QC personnel for the inspection.\nAttached is the approved PDI Request Form for your reference.\n\nThank you.\nQA/QC Department';
+   body=greeting+'\n\nGood day!\n\nWe are pleased to inform you that your Pre-Delivery Inspection (PDI) Request has been APPROVED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\nAssigned QC In Charge: '+qc+'\n\nPlease be guided accordingly and coordinate with the assigned QC personnel for the inspection.\nAttached is the approved PDI Request Form for your reference.\n\nThank you.\nQA/QC Department';
   }else if(status==='Declined'){
    subject='PDI Request Declined – '+ref;
-   body='Dear '+(name||'Requestor')+',\n\nGood day!\n\nWe regret to inform you that your Pre-Delivery Inspection (PDI) Request has been DECLINED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\n\nReason for Declining: '+String(data.reason||'').trim()+'\n\nPlease take note of the remarks provided and coordinate with the concerned personnel for the necessary action.\nAttached is the PDI Request Form indicating the declined status for your reference.\n\nThank you.\nQA/QC Department';
+   body=greeting+'\n\nGood day!\n\nWe regret to inform you that your Pre-Delivery Inspection (PDI) Request has been DECLINED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\n\nReason for Declining: '+String(data.reason||'').trim()+'\n\nPlease take note of the remarks provided and coordinate with the concerned personnel for the necessary action.\nAttached is the PDI Request Form indicating the declined status for your reference.\n\nThank you.\nQA/QC Department';
   }else if(status==='Rescheduled'){
    subject='PDI Request Rescheduled – '+ref;
    const newDate=String(data.newDate||''),newTime=String(data.newTime||'');
-   body='Dear '+(name||'Requestor')+',\n\nGood day!\n\nPlease be informed that your Pre-Delivery Inspection (PDI) Request has been RESCHEDULED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\n\nNew PDI Schedule:\nDate: '+newDate+'\nTime: '+newTime+'\n\nKindly take note of the revised inspection schedule and make the necessary arrangements.\nAttached is the updated PDI Request Form indicating the rescheduled status.\n\nThank you.\nQA/QC Department';
+   body=greeting+'\n\nGood day!\n\nPlease be informed that your Pre-Delivery Inspection (PDI) Request has been RESCHEDULED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\n\nNew PDI Schedule:\nDate: '+newDate+'\nTime: '+newTime+'\n\nKindly take note of the revised inspection schedule and make the necessary arrangements.\nAttached is the updated PDI Request Form indicating the rescheduled status.\n\nThank you.\nQA/QC Department';
   }
   if(shouldEmail){
    const pdf=HtmlService.createHtmlOutput(String(requestHtml)).getBlob().getAs(MimeType.PDF).setName('PDI Request - '+ref+' - '+status+'.pdf');
