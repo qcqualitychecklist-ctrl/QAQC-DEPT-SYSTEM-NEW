@@ -523,7 +523,7 @@ function getMyComplaintHistory(sessionToken){
 function ensurePdiTrackingColumns_(sh){
  let headers=sh.getRange(1,1,1,Math.max(sh.getLastColumn(),1)).getDisplayValues()[0].map(v=>String(v||'').trim());
  let schemaChanged=false;
- ['Company','PDI Reference No','Date of Request','Request Type'].forEach(name=>{
+ ['Company','PDI Reference No','Date of Request','Request Type','Decision Reason','Rescheduled Date','Rescheduled Time'].forEach(name=>{
   if(!headers.includes(name)){
    const newCol=sh.getLastColumn()+1;
    sh.getRange(1,newCol).setValue(name).setFontWeight('bold').setBackground('#142b4a').setFontColor('#ffffff');
@@ -599,6 +599,58 @@ function updatePdiRequest(payload,referenceNo,editToken){
   const col=tracking.headers.indexOf('Updated At');if(col>=0)sh.getRange(row,col+1).setValue(new Date());
   CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');
   return {ok:true,referenceNo:ref,message:'PDI request updated successfully.'};
+ }finally{lock.releaseLock();}
+}
+
+function updatePdiStatusAndNotify(referenceNo,decisionData,requestHtml){
+ const ref=String(referenceNo||'').trim(),data=decisionData||{},status=String(data.status||'').trim();
+ if(!ref)throw new Error('Missing PDI reference number.');
+ if(!['Pending','Approved','Declined','Rescheduled'].includes(status))throw new Error('Select a valid PDI decision.');
+ if(status==='Approved'&&!String(data.qcInCharge||'').trim())throw new Error('Assigned QC In Charge is required.');
+ if(status==='Declined'&&!String(data.reason||'').trim())throw new Error('Reason for Declining is required.');
+ if(status==='Rescheduled'){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(data.newDate||'')))throw new Error('Select a valid new PDI date.');
+  if(!/^\d{2}:\d{2}$/.test(String(data.newTime||'')))throw new Error('Select a valid new PDI time.');
+ }
+ const lock=LockService.getScriptLock();lock.waitLock(20000);
+ try{
+  const sh=SpreadsheetApp.openById(DATABASE_ID).getSheetByName(PDI_SHEET);if(!sh)throw new Error('PDI Monitoring database is not prepared.');
+  const tracking=ensurePdiTrackingColumns_(sh),headers=tracking.headers,refCol=headers.indexOf('PDI Reference No');
+  if(refCol<0)throw new Error('PDI Reference No column is missing.');
+  const rows=sh.getDataRange().getDisplayValues();let row=-1;
+  for(let i=1;i<rows.length;i++)if(String(rows[i][refCol]||'').trim()===ref){row=i+1;break;}
+  if(row<0)throw new Error('PDI request not found. Refresh and try again.');
+  const get=name=>{const c=headers.indexOf(name);return c<0?'':String(rows[row-1][c]||'').trim();};
+  const requestType=get('Request Type').toLowerCase(),email=get("Requestor's Email"),name=get("Requestor's Name");
+  const isWithout=requestType==='without request';
+  const shouldEmail=status!=='Pending'&&!isWithout&&!!email;
+  if(shouldEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('The requestor email address is invalid.');
+  if(shouldEmail&&!String(requestHtml||'').startsWith('<!DOCTYPE html>'))throw new Error('Unable to prepare the PDI Request PDF attachment. Please try again.');
+  const jo=get('J.O'),so=get('S.O'),client=get('Client'),qc=String(data.qcInCharge||'').trim();
+  let subject='',body='';
+  if(status==='Approved'){
+   subject='PDI Request Approved – '+ref;
+   body='Dear '+(name||'Requestor')+',\n\nGood day!\n\nWe are pleased to inform you that your Pre-Delivery Inspection (PDI) Request has been APPROVED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\nAssigned QC In Charge: '+qc+'\n\nPlease be guided accordingly and coordinate with the assigned QC personnel for the inspection.\nAttached is the approved PDI Request Form for your reference.\n\nThank you.\nQA/QC Department';
+  }else if(status==='Declined'){
+   subject='PDI Request Declined – '+ref;
+   body='Dear '+(name||'Requestor')+',\n\nGood day!\n\nWe regret to inform you that your Pre-Delivery Inspection (PDI) Request has been DECLINED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\n\nReason for Declining: '+String(data.reason||'').trim()+'\n\nPlease take note of the remarks provided and coordinate with the concerned personnel for the necessary action.\nAttached is the PDI Request Form indicating the declined status for your reference.\n\nThank you.\nQA/QC Department';
+  }else if(status==='Rescheduled'){
+   subject='PDI Request Rescheduled – '+ref;
+   const newDate=String(data.newDate||''),newTime=String(data.newTime||'');
+   body='Dear '+(name||'Requestor')+',\n\nGood day!\n\nPlease be informed that your Pre-Delivery Inspection (PDI) Request has been RESCHEDULED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\n\nNew PDI Schedule:\nDate: '+newDate+'\nTime: '+newTime+'\n\nKindly take note of the revised inspection schedule and make the necessary arrangements.\nAttached is the updated PDI Request Form indicating the rescheduled status.\n\nThank you.\nQA/QC Department';
+  }
+  if(shouldEmail){
+   const pdf=HtmlService.createHtmlOutput(String(requestHtml)).getBlob().getAs(MimeType.PDF).setName('PDI Request - '+ref+' - '+status+'.pdf');
+   MailApp.sendEmail({to:email,subject:subject,body:body,attachments:[pdf],name:'QA/QC Department'});
+  }
+  const set=(key,value)=>{const c=headers.indexOf(key);if(c>=0)sh.getRange(row,c+1).setValue(value);};
+  set('Status',status);
+  if(status==='Approved')set('QC in Charge',qc);
+  if(status==='Declined')set('Decision Reason',String(data.reason||'').trim());
+  if(status==='Rescheduled'){set('Date of PDI',String(data.newDate));set('Time',String(data.newTime));set('Rescheduled Date',String(data.newDate));set('Rescheduled Time',String(data.newTime));}
+  const updated=headers.indexOf('Updated At');if(updated>=0)sh.getRange(row,updated+1).setValue(new Date());
+  CacheService.getScriptCache().remove('qaqc_module_v3_PDI_Monitoring');
+  return {ok:true,referenceNo:ref,emailSent:shouldEmail,message:shouldEmail?'PDI decision saved and email sent to the requestor.':(isWithout?'PDI decision saved. No email was sent for a manually recorded entry.':'PDI decision saved. No requestor email is available, so no email was sent.')};
  }finally{lock.releaseLock();}
 }
 
