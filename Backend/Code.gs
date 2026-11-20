@@ -660,8 +660,7 @@ function updatePdiStatusAndNotify(referenceNo,decisionData,requestHtml){
   if(shouldEmail&&!String(requestHtml||'').startsWith('<!DOCTYPE html>'))throw new Error('Unable to prepare the PDI Request PDF attachment. Please try again.');
   const jo=get('J.O'),so=get('S.O'),client=get('Client'),qc=String(data.qcInCharge||'').trim();
   const firstName=(name||'Requestor').trim().split(/\s+/)[0]||'Requestor';
-  const salutation=String(get("Requestor's Salutation")||'').trim().replace(/’/g,"'");
-  const greeting='Good day, '+(salutation?salutation+' ':'')+firstName+'!';
+  const greeting="Good day, Ma'am/Sir "+firstName+'!';
   let subject='',body='';
   if(status==='Approved'){
    subject='PDI Request Approved – '+ref;
