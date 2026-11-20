@@ -602,6 +602,36 @@ function updatePdiRequest(payload,referenceNo,editToken){
  }finally{lock.releaseLock();}
 }
 
+function buildPdiDecisionEmailHtml_(plainText){
+ const escapeHtml=value=>String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+ const lines=String(plainText||'').split(/\r?\n/);
+ let html='<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.65;color:#222;">',inList=false;
+ const closeList=()=>{if(inList){html+='</ul>';inList=false;}};
+ lines.forEach((line,index)=>{
+  const value=String(line||'').trim();
+  if(!value){closeList();return;}
+  if(index===0&&/^Dear /i.test(value)){html+='<p style="margin:0 0 18px;">'+escapeHtml(value)+'</p>';return;}
+  if(value==='Request Details:'||value==='New PDI Schedule:'){
+   closeList();html+='<p style="margin:18px 0 6px;"><strong>'+escapeHtml(value)+'</strong></p>';return;
+  }
+  const match=value.match(/^(PDI Ref\. No\.|J\.O Number|S\.O Number|Client|Assigned QC In Charge|Date|Time):\s*(.*)$/);
+  if(match){
+   if(!inList){html+='<ul style="margin:0 0 16px;padding-left:24px;">';inList=true;}
+   html+='<li style="margin:2px 0;"><strong>'+escapeHtml(match[1])+':</strong> '+escapeHtml(match[2])+'</li>';return;
+  }
+  closeList();
+  if(value.startsWith('Reason for Declining:')){
+   const parts=value.split(/:(.*)/s);html+='<p style="margin:12px 0;"><strong>Reason for Declining:</strong> '+escapeHtml((parts[1]||'').trim())+'</p>';return;
+  }
+  if(value==='Best regards,'){html+='<p style="margin:22px 0 0;">Best regards,</p>';return;}
+  if(value==='QA/QC Department'){html+='<p style="margin:0;"><strong>QA/QC Department</strong></p>';return;}
+  html+='<p style="margin:0 0 14px;">'+escapeHtml(value)+'</p>';
+ });
+ closeList();
+ html+='</div>';
+ return html;
+}
+
 function updatePdiStatusAndNotify(referenceNo,decisionData,requestHtml){
  const ref=String(referenceNo||'').trim(),data=decisionData||{},status=String(data.status||'').trim();
  if(!ref)throw new Error('Missing PDI reference number.');
@@ -627,24 +657,24 @@ function updatePdiStatusAndNotify(referenceNo,decisionData,requestHtml){
   if(shouldEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('The requestor email address is invalid.');
   if(shouldEmail&&!String(requestHtml||'').startsWith('<!DOCTYPE html>'))throw new Error('Unable to prepare the PDI Request PDF attachment. Please try again.');
   const jo=get('J.O'),so=get('S.O'),client=get('Client'),qc=String(data.qcInCharge||'').trim();
-  const firstName=(name||'Requestor').trim().split(/\\s+/)[0]||'Requestor';
-  const salutation=String(get("Requestor's Salutation")||'').trim();
+  const firstName=(name||'Requestor').trim().split(/\s+/)[0]||'Requestor';
+  const salutation=String(get("Requestor's Salutation")||'').trim().replace(/’/g,"'");
   const greeting='Dear '+(salutation?salutation+' ':'')+firstName+',';
   let subject='',body='';
   if(status==='Approved'){
    subject='PDI Request Approved – '+ref;
-   body=greeting+'\n\nGood day!\n\nWe are pleased to inform you that your Pre-Delivery Inspection (PDI) Request has been APPROVED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\nAssigned QC In Charge: '+qc+'\n\nPlease be guided accordingly and coordinate with the assigned QC personnel for the inspection.\nAttached is the approved PDI Request Form for your reference.\n\nThank you.\nQA/QC Department';
+   body=greeting+'\n\nGood day!\n\nWe are pleased to inform you that your Pre-Delivery Inspection (PDI) Request has been APPROVED.\n\nRequest Details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\nAssigned QC In Charge: '+qc+'\n\nPlease be guided accordingly and coordinate with the assigned QC personnel for the inspection.\nAttached is the approved PDI Request Form for your reference.\n\nBest regards,\nQA/QC Department';
   }else if(status==='Declined'){
    subject='PDI Request Declined – '+ref;
-   body=greeting+'\n\nGood day!\n\nWe regret to inform you that your Pre-Delivery Inspection (PDI) Request has been DECLINED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\n\nReason for Declining: '+String(data.reason||'').trim()+'\n\nPlease take note of the remarks provided and coordinate with the concerned personnel for the necessary action.\nAttached is the PDI Request Form indicating the declined status for your reference.\n\nThank you.\nQA/QC Department';
+   body=greeting+'\n\nGood day!\n\nWe regret to inform you that your Pre-Delivery Inspection (PDI) Request has been DECLINED.\n\nRequest Details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\n\nReason for Declining: '+String(data.reason||'').trim()+'\n\nPlease take note of the remarks provided and coordinate with the concerned personnel for the necessary action.\nAttached is the PDI Request Form indicating the declined status for your reference.\n\nBest regards,\nQA/QC Department';
   }else if(status==='Rescheduled'){
    subject='PDI Request Rescheduled – '+ref;
    const newDate=String(data.newDate||''),newTime=String(data.newTime||'');
-   body=greeting+'\n\nGood day!\n\nPlease be informed that your Pre-Delivery Inspection (PDI) Request has been RESCHEDULED.\n\nRequest details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\n\nNew PDI Schedule:\nDate: '+newDate+'\nTime: '+newTime+'\n\nKindly take note of the revised inspection schedule and make the necessary arrangements.\nAttached is the updated PDI Request Form indicating the rescheduled status.\n\nThank you.\nQA/QC Department';
+   body=greeting+'\n\nGood day!\n\nPlease be informed that your Pre-Delivery Inspection (PDI) Request has been RESCHEDULED.\n\nRequest Details:\nPDI Ref. No.: '+ref+'\nJ.O Number: '+jo+'\nS.O Number: '+so+'\nClient: '+client+'\n\nNew PDI Schedule:\nDate: '+newDate+'\nTime: '+newTime+'\n\nKindly take note of the revised inspection schedule and make the necessary arrangements.\nAttached is the updated PDI Request Form indicating the rescheduled status.\n\nBest regards,\nQA/QC Department';
   }
   if(shouldEmail){
    const pdf=HtmlService.createHtmlOutput(String(requestHtml)).getBlob().getAs(MimeType.PDF).setName('PDI Request - '+ref+' - '+status+'.pdf');
-   MailApp.sendEmail({to:email,subject:subject,body:body,attachments:[pdf],name:'QA/QC Department'});
+   MailApp.sendEmail({to:email,subject:subject,body:body,htmlBody:buildPdiDecisionEmailHtml_(body),attachments:[pdf],name:'QA/QC Department'});
   }
   const set=(key,value)=>{const c=headers.indexOf(key);if(c>=0)sh.getRange(row,c+1).setValue(value);};
   set('Status',status);
