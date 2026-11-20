@@ -1731,6 +1731,7 @@ body:has(.modal.open){overflow:hidden}
    <div class="pdi-request-company-row"><label for="pdiRequestCompany">Company *</label><select id="pdiRequestCompany" required><option value="">Select Company</option><option value="GEMCOR">GEMCOR</option><option value="GPI">GPI</option></select></div>
    <section class="pdi-request-section"><div class="pdi-request-grid">
     <div class="pdi-request-field"><label for="pdiRequestName">Requestor’s Name *</label><input id="pdiRequestName" required maxlength="120" placeholder="Enter your full name"></div>
+    <div class="pdi-request-field"><label for="pdiRequestSalutation">Ma’am / Sir *</label><select id="pdiRequestSalutation" required><option value="">Select Ma’am or Sir</option><option value="Ma'am">Ma’am</option><option value="Sir">Sir</option></select></div>
     <div class="pdi-request-field"><label for="pdiRequestEmail">Requestor’s Email *</label><input id="pdiRequestEmail" type="email" required maxlength="160" placeholder="name@company.com"></div>
     <div class="pdi-request-field"><label>S.O / J.O Number *</label><div class="pdi-joso-inputs"><input id="pdiRequestSO" required maxlength="80" placeholder="S.O Number"><input id="pdiRequestJO" required maxlength="80" placeholder="J.O Number"></div></div>
     <div class="pdi-request-field"><label for="pdiRequestClient">Client Name *</label><input id="pdiRequestClient" required maxlength="160" placeholder="Enter client name"></div>
@@ -2678,7 +2679,7 @@ function editPdiRequestFromHistory(rec){
  if(!el('guestPdiWorkspace')||el('guestPdiWorkspace').style.display==='none')openGuestPdiRequest();
  const formArea=el('guestPdiFormArea'),history=el('pdiRequestHistorySection'),create=el('createGuestPdiButton'),exit=el('guestPdiWorkspace')?.querySelector('.guest-workspace-exit');
  if(formArea)formArea.style.display='block';if(history)history.style.display='none';if(create)create.style.display='none';if(exit)exit.style.display='';
- el('pdiRequestEmail').value=rec["Requestor's Email"]||'';el('pdiRequestName').value=rec["Requestor's Name"]||'';el('pdiRequestCompany').value=rec.Company||'';
+ el('pdiRequestEmail').value=rec["Requestor's Email"]||'';el('pdiRequestName').value=rec["Requestor's Name"]||'';el('pdiRequestSalutation').value=rec["Requestor's Salutation"]||'';el('pdiRequestCompany').value=rec.Company||'';
  el('pdiRequestJO').value=rec['J.O']||'';el('pdiRequestSO').value=rec['S.O']||'';el('pdiRequestDateRequest').value=rec['Date of Request']||rec['Date of request']||'';el('pdiRequestClient').value=rec.Client||'';el('pdiRequestDate').value=rec['Date of PDI']||'';
  el('pdiRequestTime').value=String(rec.Time||'').slice(0,5);el('pdiRequestRep').value=rec['Representative Name']||'';el('pdiRequestContact').value=rec['Contact Number']||'';
  el('pdiRequestScope').value=rec['Scope of Inspection']||'';el('pdiRequestComments').value=rec['Comments or Special Request']||rec['Comments or Special Requests']||'';
@@ -3363,7 +3364,7 @@ function showPublicPdiMessage(message,success){showStatus(!!success,success?'Sub
 function submitPublicPdiForm(event){
  event.preventDefault();const btn=el('publicPdiSubmit');if(btn.disabled)return;
  const payload={
-  "Requestor's Email":el('pdiRequestEmail').value.trim(),"Requestor's Name":el('pdiRequestName').value.trim(),
+  "Requestor's Email":el('pdiRequestEmail').value.trim(),"Requestor's Name":el('pdiRequestName').value.trim(),"Requestor's Salutation":el('pdiRequestSalutation').value,
   "Company":el('pdiRequestCompany').value,"J.O":el('pdiRequestJO').value.trim(),"S.O":el('pdiRequestSO').value.trim(),
   "Client":el('pdiRequestClient').value.trim(),"Date of Request":el('pdiRequestDateRequest').value||new Date().toISOString().slice(0,10),"Date of PDI":el('pdiRequestDate').value,"Time":el('pdiRequestTime').value,
   "Representative Name":el('pdiRequestRep').value.trim(),"Contact Number":el('pdiRequestContact').value.trim(),
