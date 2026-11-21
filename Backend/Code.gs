@@ -194,10 +194,10 @@ function getFGTSReportData(selectedYear) {
   });
   monthlyLead.forEach(x=>{x.average=x.count?Number((x.total/x.count).toFixed(2)):null;});
   const dimensionRows=bucket=>Object.keys(bucket).sort((a,b)=>a.localeCompare(b)).map(name=>({name,monthly:bucket[name],total:bucket[name].reduce((a,b)=>a+b,0)}));
-  const leadValues=selected.map(x=>Number(x.record['Lead Days'])).filter(n=>isFinite(n)&&String(n)!=='');
+  const leadValues=selected.filter(x=>String(x.record['Lead Days']??'').trim()!=='').map(x=>Number(x.record['Lead Days'])).filter(n=>isFinite(n));
   const leadTotal=leadValues.reduce((a,b)=>a+b,0);
   return {ok:true,year,years,recordCount:selected.length,totalQty:monthlyQty.reduce((a,x)=>a+x.qty,0),
-    averageLeadDays:leadValues.length?Number((leadTotal/leadValues.length).toFixed(2)):null,
+    totalLeadDays:leadTotal,averageLeadDays:leadValues.length?Number((leadTotal/leadValues.length).toFixed(2)):null,
     monthlyQty,monthlyLead:monthlyLead.map(x=>({month:x.month,average:x.average,count:x.count})),
     qc:dimensionRows(dimensions.qc),category:dimensionRows(dimensions.category),classification:dimensionRows(dimensions.classification)};
 }
