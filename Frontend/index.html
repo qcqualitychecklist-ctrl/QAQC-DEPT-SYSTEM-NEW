@@ -1928,6 +1928,17 @@ body:has(.modal.open){overflow:hidden}
 #fgtsReportView .report-panel{border:1px solid #d5e1f1!important;border-radius:12px!important;overflow:hidden;background:#fff!important;box-shadow:0 2px 7px #0b285815!important}
 #fgtsReportView .fgts-panel-body{background:#fff}
 @media(max-width:800px){#fgtsReportView .report-topline{align-items:flex-start}#fgtsReportView .report-topline .report-controls{justify-content:flex-start;width:100%}}
+
+/* FGTS monthly trend layout: one full-width graph row at a time, with its KPI cards on the right. */
+#fgtsReportView .fgts-trend-grid{grid-template-columns:minmax(0,1fr)!important}
+#fgtsReportView .fgts-trend-grid .fgts-chart-with-metric{grid-template-columns:minmax(0,1fr) 190px!important;gap:16px;align-items:stretch}
+#fgtsReportView .fgts-trend-grid .fgts-kpi-stack{min-width:0;justify-content:center}
+#fgtsReportView .fgts-trend-grid .fgts-kpi-card{min-height:78px}
+@media(max-width:760px){
+ #fgtsReportView .fgts-trend-grid .fgts-chart-with-metric{grid-template-columns:minmax(0,1fr)!important}
+ #fgtsReportView .fgts-trend-grid .fgts-kpi-stack{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+}
+
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
