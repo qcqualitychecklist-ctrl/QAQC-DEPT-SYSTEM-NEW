@@ -162,7 +162,7 @@ function setupDatabase() {
 }
 
 
-function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod) {
+function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod, fromMonth, toMonth) {
   // Reports only read FGTS data; allocation synchronization already runs on Transfer save/update.
   const source=getFGTSMonitoringRecords_('',true);
   if(!source||!source.ok)throw new Error('Unable to load FGTS source records.');
@@ -177,7 +177,9 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod) {
   const years=[...new Set(dated.map(x=>x.date.year))].sort((a,b)=>b-a);
   const year=Number(selectedYear)||years[0]||new Date().getFullYear();
   const compare=Number(comparisonYear)||(years.find(y=>y!==year)||year);
-  const period=['H1','H2'].includes(String(selectedPeriod||'').toUpperCase())?String(selectedPeriod).toUpperCase():'FULL';
+  const period=['H1','H2','Q1','Q2','Q3','Q4','MONTH','CUSTOM'].includes(String(selectedPeriod||'').toUpperCase())?String(selectedPeriod).toUpperCase():'FULL';
+  const from= Math.min(12,Math.max(1,Number(fromMonth)||1)),to=Math.min(12,Math.max(1,Number(toMonth)||12));
+  const inPeriod=m=>period==='FULL'||(period==='H1'&&m<=6)||(period==='H2'&&m>=7)||(period==='Q1'&&m<=3)||(period==='Q2'&&m>=4&&m<=6)||(period==='Q3'&&m>=7&&m<=9)||(period==='Q4'&&m>=10)||(period==='MONTH'&&m===from)||(period==='CUSTOM'&&m>=Math.min(from,to)&&m<=Math.max(from,to));
   const qty=r=>{const n=Number(String(r.Qty??0).replace(/,/g,''));return isFinite(n)?n:0;};
   const clean=v=>{
     let label=String(v||'').trim().replace(/\s+/g,' ').replace(/\s*\/\s*/g,'/');
@@ -188,7 +190,7 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod) {
     return label.replace(/\b(ecb|ats|mts|qc)\b/gi,token=>token.toUpperCase());
   };
   const build=targetYear=>{
-    const selected=dated.filter(x=>x.date.year===targetYear&&(period==='FULL'||(period==='H1'?x.date.month<=6:x.date.month>=7)));
+    const selected=dated.filter(x=>x.date.year===targetYear&&inPeriod(x.date.month));
     const monthlyQty=months.map(m=>({month:m,qty:0}));
     const monthlyLead=months.map(m=>({month:m,total:0,count:0,average:null}));
     const dimensions={qc:Object.create(null),category:Object.create(null),classification:Object.create(null),qcLead:Object.create(null)};
