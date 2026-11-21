@@ -1981,6 +1981,14 @@ body:has(.modal.open){overflow:hidden}
 #fgtsReportView .fgts-final-legend b{font-size:9px;color:#243d5c}
 @media(max-width:850px){#fgtsReportView .fgts-period-controls{grid-template-columns:repeat(3,minmax(0,1fr))}#fgtsReportView .fgts-final-distribution{grid-template-columns:1fr}}
 @media(max-width:580px){#fgtsReportView .fgts-report-banner{align-items:flex-start;flex-direction:column}#fgtsReportView .fgts-period-controls{grid-template-columns:repeat(2,minmax(0,1fr))}#fgtsReportView .fgts-final-kpis{grid-template-columns:1fr}#fgtsReportView .fgts-final-cat-row{grid-template-columns:90px minmax(0,1fr) auto}}
+</style><style id="fgts-report-reference-grid-fix">
+#fgtsReportView .fgts-trend-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1.15fr) minmax(210px,.8fr)}
+#fgtsReportView .fgts-trend-grid>.report-panel:last-child .fgts-panel-body{height:calc(100% - 42px)}
+#fgtsReportView .fgts-final-insights{margin:0;padding-left:17px;color:#344b68;font-size:11px;line-height:1.65}
+#fgtsReportView .fgts-final-insights li{margin:0 0 10px}
+#fgtsReportView .fgts-final-bottom{grid-template-columns:1fr}
+@media(max-width:1000px){#fgtsReportView .fgts-trend-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#fgtsReportView .fgts-trend-grid>.report-panel:last-child{grid-column:1/-1}}
+@media(max-width:600px){#fgtsReportView .fgts-trend-grid{grid-template-columns:1fr}#fgtsReportView .fgts-trend-grid>.report-panel:last-child{grid-column:auto}}
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
@@ -3975,9 +3983,9 @@ function renderFgtsReport(data){
  ];
  const summary='<div class="fgts-final-summary"><table><thead><tr><th>Metric</th><th>'+yearA+'</th>'+(compare?'<th>'+yearB+'</th>':'')+'</tr></thead><tbody>'+summaryRows.map(r=>'<tr>'+r.map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
  let html='<div class="fgts-final-kpis">'+kpi('Total Quantity',a.totalQty,compare?'Period A · '+yearA:'Selected period')+kpi('Average Lead Days',a.averageLeadDays,'Record-level average')+'</div>';
- html+='<div class="report-grid fgts-trend-grid">'+panel('1. Quantity per Month','chart','Monthly completed quantity · '+periodLabel,reportMonthlyQtyBars(qtyA,qtyB,yearA,yearB))+panel('2. Average Lead Days per Month','trend','Average record-level lead days · '+periodLabel,reportLineChart(leadA,leadB,'average',yearA,yearB,'days'))+'</div>';
+ html+='<div class="report-grid fgts-trend-grid">'+panel('1. Quantity per Month','chart','Monthly completed quantity · '+periodLabel,reportMonthlyQtyBars(qtyA,qtyB,yearA,yearB))+panel('2. Average Lead Days per Month','trend','Average record-level lead days · '+periodLabel,reportLineChart(leadA,leadB,'average',yearA,yearB,'days'))+'<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('trend')+'<span>Key Insights</span></header><div class="fgts-panel-body"><ul class="fgts-final-insights">'+insights.map(x=>'<li>'+x+'</li>').join('')+'</ul></div></section></div>';
  html+='<div class="report-grid fgts-final-distribution">'+panel('3. Category Distribution','category','All categories · sorted by quantity',catRows,'fgts-final-category-panel')+panel('4. Classification Distribution','classification','Quantity and percentage · four official classifications only',classDonuts(a.classification,b.classification),'fgts-final-class-panel')+'</div>';
- html+='<div class="report-grid fgts-final-bottom">'+panel('5. Comparison Summary','chart','Selected reporting period(s)',summary)+ '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('trend')+'<span>Key Insights</span></header><div class="fgts-panel-body"><ul class="fgts-final-insights">'+insights.map(x=>'<li>'+x+'</li>').join('')+'</ul></div></section></div>';
+ html+='<div class="report-grid fgts-final-bottom">'+panel('5. Comparison Summary','chart','Selected reporting period(s)',summary)+'</div>';
  html+='<div class="fgts-report-footnote">Based on completed FGTS records with a valid Date Finish. All available categories are included. Classification is limited to Standard, Non-standard, Telcos, and Others. Average lead days are calculated from valid record-level Lead Days.</div>';
  content.innerHTML=html;
 }
