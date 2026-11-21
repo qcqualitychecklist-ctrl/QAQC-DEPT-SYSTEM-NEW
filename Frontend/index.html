@@ -2081,7 +2081,7 @@ body:has(.modal.open){overflow:hidden}
 <button class="report-choice" type="button" disabled><strong>PDI Monitoring Report</strong><small>Coming soon</small></button>
 </div></div>
 <div id="fgtsReportView" style="display:none"><button type="button" class="report-back" onclick="backToReportCatalog()">← Back to Reports</button>
-<div class="report-topline"><div><h3 class="fgts-report-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="4" height="10" rx="1"/><rect x="10" y="6" width="4" height="15" rx="1"/><rect x="17" y="2" width="4" height="19" rx="1"/></svg><span>FGTS REPORT</span></h3><p class="muted" style="margin:5px 0 0;font-size:11px">Compare yearly performance using FGTS Date Finish.</p></div><div class="report-controls"><div class="report-year-field"><label for="fgtsReportMode">Comparison</label><select id="fgtsReportMode" onchange="updateFgtsReportMode()"><option value="SINGLE">Single Year</option><option value="YEAR">Year-to-Year</option><option value="HALF">Half-Year to Half-Year</option></select></div><div class="report-year-field fgts-year-a-field"><label for="fgtsReportYear">Year A</label><select id="fgtsReportYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field fgts-year-b-field"><label for="fgtsCompareYear">Year B</label><select id="fgtsCompareYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field"><label for="fgtsReportPeriod">Period</label><select id="fgtsReportPeriod" onchange="loadFgtsReport()"><option value="FULL">Full Year (Jan–Dec)</option><option value="H1">1st Half (Jan–Jun)</option><option value="H2">2nd Half (Jul–Dec)</option></select></div></div></div>
+<div class="report-topline"><div><h3 class="fgts-report-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="4" height="10" rx="1"/><rect x="10" y="6" width="4" height="15" rx="1"/><rect x="17" y="2" width="4" height="19" rx="1"/></svg><span>FGTS REPORT</span></h3><p class="muted" style="margin:5px 0 0;font-size:11px">Compare yearly performance using FGTS Date Finish.</p></div><div class="report-controls"><div class="report-year-field"><label for="fgtsReportMode">Comparison</label><select id="fgtsReportMode" onchange="updateFgtsReportMode()"><option value="SINGLE">Single Year</option><option value="HALF">Half-Year to Half-Year</option></select></div><div class="report-year-field fgts-year-a-field"><label for="fgtsReportYear">Year A</label><select id="fgtsReportYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field fgts-year-b-field"><label for="fgtsCompareYear">Year B</label><select id="fgtsCompareYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field"><label for="fgtsReportPeriod">Period</label><select id="fgtsReportPeriod" onchange="loadFgtsReport()"><option value="FULL">Full Year (Jan–Dec)</option><option value="H1">1st Half (Jan–Jun)</option><option value="H2">2nd Half (Jul–Dec)</option></select></div></div></div>
 <div id="fgtsReportContent"><div class="report-empty">Loading FGTS report…</div></div></div></section>
 </main></div>
 
@@ -3747,13 +3747,13 @@ function openFgtsReport(){el('reportCatalog').style.display='none';el('fgtsRepor
 function backToReportCatalog(){el('fgtsReportView').style.display='none';el('reportCatalog').style.display='block';}
 function updateFgtsReportMode(){
  const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field'),yearA=el('fgtsReportYear')?.closest('.report-year-field'),period=el('fgtsReportPeriod')?.closest('.report-year-field');
- if(yearB)yearB.style.display=mode==='SINGLE'?'none':'';
- if(period)period.style.display=mode==='YEAR'?'none':'';
+ if(yearB)yearB.style.display=mode==='HALF'?'':'none';
+ if(period)period.style.display='';
  if(yearA){const label=yearA.querySelector('label');if(label)label.textContent=mode==='SINGLE'?'Year':'Year A';}
  loadFgtsReport();
 }
 function loadFgtsReport(){
- const mode=el('fgtsReportMode')?.value||'SINGLE',year=el('fgtsReportYear')?.value||'',compareYear=el('fgtsCompareYear')?.value||'',period=mode==='YEAR'?'FULL':(el('fgtsReportPeriod')?.value||'H1'),token=++fgtsReportRequest,content=el('fgtsReportContent');
+ const mode=el('fgtsReportMode')?.value||'SINGLE',year=el('fgtsReportYear')?.value||'',compareYear=el('fgtsCompareYear')?.value||'',period=el('fgtsReportPeriod')?.value||'FULL',token=++fgtsReportRequest,content=el('fgtsReportContent');
  content.innerHTML='<div class="report-empty">Loading FGTS report…</div>';
  callServer('getFGTSReportData',[year,compareYear,period],data=>{
   if(token!==fgtsReportRequest)return;if(!data||!data.ok){content.innerHTML='<div class="report-empty">Unable to load FGTS report data.</div>';return;}
@@ -3767,8 +3767,8 @@ function loadFgtsReport(){
 }
 function updateFgtsReportModeVisibility(){
  const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field'),period=el('fgtsReportPeriod')?.closest('.report-year-field'),yearA=el('fgtsReportYear')?.closest('.report-year-field');
- if(yearB)yearB.style.display=mode==='SINGLE'?'none':'';
- if(period)period.style.display=mode==='YEAR'?'none':'';
+ if(yearB)yearB.style.display=mode==='HALF'?'':'none';
+ if(period)period.style.display='';
  if(yearA){const label=yearA.querySelector('label');if(label)label.textContent=mode==='SINGLE'?'Year':'Year A';}
 }
 
@@ -3795,6 +3795,26 @@ function reportDonut(rows,year){
  const circles=items.map((x,i)=>{const pct=Number(x.total)/sum*100,dash=pct+' '+(100-pct),el='<circle cx="60" cy="60" r="43" fill="none" stroke="'+colors[i%colors.length]+'" stroke-width="17" stroke-dasharray="'+dash+'" pathLength="100" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 60 60)"/>';offset+=pct;return el;}).join('');
  return '<div class="fgts-donut-layout"><svg viewBox="0 0 120 120" class="fgts-donut" role="img" aria-label="'+reportEscape(year)+' distribution donut chart">'+circles+'<text x="60" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#142b4a">'+reportNumber(sum)+'</text><text x="60" y="70" text-anchor="middle" font-size="8" fill="#718096">QTY</text></svg><div class="fgts-donut-legend">'+items.map((x,i)=>'<div><i style="background:'+colors[i%colors.length]+'"></i><span title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><b>'+((Number(x.total)/sum)*100).toFixed(1)+'%</b></div>').join('')+'</div></div>';
 }
+function reportYearlyQtyChart(rows){
+ const data=(rows||[]).slice().sort((a,b)=>Number(a.year)-Number(b.year)),max=Math.max(1,...data.map(x=>Number(x.totalQty)||0));
+ if(!data.length)return '<div class="report-empty">No yearly quantity data available.</div>';
+ const w=640,h=235,left=52,right=14,top=18,bottom=38,plotH=h-top-bottom,plotW=w-left-right;
+ const ticks=[0,.25,.5,.75,1].map(t=>{const yy=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#e7edf5"/><text x="'+(left-8)+'" y="'+(yy+3)+'" text-anchor="end" fill="#8491a3" font-size="10">'+reportNumber(max*t)+'</text>';}).join('');
+ const slot=plotW/Math.max(1,data.length),barW=Math.min(42,slot*.58);
+ const bars=data.map((x,i)=>{const v=Number(x.totalQty)||0,bh=v/max*plotH,xx=left+i*slot+(slot-barW)/2,yy=top+plotH-bh;return '<rect x="'+xx+'" y="'+yy+'" width="'+barW+'" height="'+bh+'" rx="3" fill="#2864b8"/><text x="'+(xx+barW/2)+'" y="'+Math.max(top+10,yy-6)+'" text-anchor="middle" fill="#2459a9" font-size="10" font-weight="700">'+reportNumber(v)+'</text><text x="'+(xx+barW/2)+'" y="'+(h-13)+'" text-anchor="middle" fill="#68778c" font-size="10">'+x.year+'</text>';}).join('');
+ return '<div class="fgts-yearly-svg-wrap"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Total FGTS quantity by year">'+ticks+bars+'</svg></div>';
+}
+function reportYearlyLeadChart(rows){
+ const data=(rows||[]).slice().sort((a,b)=>Number(a.year)-Number(b.year)),valid=data.map((x,i)=>({x:i,year:x.year,value:x.averageLeadDays==null?null:Number(x.averageLeadDays)})).filter(x=>x.value!=null&&Number.isFinite(x.value));
+ if(!valid.length)return '<div class="report-empty">No yearly lead time data available.</div>';
+ const w=640,h=235,left=48,right=18,top=24,bottom=38,plotH=h-top-bottom,plotW=w-left-right,max=Math.max(1,...valid.map(x=>x.value))*1.18;
+ const xx=i=>left+(data.length<=1?plotW/2:i*plotW/(data.length-1)),yy=v=>top+plotH-(v/max)*plotH;
+ const grid=[0,.25,.5,.75,1].map(t=>{const y=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="#e7edf5"/><text x="'+(left-8)+'" y="'+(y+3)+'" text-anchor="end" fill="#8491a3" font-size="10">'+(max*t).toFixed(1)+'</text>';}).join('');
+ const path=valid.map((p,i)=>(i?'L':'M')+xx(p.x)+','+yy(p.value)).join(' ');
+ const points=valid.map(p=>'<circle cx="'+xx(p.x)+'" cy="'+yy(p.value)+'" r="4" fill="#20a85a"/><text x="'+xx(p.x)+'" y="'+(yy(p.value)-10)+'" text-anchor="middle" fill="#16834f" font-size="10" font-weight="700">'+p.value.toFixed(2)+'</text>').join('');
+ const labels=data.map((x,i)=>'<text x="'+xx(i)+'" y="'+(h-13)+'" text-anchor="middle" fill="#68778c" font-size="10">'+x.year+'</text>').join('');
+ return '<div class="fgts-yearly-svg-wrap"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average FGTS lead time by year">'+grid+'<path d="'+path+'" fill="none" stroke="#20a85a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+points+labels+'</svg></div>';
+}
 function reportDistributionBars(rowsA,rowsB,yearA,yearB,mode){
  const map=new Map();
  (rowsA||[]).forEach(x=>map.set(String(x.name),{name:String(x.name),a:Number(x.total)||0,b:0}));
@@ -3802,8 +3822,12 @@ function reportDistributionBars(rowsA,rowsB,yearA,yearB,mode){
  const items=[...map.values()].sort((x,y)=>Math.max(y.a,y.b)-Math.max(x.a,x.b));
  const max=Math.max(1,...items.map(x=>Math.max(x.a,x.b)));
  if(!items.length)return '<div class="report-empty">No distribution data available.</div>';
- const rows=items.map(x=>'<div class="fgts-distribution-row"><span class="fgts-distribution-name" title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><div class="fgts-distribution-tracks"><div class="fgts-distribution-track"><i class="a" style="width:'+(x.a/max*100)+'%"></i></div><b>'+reportNumber(x.a)+'</b>'+(mode==='COMPARE'?'<div class="fgts-distribution-track"><i class="b" style="width:'+(x.b/max*100)+'%"></i></div><b>'+reportNumber(x.b)+'</b>':'')+'</div></div>').join('');
- return '<div class="fgts-distribution-bars">'+rows+'</div><div class="report-legend"><span><i class="legend-a"></i>'+yearA+'</span>'+(mode==='COMPARE'?'<span><i class="legend-b"></i>'+yearB+'</span>':'')+'</div>';
+ const ticks=[0,.25,.5,.75,1].map(v=>'<span>'+reportNumber(max*v)+'</span>').join('');
+ const rows=items.map(x=>{
+  const bar=(value,cls,label)=>'<div class="fgts-category-bar-row"><div class="fgts-category-plot"><i class="'+cls+'" style="width:'+(value>0?Math.max(1,value/max*100):0)+'%"></i></div><b title="'+label+'">'+reportNumber(value)+'</b></div>';
+  return '<div class="fgts-category-row"><span class="fgts-category-name" title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><div class="fgts-category-values">'+bar(x.a,'a',yearA)+(mode==='COMPARE'?bar(x.b,'b',yearB):'')+'</div></div>';
+ }).join('');
+ return '<div class="fgts-category-chart"><div class="fgts-category-axis-label"></div><div class="fgts-category-axis">'+ticks+'</div>'+rows+'</div><div class="report-legend"><span><i class="legend-a"></i>'+yearA+'</span>'+(mode==='COMPARE'?'<span><i class="legend-b"></i>'+yearB+'</span>':'')+'</div>';
 }
 function reportDonutCompare(rowsA,rowsB,yearA,yearB,mode){
  return '<div class="fgts-donut-years"><div class="fgts-donut-year"><strong>'+yearA+'</strong>'+reportDonut(rowsA,yearA)+'</div>'+(mode==='COMPARE'?'<div class="fgts-donut-year"><strong>'+yearB+'</strong>'+reportDonut(rowsB,yearB)+'</div>':'')+'</div>';
@@ -3839,7 +3863,7 @@ function renderFgtsReport(data){
  const content=el('fgtsReportContent');if(!content)return;
  const a=data,b=data.comparison||{},period=data.period||'H1',mode=el('fgtsReportMode')?.value||'SINGLE';
  const yearA=String(a.year),yearB=String(b.year),periodLabel=period==='H1'?'1st Half (Jan–Jun)':period==='H2'?'2nd Half (Jul–Dec)':'Full Year';
- const compare=mode!=='SINGLE',months=arr=>(arr||[]).filter(x=>period==='FULL'||(period==='H1'?x.month<=6:x.month>=7));
+ const compare=mode==='HALF',months=arr=>(arr||[]).filter(x=>period==='FULL'||(period==='H1'?x.month<=6:x.month>=7));
  const qtyA=months(a.monthlyQty),qtyB=compare?months(b.monthlyQty):[],leadA=months(a.monthlyLead),leadB=compare?months(b.monthlyLead):[];
  const panel=(title,icon,subtitle,body)=>'<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
  const metricCards=(title,v1,v2,unit)=>{
@@ -3848,15 +3872,13 @@ function renderFgtsReport(data){
   return '<div class="fgts-kpi-stack">'+(mode==='SINGLE'?card(yearA,v1,'kpi-a'):card(yearA,v1,'kpi-a')+card(yearB,v2,'kpi-b')+card('Change',diff,'kpi-change')+'<small class="fgts-kpi-change-note">'+(diff>0?'+':'')+reportNumber(pct)+'% change</small>')+'</div>';
  };
  let html='';
- if(mode==='YEAR'){
-  html+='<div class="report-grid fgts-annual-kpi-grid">'+panel('Overall Quantity','chart','Full-year quantity served',metricCards('Overall Qty',a.totalQty,b.totalQty,''))+panel('Overall Average Lead Days','trend','Full-year average lead days',metricCards('Overall Average Lead Days',a.averageLeadDays,b.averageLeadDays,'days'))+'</div>';
- }else{
-  html+='<div class="report-grid fgts-trend-grid">'+
-   '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('chart')+'<span>Monthly Quantity</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric"><div class="fgts-chart-main">'+reportMonthlyQtyBars(qtyA,qtyB,yearA,yearB)+'</div>'+metricCards('Overall Qty',a.totalQty,b.totalQty,'')+'</div></div></section>'+
-   '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('trend')+'<span>Monthly Average Lead Days</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric"><div class="fgts-chart-main">'+reportLineChart(leadA,leadB,'average',yearA,yearB,'days')+'</div>'+metricCards('Overall Avg. Lead Days',a.averageLeadDays,b.averageLeadDays,'days')+'</div></div></section></div>';
- }
+ html+='<div class="report-grid fgts-trend-grid">'+
+  '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('chart')+'<span>Monthly Quantity</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric"><div class="fgts-chart-main">'+reportMonthlyQtyBars(qtyA,qtyB,yearA,yearB)+'</div>'+metricCards('Overall Qty',a.totalQty,b.totalQty,'')+'</div></div></section>'+
+  '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('trend')+'<span>Monthly Average Lead Days</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric"><div class="fgts-chart-main">'+reportLineChart(leadA,leadB,'average',yearA,yearB,'days')+'</div>'+metricCards('Overall Avg. Lead Days',a.averageLeadDays,b.averageLeadDays,'days')+'</div></div></section></div>';
  html+='<div class="report-grid fgts-distribution-grid">'+panel('Category Distribution','category','Quantity by category · '+periodLabel,reportDistributionBars(a.category,b.category,yearA,yearB,compare?'COMPARE':'SINGLE'))+panel('Classification Distribution','classification','Quantity by classification · '+periodLabel,reportDistributionBars(a.classification,b.classification,yearA,yearB,compare?'COMPARE':'SINGLE'))+'</div>';
  html+='<div class="report-grid fgts-qc-grid">'+panel('Quantity per QC In-Charge','people','Completed quantity · '+periodLabel,reportQcProgress(a.qc,b.qc,yearA,yearB,compare?'COMPARE':'SINGLE','qty'))+panel('Lead Days per QC In-Charge','clock','Average lead days · '+periodLabel,reportQcProgress(a.qcLead,b.qcLead,yearA,yearB,compare?'COMPARE':'SINGLE','days'))+'</div>';
+ const yearly=data.yearlyTrend||[];
+ html+='<div class="report-grid fgts-yearly-trend-grid">'+panel('Yearly Quantity Trend','chart','Total completed quantity by year',reportYearlyQtyChart(yearly))+panel('Yearly Average Lead Time Trend','trend','Average record-level lead days by year',reportYearlyLeadChart(yearly))+'</div>';
  html+='<div class="fgts-report-footnote">Based on completed FGTS records with a valid Date Finish. All Category, Classification, and QC In-Charge values are included. Average lead days are calculated from valid record-level Lead Days.</div>';
  content.innerHTML=html;
 }
@@ -4165,6 +4187,24 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 
 </style>
 
+
+<style id="fgts-report-yearly-and-category-chart">
+#fgtsReportView .fgts-category-chart{display:grid;grid-template-columns:minmax(90px,125px) minmax(0,1fr);column-gap:10px;row-gap:10px;padding:8px 2px 2px}
+#fgtsReportView .fgts-category-axis{display:flex;justify-content:space-between;grid-column:2;color:#8390a2;font-size:9px;padding:0 2px 4px;border-bottom:1px solid #dfe6ef}
+#fgtsReportView .fgts-category-row{display:contents}
+#fgtsReportView .fgts-category-name{grid-column:1;align-self:center;font-size:11px;font-weight:750;color:#243b5c;overflow-wrap:anywhere;line-height:1.25}
+#fgtsReportView .fgts-category-values{grid-column:2;display:flex;flex-direction:column;gap:5px;min-width:0}
+#fgtsReportView .fgts-category-bar-row{display:grid;grid-template-columns:minmax(0,1fr) 40px;gap:7px;align-items:center;min-width:0}
+#fgtsReportView .fgts-category-plot{height:14px;position:relative;overflow:visible;background-image:linear-gradient(to right,#e7edf5 1px,transparent 1px);background-size:25% 100%;border-left:1px solid #cbd5e1}
+#fgtsReportView .fgts-category-plot i{display:block;height:100%;min-width:0;border-radius:1px}
+#fgtsReportView .fgts-category-plot i.a{background:#2864b8}
+#fgtsReportView .fgts-category-plot i.b{background:#20a85a}
+#fgtsReportView .fgts-category-bar-row>b{font-size:10px;color:#142b4a;text-align:right;white-space:nowrap}
+#fgtsReportView .fgts-yearly-trend-grid{margin-top:16px!important}
+#fgtsReportView .fgts-yearly-svg-wrap{width:100%;min-width:0}
+#fgtsReportView .fgts-yearly-svg-wrap svg{display:block;width:100%;height:auto;max-height:260px;overflow:visible}
+@media(max-width:600px){#fgtsReportView .fgts-category-chart{grid-template-columns:minmax(72px,95px) minmax(0,1fr);column-gap:7px}#fgtsReportView .fgts-category-name{font-size:10px}#fgtsReportView .fgts-category-bar-row{grid-template-columns:minmax(0,1fr) 34px;gap:5px}}
+</style>
 </body></html>
 <!-- Trigger syntax validation for restored #242 source -->
 
