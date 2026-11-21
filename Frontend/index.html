@@ -3802,8 +3802,8 @@ function reportEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;
 function openFgtsReport(){el('reportCatalog').style.display='none';el('fgtsReportView').style.display='block';if(activeFgtsReport){renderFgtsReport(activeFgtsReport);return;}el('fgtsReportContent').innerHTML='<div class="report-empty">Loading FGTS report…</div>';loadFgtsReport('');}
 function backToReportCatalog(){el('fgtsReportView').style.display='none';el('reportCatalog').style.display='block';}
 function updateFgtsReportMode(){
- const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field');
- if(yearB)yearB.style.display=mode==='COMPARE'?'':'none';
+ const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field'),periodB=el('fgtsComparePeriod')?.closest('.report-year-field');
+ if(yearB)yearB.style.display=mode==='COMPARE'?'':'none';if(periodB)periodB.style.display=mode==='COMPARE'?'':'none';
  loadFgtsReport();
 }
 function updateFgtsPeriodType(){
@@ -3827,7 +3827,7 @@ function loadFgtsReport(){
   updateFgtsReportModeVisibility();updateFgtsPeriodTypeVisibility();renderFgtsReport(data);
  },err=>{if(token===fgtsReportRequest)content.innerHTML='<div class="report-empty">'+reportEscape(err&&err.message||'Unable to load FGTS report data.')+'</div>';});
 }
-function updateFgtsReportModeVisibility(){const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field');if(yearB)yearB.style.display=mode==='COMPARE'?'':'none';}
+function updateFgtsReportModeVisibility(){const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field'),periodB=el('fgtsComparePeriod')?.closest('.report-year-field');if(yearB)yearB.style.display=mode==='COMPARE'?'':'none';if(periodB)periodB.style.display=mode==='COMPARE'?'':'none';}
 function updateFgtsPeriodTypeVisibility(){
  const type=el('fgtsReportPeriod')?.value||'FULL',from=el('fgtsFromMonth')?.closest('.report-year-field'),to=el('fgtsToMonth')?.closest('.report-year-field');
  if(from)from.style.display=['MONTH','CUSTOM'].includes(type)?'':'none';if(to)to.style.display=type==='CUSTOM'?'':'none';
