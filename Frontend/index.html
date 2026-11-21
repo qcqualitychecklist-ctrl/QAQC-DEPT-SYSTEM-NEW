@@ -1858,6 +1858,22 @@ body:has(.modal.open){overflow:hidden}
 
 
 
+
+#fgtsReportView .fgts-kpi-stack{display:flex;flex-direction:column;gap:9px;min-width:145px}
+#fgtsReportView .fgts-kpi-card{display:flex;flex-direction:column;gap:5px;padding:13px 15px;border-radius:11px;min-height:72px;justify-content:center}
+#fgtsReportView .fgts-kpi-card small{font-size:11px;font-weight:750;color:#33445e}
+#fgtsReportView .fgts-kpi-card strong{font-size:25px;line-height:1.1;font-weight:850;color:#142b4a}
+#fgtsReportView .fgts-kpi-card.kpi-a{background:#e8f5e9}
+#fgtsReportView .fgts-kpi-card.kpi-b{background:#f0eaff}
+#fgtsReportView .fgts-kpi-card.kpi-change{background:#e8f2ff}
+#fgtsReportView .fgts-kpi-change-note{font-size:10px;color:#52647d;font-weight:700}
+#fgtsReportView .fgts-annual-kpi-grid .report-panel{min-height:210px}
+#fgtsReportView .fgts-annual-kpi-grid .fgts-panel-body{display:flex;flex-direction:column}
+#fgtsReportView .fgts-annual-kpi-grid .fgts-kpi-stack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;flex:1}
+#fgtsReportView .fgts-annual-kpi-grid .fgts-kpi-card{min-height:110px}
+#fgtsReportView .fgts-annual-kpi-grid .fgts-kpi-change-note{grid-column:1/-1}
+@media(max-width:900px){#fgtsReportView .fgts-annual-kpi-grid .fgts-kpi-stack{grid-template-columns:1fr}}
+@media(max-width:600px){#fgtsReportView .fgts-kpi-stack{min-width:0}#fgtsReportView .fgts-kpi-card strong{font-size:21px}}
 /* FGTS category and classification: complete horizontal bar lists with paired year values. */
 #fgtsReportView .fgts-distribution-bars{display:flex;flex-direction:column;gap:13px;padding:6px 1px 3px;max-height:none!important;height:auto!important;overflow:visible!important}
 #fgtsReportView .fgts-distribution-row{display:grid;grid-template-columns:minmax(90px,125px) minmax(0,1fr);gap:10px;align-items:center}
@@ -2052,7 +2068,7 @@ body:has(.modal.open){overflow:hidden}
 <button class="report-choice" type="button" disabled><strong>PDI Monitoring Report</strong><small>Coming soon</small></button>
 </div></div>
 <div id="fgtsReportView" style="display:none"><button type="button" class="report-back" onclick="backToReportCatalog()">← Back to Reports</button>
-<div class="report-topline"><div><h3 class="fgts-report-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="4" height="10" rx="1"/><rect x="10" y="6" width="4" height="15" rx="1"/><rect x="17" y="2" width="4" height="19" rx="1"/></svg><span>FGTS REPORT</span></h3><p class="muted" style="margin:5px 0 0;font-size:11px">Compare yearly performance using FGTS Date Finish.</p></div><div class="report-controls"><div class="report-year-field"><label for="fgtsReportMode">Comparison</label><select id="fgtsReportMode" onchange="renderFgtsReport(activeFgtsReport)"><option value="COMPARE">Compare</option><option value="SINGLE">Single Year</option></select></div><div class="report-year-field"><label for="fgtsReportYear">Year A</label><select id="fgtsReportYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field fgts-year-b-field"><label for="fgtsCompareYear">Year B</label><select id="fgtsCompareYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field"><label for="fgtsReportPeriod">Period</label><select id="fgtsReportPeriod" onchange="loadFgtsReport()"><option value="FULL">Full Year</option><option value="H1">1st Half (Jan–Jun)</option><option value="H2">2nd Half (Jul–Dec)</option></select></div></div></div>
+<div class="report-topline"><div><h3 class="fgts-report-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="4" height="10" rx="1"/><rect x="10" y="6" width="4" height="15" rx="1"/><rect x="17" y="2" width="4" height="19" rx="1"/></svg><span>FGTS REPORT</span></h3><p class="muted" style="margin:5px 0 0;font-size:11px">Compare yearly performance using FGTS Date Finish.</p></div><div class="report-controls"><div class="report-year-field"><label for="fgtsReportMode">Comparison</label><select id="fgtsReportMode" onchange="updateFgtsReportMode()"><option value="SINGLE">Single Year</option><option value="YEAR">Year-to-Year</option><option value="HALF">Half-Year to Half-Year</option></select></div><div class="report-year-field fgts-year-a-field"><label for="fgtsReportYear">Year A</label><select id="fgtsReportYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field fgts-year-b-field"><label for="fgtsCompareYear">Year B</label><select id="fgtsCompareYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field"><label for="fgtsReportPeriod">Period</label><select id="fgtsReportPeriod" onchange="loadFgtsReport()"><option value="H1">1st Half (Jan–Jun)</option><option value="H2">2nd Half (Jul–Dec)</option></select></div></div></div>
 <div id="fgtsReportContent"><div class="report-empty">Loading FGTS report…</div></div></div></section>
 </main></div>
 
@@ -3716,7 +3732,32 @@ function reportNumber(v){return (Number(v)||0).toLocaleString('en-US',{maximumFr
 function reportEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function openFgtsReport(){el('reportCatalog').style.display='none';el('fgtsReportView').style.display='block';if(activeFgtsReport){renderFgtsReport(activeFgtsReport);return;}el('fgtsReportContent').innerHTML='<div class="report-empty">Loading FGTS report…</div>';loadFgtsReport('');}
 function backToReportCatalog(){el('fgtsReportView').style.display='none';el('reportCatalog').style.display='block';}
-function loadFgtsReport(){const year=el('fgtsReportYear')?.value||'',compareYear=el('fgtsCompareYear')?.value||'',period=el('fgtsReportPeriod')?.value||'FULL',token=++fgtsReportRequest,content=el('fgtsReportContent');content.innerHTML='<div class="report-empty">Loading FGTS report…</div>';callServer('getFGTSReportData',[year,compareYear,period],data=>{if(token!==fgtsReportRequest)return;if(!data||!data.ok){content.innerHTML='<div class="report-empty">Unable to load FGTS report data.</div>';return;}activeFgtsReport=data;const years=data.years||[],yearSelect=el('fgtsReportYear'),compareSelect=el('fgtsCompareYear');yearSelect.innerHTML=years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');compareSelect.innerHTML=years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');if(!years.length){yearSelect.innerHTML='<option value="'+data.year+'">'+data.year+'</option>';compareSelect.innerHTML='<option value="'+data.comparisonYear+'">'+data.comparisonYear+'</option>';}yearSelect.value=String(data.year);compareSelect.value=String(data.comparisonYear);el('fgtsReportPeriod').value=data.period||'FULL';renderFgtsReport(data);},err=>{if(token===fgtsReportRequest)content.innerHTML='<div class="report-empty">'+reportEscape(err&&err.message||'Unable to load FGTS report data.')+'</div>';});}
+function updateFgtsReportMode(){
+ const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field'),yearA=el('fgtsReportYear')?.closest('.report-year-field'),period=el('fgtsReportPeriod')?.closest('.report-year-field');
+ if(yearB)yearB.style.display=mode==='SINGLE'?'none':'';
+ if(period)period.style.display=mode==='YEAR'?'none':'';
+ if(yearA){const label=yearA.querySelector('label');if(label)label.textContent=mode==='SINGLE'?'Year':'Year A';}
+ loadFgtsReport();
+}
+function loadFgtsReport(){
+ const mode=el('fgtsReportMode')?.value||'SINGLE',year=el('fgtsReportYear')?.value||'',compareYear=el('fgtsCompareYear')?.value||'',period=mode==='YEAR'?'FULL':(el('fgtsReportPeriod')?.value||'H1'),token=++fgtsReportRequest,content=el('fgtsReportContent');
+ content.innerHTML='<div class="report-empty">Loading FGTS report…</div>';
+ callServer('getFGTSReportData',[year,compareYear,period],data=>{
+  if(token!==fgtsReportRequest)return;if(!data||!data.ok){content.innerHTML='<div class="report-empty">Unable to load FGTS report data.</div>';return;}
+  activeFgtsReport=data;const years=data.years||[],yearSelect=el('fgtsReportYear'),compareSelect=el('fgtsCompareYear');
+  yearSelect.innerHTML=years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');compareSelect.innerHTML=years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');
+  if(!years.length){yearSelect.innerHTML='<option value="'+data.year+'">'+data.year+'</option>';compareSelect.innerHTML='<option value="'+data.comparisonYear+'">'+data.comparisonYear+'</option>';}
+  yearSelect.value=String(data.year);compareSelect.value=String(data.comparisonYear);
+  if(el('fgtsReportPeriod'))el('fgtsReportPeriod').value=period;
+  updateFgtsReportModeVisibility();renderFgtsReport(data);
+ },err=>{if(token===fgtsReportRequest)content.innerHTML='<div class="report-empty">'+reportEscape(err&&err.message||'Unable to load FGTS report data.')+'</div>';});
+}
+function updateFgtsReportModeVisibility(){
+ const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field'),period=el('fgtsReportPeriod')?.closest('.report-year-field'),yearA=el('fgtsReportYear')?.closest('.report-year-field');
+ if(yearB)yearB.style.display=mode==='SINGLE'?'none':'';
+ if(period)period.style.display=mode==='YEAR'?'none':'';
+ if(yearA){const label=yearA.querySelector('label');if(label)label.textContent=mode==='SINGLE'?'Year':'Year A';}
+}
 
 function reportBarChart(items,labelKey,valueKey,formatLabel){const max=Math.max(0,...items.map(x=>Number(x[valueKey])||0));if(!items.length||!max)return '<div class="report-empty">No completed FGTS records for this period.</div>';return '<div class="report-chart">'+items.map(x=>{const v=Number(x[valueKey])||0,h=max?Math.max(2,v/max*100):0;return '<div class="report-bar-col"><span class="report-bar-value">'+reportNumber(v)+'</span><div class="report-bar" style="height:'+h+'%"></div><span class="report-bar-label">'+reportEscape(formatLabel(x[labelKey]))+'</span></div>';}).join('')+'</div>';}
 function reportPairedMonthly(primary,comparison,valueKey,formatLabel,yearA,yearB){const max=Math.max(0,...primary.map((x,i)=>Math.max(Number(x[valueKey])||0,Number(comparison[i]?.[valueKey])||0)));if(!max)return '<div class="report-empty">No data available for this comparison.</div>';return '<div class="report-chart report-paired-chart">'+primary.map((x,i)=>{const rawA=x[valueKey],rawB=comparison[i]?.[valueKey],a=Number(rawA)||0,b=Number(rawB)||0;return '<div class="report-bar-col"><div class="report-pair-values"><span>'+(rawA==null?'—':reportNumber(a))+'</span><span>'+(rawB==null?'—':reportNumber(b))+'</span></div><div class="report-pair-bars"><div class="report-bar report-bar-a" style="height:'+Math.max(a?2:0,a/max*100)+'%"></div><div class="report-bar report-bar-b" style="height:'+Math.max(b?2:0,b/max*100)+'%"></div></div><span class="report-bar-label">'+reportEscape(formatLabel(x.month))+'</span></div>';}).join('')+'</div><div class="report-legend"><span><i class="legend-a"></i>'+yearA+'</span><span><i class="legend-b"></i>'+yearB+'</span></div>';}
@@ -3783,15 +3824,26 @@ function fgtsReportHeaderIcon(name){
 }
 function renderFgtsReport(data){
  const content=el('fgtsReportContent');if(!content)return;
- const a=data,b=data.comparison||{},period=data.period||'FULL',mode=el('fgtsReportMode')?.value||'COMPARE';
- const yearA=String(a.year),yearB=String(b.year),periodLabel=period==='H1'?'1st Half (Jan–Jun)':period==='H2'?'2nd Half (Jul–Dec)':'Full Year',compare=mode==='COMPARE';
- const months=arr=>(arr||[]).filter(x=>period==='FULL'||(period==='H1'?x.month<=6:x.month>=7));
+ const a=data,b=data.comparison||{},period=data.period||'H1',mode=el('fgtsReportMode')?.value||'SINGLE';
+ const yearA=String(a.year),yearB=String(b.year),periodLabel=period==='H1'?'1st Half (Jan–Jun)':period==='H2'?'2nd Half (Jul–Dec)':'Full Year';
+ const compare=mode!=='SINGLE',months=arr=>(arr||[]).filter(x=>period==='FULL'||(period==='H1'?x.month<=6:x.month>=7));
  const qtyA=months(a.monthlyQty),qtyB=compare?months(b.monthlyQty):[],leadA=months(a.monthlyLead),leadB=compare?months(b.monthlyLead):[];
- const metric=(title,v1,v2,unit)=>'<aside class="fgts-side-metric"><span>'+title+'</span><div class="a">'+reportNumber(v1)+(unit?' '+unit:'')+'</div><small>'+yearA+'</small>'+(compare?'<div class="b">'+reportNumber(v2)+(unit?' '+unit:'')+'</div><small>'+yearB+'</small>':'')+'</aside>';
  const panel=(title,icon,subtitle,body)=>'<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
- let html='<div class="report-grid fgts-trend-grid"><section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('chart')+'<span>Monthly Quantity</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric">'+reportMonthlyQtyBars(qtyA,qtyB,yearA,yearB)+' '+metric('Overall Qty',a.totalQty,b.totalQty,'')+'</div></div></section><section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('trend')+'<span>Monthly Average Lead Days</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric">'+reportLineChart(leadA,leadB,'average',yearA,yearB,'days')+metric('Overall Avg. Lead Days',a.averageLeadDays,b.averageLeadDays,'days')+'</div></div></section></div>';
- html+='<div class="report-grid fgts-distribution-grid">'+panel('Category Distribution','category','Quantity by category · '+periodLabel,reportDistributionBars(a.category,b.category,yearA,yearB,mode))+panel('Classification Distribution','classification','Quantity by classification · '+periodLabel,reportDistributionBars(a.classification,b.classification,yearA,yearB,mode))+'</div>';
- html+='<div class="report-grid fgts-qc-grid">'+panel('Quantity per QC In-Charge','people','Completed quantity · '+periodLabel,reportQcProgress(a.qc,b.qc,yearA,yearB,mode,'qty'))+panel('Lead Days per QC In-Charge','clock','Average lead days · '+periodLabel,reportQcProgress(a.qcLead,b.qcLead,yearA,yearB,mode,'days'))+'</div>';
+ const metricCards=(title,v1,v2,unit)=>{
+  const change=Number(v1)||0,other=Number(v2)||0,diff=other-change,pct=change?diff/Math.abs(change)*100:0;
+  const card=(label,value,cls)=>'<div class="fgts-kpi-card '+cls+'"><small>'+label+'</small><strong>'+reportNumber(value)+(unit?' '+unit:'')+'</strong></div>';
+  return '<div class="fgts-kpi-stack">'+(mode==='SINGLE'?card(yearA,v1,'kpi-a'):card(yearA,v1,'kpi-a')+card(yearB,v2,'kpi-b')+card('Change',diff,'kpi-change')+'<small class="fgts-kpi-change-note">'+(diff>0?'+':'')+reportNumber(pct)+'% change</small>')+'</div>';
+ };
+ let html='';
+ if(mode==='YEAR'){
+  html+='<div class="report-grid fgts-annual-kpi-grid">'+panel('Overall Quantity','chart','Full-year quantity served',metricCards('Overall Qty',a.totalQty,b.totalQty,''))+panel('Overall Average Lead Days','trend','Full-year average lead days',metricCards('Overall Average Lead Days',a.averageLeadDays,b.averageLeadDays,'days'))+'</div>';
+ }else{
+  html+='<div class="report-grid fgts-trend-grid">'+
+   '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('chart')+'<span>Monthly Quantity</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric">'+reportMonthlyQtyBars(qtyA,qtyB,yearA,yearB)+' '+metricCards('Overall Qty',a.totalQty,b.totalQty,'')+'</div></div></section>'+
+   '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('trend')+'<span>Monthly Average Lead Days</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric">'+reportLineChart(leadA,leadB,'average',yearA,yearB,'days')+metricCards('Overall Avg. Lead Days',a.averageLeadDays,b.averageLeadDays,'days')+'</div></div></section></div>';
+ }
+ html+='<div class="report-grid fgts-distribution-grid">'+panel('Category Distribution','category','Quantity by category · '+periodLabel,reportDistributionBars(a.category,b.category,yearA,yearB,compare?'COMPARE':'SINGLE'))+panel('Classification Distribution','classification','Quantity by classification · '+periodLabel,reportDistributionBars(a.classification,b.classification,yearA,yearB,compare?'COMPARE':'SINGLE'))+'</div>';
+ html+='<div class="report-grid fgts-qc-grid">'+panel('Quantity per QC In-Charge','people','Completed quantity · '+periodLabel,reportQcProgress(a.qc,b.qc,yearA,yearB,compare?'COMPARE':'SINGLE','qty'))+panel('Lead Days per QC In-Charge','clock','Average lead days · '+periodLabel,reportQcProgress(a.qcLead,b.qcLead,yearA,yearB,compare?'COMPARE':'SINGLE','days'))+'</div>';
  html+='<div class="fgts-report-footnote">Based on completed FGTS records with a valid Date Finish. All Category, Classification, and QC In-Charge values are included. Average lead days are calculated from valid record-level Lead Days.</div>';
  content.innerHTML=html;
 }
