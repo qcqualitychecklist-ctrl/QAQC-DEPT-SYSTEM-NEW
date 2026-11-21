@@ -167,7 +167,7 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod) {
   if(!source||!source.ok)throw new Error('Unable to load FGTS source records.');
   const all=source.records||[],months=Array.from({length:12},(_,i)=>i+1);
   const parseDate=value=>{
-    const s=String(value||'').trim(),m=s.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);
+    const s=String(value||'').trim(),m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
     if(m)return {year:Number(m[1]),month:Number(m[2]),day:Number(m[3])};
     const d=value instanceof Date?value:new Date(value);
     return isNaN(d.getTime())?null:{year:d.getFullYear(),month:d.getMonth()+1,day:d.getDate()};
@@ -179,7 +179,7 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod) {
   const period=['H1','H2'].includes(String(selectedPeriod||'').toUpperCase())?String(selectedPeriod).toUpperCase():'FULL';
   const qty=r=>{const n=Number(String(r.Qty??0).replace(/,/g,''));return isFinite(n)?n:0;};
   const clean=v=>{
-    let label=String(v||'').trim().replace(/\\s+/g,' ').replace(/\\s*\\/\\s*/g,'/').toUpperCase();
+    let label=String(v||'').trim().replace(/\s+/g,' ').replace(/\s*\/\s*/g,'/').toUpperCase();
     if(!label)return 'UNASSIGNED';
     if(label==='OTHER')return 'OTHERS';
     return label;
