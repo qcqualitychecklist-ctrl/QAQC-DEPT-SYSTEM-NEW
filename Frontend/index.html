@@ -4322,3 +4322,19 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-qc-progress .fgts-qc-bars b{font-size:9px!important;line-height:1!important;white-space:nowrap!important;}
 @media(max-width:600px){#fgtsReportView .fgts-qc-progress .fgts-qc-row{grid-template-columns:minmax(64px,88px) minmax(0,1fr)!important;gap:6px!important}#fgtsReportView .fgts-qc-progress .fgts-qc-bars{grid-template-columns:minmax(0,1fr) 42px!important;gap:4px!important}}
 </style>
+
+
+<style id="fgts-comparison-bar-spacing">
+/* Add clear separation between paired comparison bars and between category rows. */
+#fgtsReportView .fgts-category-chart{grid-template-rows:24px auto!important;min-height:264px!important;}
+#fgtsReportView .fgts-category-chart>.fgts-page-items{grid-template-rows:repeat(5,46px)!important;grid-auto-rows:46px!important;height:230px!important;min-height:230px!important;max-height:230px!important;}
+#fgtsReportView .fgts-category-chart .fgts-category-row{height:46px!important;min-height:46px!important;max-height:46px!important;}
+#fgtsReportView .fgts-category-chart .fgts-category-values{gap:8px!important;}
+#fgtsReportView .fgts-category-chart .fgts-category-plot{height:14px!important;}
+#fgtsReportView .fgts-qc-progress{height:180px!important;min-height:180px!important;max-height:180px!important;}
+#fgtsReportView .fgts-qc-progress>.fgts-page-items{grid-template-rows:repeat(5,34px)!important;grid-auto-rows:34px!important;height:170px!important;min-height:170px!important;max-height:170px!important;}
+#fgtsReportView .fgts-qc-progress .fgts-qc-row{height:34px!important;min-height:34px!important;max-height:34px!important;}
+#fgtsReportView .fgts-qc-progress .fgts-qc-bars{row-gap:7px!important;}
+#fgtsReportView .fgts-qc-progress .fgts-qc-track{height:10px!important;}
+@media(max-width:600px){#fgtsReportView .fgts-category-chart{min-height:264px!important}#fgtsReportView .fgts-category-chart>.fgts-page-items{height:230px!important;min-height:230px!important}#fgtsReportView .fgts-qc-progress{height:180px!important;min-height:180px!important}}
+</style>
