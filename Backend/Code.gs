@@ -220,8 +220,21 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod) {
       averageLeadDays:leadValues.length?Number((leadTotal/leadValues.length).toFixed(2)):null,
       monthlyQty,monthlyLead,qc:dimensionRows(dimensions.qc),qcLead:qcLeadRows,category:dimensionRows(dimensions.category),classification:dimensionRows(dimensions.classification)};
   };
+  const yearlyBuckets=Object.create(null);
+  dated.forEach(x=>{
+    const y=x.date.year;
+    if(!yearlyBuckets[y])yearlyBuckets[y]={qty:0,leadTotal:0,leadCount:0,recordCount:0};
+    const bucket=yearlyBuckets[y],r=x.record;
+    bucket.qty+=qty(r);bucket.recordCount++;
+    const lead=Number(String(r['Lead Days']??'').replace(/,/g,''));
+    if(String(r['Lead Days']??'').trim()!==''&&isFinite(lead)){bucket.leadTotal+=lead;bucket.leadCount++;}
+  });
+  const yearlyTrend=years.slice().sort((a,b)=>a-b).map(y=>{
+    const x=yearlyBuckets[y];
+    return {year:y,totalQty:x.qty,averageLeadDays:x.leadCount?Number((x.leadTotal/x.leadCount).toFixed(2)):null,recordCount:x.recordCount};
+  });
   const primary=build(year),comparison=build(compare);
-  return Object.assign({ok:true,year,comparisonYear:compare,years,period,comparison},primary);
+  return Object.assign({ok:true,year,comparisonYear:compare,years,period,comparison,yearlyTrend},primary);
 }
 
 function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll, forceRefresh) {
