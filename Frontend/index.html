@@ -2749,7 +2749,14 @@ function openPdiDecisionModal(rec){
   if(decision==='Approved')updated['QC in Charge']=qc.value.trim();
   if(decision==='Rescheduled'){updated['Date of PDI']=date.value;updated.Time=time.value;}
   const logo=document.querySelector('.system-topbar-logo');
-  const requestHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(updated,logo?logo.src:'',decision)+'</body></html>';
+  const requestHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(updated,logo?logo.src:'',decision)+'<style id="fgts-report-compact-pagination">
+#fgtsReportView .fgts-page-item[hidden]{display:none!important}
+#fgtsReportView .fgts-report-pager{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin:7px 0 2px}
+#fgtsReportView .fgts-report-pager button{width:19px!important;min-width:19px!important;height:18px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border:1px solid #d5deea!important;border-radius:4px!important;background:#f8fafc!important;color:#425875!important;font-size:13px!important;line-height:1!important}
+#fgtsReportView .fgts-report-pager button:disabled{opacity:.35!important;cursor:default!important}
+#fgtsReportView .fgts-report-pager span{font-size:9px;color:#718096;min-width:24px;text-align:center}
+</style>
+</body></html>';
   const payload={status:decision,qcInCharge:qc.value.trim(),reason:reason.value.trim(),newDate:date.value,newTime:time.value};
   save.disabled=true;save.textContent='Saving…';
   callServer('updatePdiStatusAndNotify',[ref,payload,requestHtml],result=>{
@@ -3815,6 +3822,23 @@ function reportYearlyLeadChart(rows){
  const labels=data.map((x,i)=>'<text x="'+xx(i)+'" y="'+(h-13)+'" text-anchor="middle" fill="#68778c" font-size="10">'+x.year+'</text>').join('');
  return '<div class="fgts-yearly-svg-wrap"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average FGTS lead time by year">'+grid+'<path d="'+path+'" fill="none" stroke="#20a85a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+points+labels+'</svg></div>';
 }
+function fgtsReportPager(total){
+ const pages=Math.ceil(total/5);
+ if(pages<=1)return '';
+ return '<div class="fgts-report-pager" aria-label="Chart pagination"><button type="button" onclick="fgtsReportPaginate(this,-1)" disabled aria-label="Previous page">‹</button><span>1 / '+pages+'</span><button type="button" onclick="fgtsReportPaginate(this,1)"'+(pages<=1?' disabled':'')+' aria-label="Next page">›</button></div>';
+}
+function fgtsReportPaginate(button,direction){
+ const pager=button.closest('.fgts-report-pager'),panel=pager?.parentElement,items=panel?.querySelector('.fgts-page-items');
+ if(!pager||!items)return;
+ const rows=[...items.querySelectorAll('.fgts-page-item')],size=Number(items.dataset.pageSize)||5,pages=Math.max(1,Math.ceil(rows.length/size));
+ let page=Math.max(0,Math.min(pages-1,Number(items.dataset.page)||0)+direction);
+ items.dataset.page=String(page);
+ rows.forEach((row,index)=>row.hidden=Math.floor(index/size)!==page);
+ const controls=pager.querySelectorAll('button'),label=pager.querySelector('span');
+ if(controls[0])controls[0].disabled=page===0;
+ if(controls[1])controls[1].disabled=page===pages-1;
+ if(label)label.textContent=(page+1)+' / '+pages;
+}
 function reportDistributionBars(rowsA,rowsB,yearA,yearB,mode){
  const map=new Map();
  (rowsA||[]).forEach(x=>map.set(String(x.name),{name:String(x.name),a:Number(x.total)||0,b:0}));
@@ -3825,9 +3849,9 @@ function reportDistributionBars(rowsA,rowsB,yearA,yearB,mode){
  const ticks=[0,.25,.5,.75,1].map(v=>'<span>'+reportNumber(max*v)+'</span>').join('');
  const rows=items.map(x=>{
   const bar=(value,cls,label)=>'<div class="fgts-category-bar-row"><div class="fgts-category-plot"><i class="'+cls+'" style="width:'+(value>0?Math.max(1,value/max*100):0)+'%"></i></div><b title="'+label+'">'+reportNumber(value)+'</b></div>';
-  return '<div class="fgts-category-row"><span class="fgts-category-name" title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><div class="fgts-category-values">'+bar(x.a,'a',yearA)+(mode==='COMPARE'?bar(x.b,'b',yearB):'')+'</div></div>';
+  return '<div class="fgts-category-row fgts-page-item"><span class="fgts-category-name" title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><div class="fgts-category-values">'+bar(x.a,'a',yearA)+(mode==='COMPARE'?bar(x.b,'b',yearB):'')+'</div></div>';
  }).join('');
- return '<div class="fgts-category-chart"><div class="fgts-category-axis-label"></div><div class="fgts-category-axis">'+ticks+'</div>'+rows+'</div><div class="report-legend"><span><i class="legend-a"></i>'+yearA+'</span>'+(mode==='COMPARE'?'<span><i class="legend-b"></i>'+yearB+'</span>':'')+'</div>';
+ return '<div class="fgts-category-chart"><div class="fgts-category-axis-label"></div><div class="fgts-category-axis">'+ticks+'</div><div class="fgts-page-items" data-page-size="5">'+rows+'</div></div>'+fgtsReportPager(items.length)+'<div class="report-legend"><span><i class="legend-a"></i>'+yearA+'</span>'+(mode==='COMPARE'?'<span><i class="legend-b"></i>'+yearB+'</span>':'')+'</div>';
 }
 function reportDonutCompare(rowsA,rowsB,yearA,yearB,mode){
  return '<div class="fgts-donut-years"><div class="fgts-donut-year"><strong>'+yearA+'</strong>'+reportDonut(rowsA,yearA)+'</div>'+(mode==='COMPARE'?'<div class="fgts-donut-year"><strong>'+yearB+'</strong>'+reportDonut(rowsB,yearB)+'</div>':'')+'</div>';
@@ -3845,7 +3869,8 @@ function reportQcProgress(rowsA,rowsB,yearA,yearB,mode,metric){
  const items=[...map.values()].sort((x,y)=>Math.max(y.a,y.b)-Math.max(x.a,x.b)),max=Math.max(1,...items.map(x=>Math.max(x.a,x.b)));
  if(!items.length)return '<div class="report-empty">No QC In-Charge data available.</div>';
  const unit=metric==='days'?' days':'';
- return '<div class="fgts-qc-progress">'+items.map(x=>'<div class="fgts-qc-row"><span class="fgts-qc-name" title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><div class="fgts-qc-bars"><div class="fgts-qc-track"><i class="a" style="width:'+(x.a/max*100)+'%"></i></div><b>'+reportNumber(x.a)+unit+'</b>'+(mode==='COMPARE'?'<div class="fgts-qc-track"><i class="b" style="width:'+(x.b/max*100)+'%"></i></div><b>'+reportNumber(x.b)+unit+'</b>':'')+'</div></div>').join('')+'</div><div class="report-legend"><span><i class="legend-a"></i>'+yearA+'</span>'+(mode==='COMPARE'?'<span><i class="legend-b"></i>'+yearB+'</span>':'')+'</div>';
+ const rows=items.map(x=>'<div class="fgts-qc-row fgts-page-item"><span class="fgts-qc-name" title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><div class="fgts-qc-bars"><div class="fgts-qc-track"><i class="a" style="width:'+(x.a/max*100)+'%"></i></div><b>'+reportNumber(x.a)+unit+'</b>'+(mode==='COMPARE'?'<div class="fgts-qc-track"><i class="b" style="width:'+(x.b/max*100)+'%"></i></div><b>'+reportNumber(x.b)+unit+'</b>':'')+'</div></div>').join('');
+ return '<div class="fgts-qc-progress"><div class="fgts-page-items" data-page-size="5">'+rows+'</div></div>'+fgtsReportPager(items.length)+'<div class="report-legend"><span><i class="legend-a"></i>'+yearA+'</span>'+(mode==='COMPARE'?'<span><i class="legend-b"></i>'+yearB+'</span>':'')+'</div>';
 }
 function reportHorizontalBars(rows){return reportQcProgress(rows,[], '', '', 'SINGLE','qty');}
 function fgtsReportHeaderIcon(name){
