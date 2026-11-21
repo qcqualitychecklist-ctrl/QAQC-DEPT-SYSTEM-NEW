@@ -188,7 +188,7 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod) {
     const selected=dated.filter(x=>x.date.year===targetYear&&(period==='FULL'||(period==='H1'?x.date.month<=6:x.date.month>=7)));
     const monthlyQty=months.map(m=>({month:m,qty:0}));
     const monthlyLead=months.map(m=>({month:m,total:0,count:0,average:null}));
-    const dimensions={qc:Object.create(null),category:Object.create(null),classification:Object.create(null)};
+    const dimensions={qc:Object.create(null),category:Object.create(null),classification:Object.create(null),qcLead:Object.create(null)};
     selected.forEach(x=>{
       const m=x.date.month-1,r=x.record,q=qty(r);
       monthlyQty[m].qty+=q;
@@ -199,14 +199,25 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod) {
         if(!bucket[label])bucket[label]=months.map(()=>0);
         bucket[label][m]+=q;
       });
+      const qcName=String(r['QC-In Charge']||'').trim()||'Unassigned';
+      const leadValue=Number(String(r['Lead Days']??'').replace(/,/g,''));
+      if(String(r['Lead Days']??'').trim()!==''&&isFinite(leadValue)){
+        if(!dimensions.qcLead[qcName])dimensions.qcLead[qcName]=months.map(()=>({total:0,count:0}));
+        dimensions.qcLead[qcName][m].total+=leadValue;
+        dimensions.qcLead[qcName][m].count++;
+      }
     });
     monthlyLead.forEach(x=>{x.average=x.count?Number((x.total/x.count).toFixed(2)):null;});
     const dimensionRows=bucket=>Object.keys(bucket).sort((a,b)=>a.localeCompare(b)).map(name=>({name,monthly:bucket[name],total:bucket[name].reduce((a,b)=>a+b,0)}));
+    const qcLeadRows=Object.keys(dimensions.qcLead).sort((a,b)=>a.localeCompare(b)).map(name=>{
+      const monthly=dimensions.qcLead[name],total=monthly.reduce((sum,x)=>sum+x.total,0),count=monthly.reduce((sum,x)=>sum+x.count,0);
+      return {name,total:count?Number((total/count).toFixed(2)):0,count,monthly:monthly.map(x=>x.count?Number((x.total/x.count).toFixed(2)):null)};
+    });
     const leadValues=selected.map(x=>Number(String(x.record['Lead Days']??'').replace(/,/g,''))).filter((n,i)=>String(selected[i].record['Lead Days']??'').trim()!==''&&isFinite(n));
     const leadTotal=leadValues.reduce((a,b)=>a+b,0);
     return {year:targetYear,recordCount:selected.length,totalQty:monthlyQty.reduce((a,x)=>a+x.qty,0),totalLeadDays:leadTotal,
       averageLeadDays:leadValues.length?Number((leadTotal/leadValues.length).toFixed(2)):null,
-      monthlyQty,monthlyLead,qc:dimensionRows(dimensions.qc),category:dimensionRows(dimensions.category),classification:dimensionRows(dimensions.classification)};
+      monthlyQty,monthlyLead,qc:dimensionRows(dimensions.qc),qcLead:qcLeadRows,category:dimensionRows(dimensions.category),classification:dimensionRows(dimensions.classification)};
   };
   const primary=build(year),comparison=build(compare);
   return Object.assign({ok:true,year,comparisonYear:compare,years,period,comparison},primary);
