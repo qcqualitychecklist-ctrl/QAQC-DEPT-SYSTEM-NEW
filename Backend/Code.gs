@@ -198,7 +198,7 @@ function getFGTSReportData(selectedYear) {
   const leadTotal=leadValues.reduce((a,b)=>a+b,0);
   return {ok:true,year,years,recordCount:selected.length,totalQty:monthlyQty.reduce((a,x)=>a+x.qty,0),
     totalLeadDays:leadTotal,averageLeadDays:leadValues.length?Number((leadTotal/leadValues.length).toFixed(2)):null,
-    monthlyQty,monthlyLead:monthlyLead.map(x=>({month:x.month,average:x.average,count:x.count})),
+    monthlyQty,monthlyLead:monthlyLead.map(x=>({month:x.month,total:x.total,average:x.average,count:x.count})),
     qc:dimensionRows(dimensions.qc),category:dimensionRows(dimensions.category),classification:dimensionRows(dimensions.classification)};
 }
 
