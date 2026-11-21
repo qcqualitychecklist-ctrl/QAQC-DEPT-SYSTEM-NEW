@@ -1855,6 +1855,22 @@ body:has(.modal.open){overflow:hidden}
 #fgtsReportView .report-topline p{opacity:.86}
 #fgtsReportView .report-topline .report-year-field{display:flex;flex-direction:column;gap:4px}
 #fgtsReportView .report-topline select{background:#fff!important;color:#142b4a!important;border:1px solid #d5e0ee!important}
+
+/* Match the approved FGTS screenshot: solid navy report toolbar and icon-led chart headers. */
+#fgtsReportView .report-topline{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;padding:13px 18px!important;margin:0 0 12px!important;min-height:76px;background:#0b2858!important;border:0!important;border-radius:11px!important;color:#fff!important;box-shadow:0 3px 10px #0b285826!important}
+#fgtsReportView .fgts-report-title{display:flex;align-items:center;gap:13px;margin:0!important;color:#fff!important;font-size:25px!important;font-weight:850!important;letter-spacing:.35px;white-space:nowrap}
+#fgtsReportView .fgts-report-title svg{width:38px;height:38px;min-width:38px;color:#fff}
+#fgtsReportView .report-topline p,#fgtsReportView .report-topline label{color:#fff!important}
+#fgtsReportView .report-topline .report-controls{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+#fgtsReportView .report-topline .report-year-field{display:flex;flex-direction:column;gap:5px}
+#fgtsReportView .report-topline .report-year-field label{font-size:11px;font-weight:750;white-space:nowrap}
+#fgtsReportView .report-topline select{min-height:39px;padding:7px 13px!important;border:1px solid #d9e5f5!important;border-radius:12px!important;background:#fff!important;color:#102b56!important;font-size:13px!important;font-weight:750}
+#fgtsReportView .fgts-panel-head{display:flex;align-items:center;gap:11px;min-height:47px;padding:10px 16px;background:#0b2858!important;color:#fff!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+#fgtsReportView .fgts-panel-head span{color:#fff!important;font-size:15px;font-weight:800;line-height:1.2}
+#fgtsReportView .fgts-panel-icon{width:23px;height:23px;min-width:23px;color:#fff;display:block}
+#fgtsReportView .report-panel{border:1px solid #d5e1f1!important;border-radius:12px!important;overflow:hidden;background:#fff!important;box-shadow:0 2px 7px #0b285815!important}
+#fgtsReportView .fgts-panel-body{background:#fff}
+@media(max-width:800px){#fgtsReportView .report-topline{align-items:flex-start}#fgtsReportView .report-topline .report-controls{justify-content:flex-start;width:100%}}
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
@@ -1995,7 +2011,7 @@ body:has(.modal.open){overflow:hidden}
 <button class="report-choice" type="button" disabled><strong>PDI Monitoring Report</strong><small>Coming soon</small></button>
 </div></div>
 <div id="fgtsReportView" style="display:none"><button type="button" class="report-back" onclick="backToReportCatalog()">← Back to Reports</button>
-<div class="report-topline"><div><h3 style="margin:0;color:#142b4a">FGTS Monitoring Report</h3><p class="muted" style="margin:5px 0 0;font-size:11px">Compare yearly performance using FGTS Date Finish.</p></div><div class="report-controls"><div class="report-year-field"><label for="fgtsReportMode">Comparison</label><select id="fgtsReportMode" onchange="renderFgtsReport(activeFgtsReport)"><option value="COMPARE">Compare</option><option value="SINGLE">Single Year</option></select></div><div class="report-year-field"><label for="fgtsReportYear">Year A</label><select id="fgtsReportYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field fgts-year-b-field"><label for="fgtsCompareYear">Year B</label><select id="fgtsCompareYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field"><label for="fgtsReportPeriod">Period</label><select id="fgtsReportPeriod" onchange="loadFgtsReport()"><option value="FULL">Full Year</option><option value="H1">1st Half (Jan–Jun)</option><option value="H2">2nd Half (Jul–Dec)</option></select></div></div></div>
+<div class="report-topline"><div><h3 class="fgts-report-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="4" height="10" rx="1"/><rect x="10" y="6" width="4" height="15" rx="1"/><rect x="17" y="2" width="4" height="19" rx="1"/></svg><span>FGTS REPORT</span></h3><p class="muted" style="margin:5px 0 0;font-size:11px">Compare yearly performance using FGTS Date Finish.</p></div><div class="report-controls"><div class="report-year-field"><label for="fgtsReportMode">Comparison</label><select id="fgtsReportMode" onchange="renderFgtsReport(activeFgtsReport)"><option value="COMPARE">Compare</option><option value="SINGLE">Single Year</option></select></div><div class="report-year-field"><label for="fgtsReportYear">Year A</label><select id="fgtsReportYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field fgts-year-b-field"><label for="fgtsCompareYear">Year B</label><select id="fgtsCompareYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field"><label for="fgtsReportPeriod">Period</label><select id="fgtsReportPeriod" onchange="loadFgtsReport()"><option value="FULL">Full Year</option><option value="H1">1st Half (Jan–Jun)</option><option value="H2">2nd Half (Jul–Dec)</option></select></div></div></div>
 <div id="fgtsReportContent"><div class="report-empty">Loading FGTS report…</div></div></div></section>
 </main></div>
 
@@ -3703,6 +3719,17 @@ function reportQcProgress(rowsA,rowsB,yearA,yearB,mode,metric){
  return '<div class="fgts-qc-progress">'+items.map(x=>'<div class="fgts-qc-row"><span class="fgts-qc-name" title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><div class="fgts-qc-bars"><div class="fgts-qc-track"><i class="a" style="width:'+(x.a/max*100)+'%"></i></div><b>'+reportNumber(x.a)+unit+'</b>'+(mode==='COMPARE'?'<div class="fgts-qc-track"><i class="b" style="width:'+(x.b/max*100)+'%"></i></div><b>'+reportNumber(x.b)+unit+'</b>':'')+'</div></div>').join('')+'</div><div class="report-legend"><span><i class="legend-a"></i>'+yearA+'</span>'+(mode==='COMPARE'?'<span><i class="legend-b"></i>'+yearB+'</span>':'')+'</div>';
 }
 function reportHorizontalBars(rows){return reportQcProgress(rows,[], '', '', 'SINGLE','qty');}
+function fgtsReportHeaderIcon(name){
+ const paths={
+  chart:'<rect x="3" y="11" width="4" height="10" rx="1"/><rect x="10" y="6" width="4" height="15" rx="1"/><rect x="17" y="2" width="4" height="19" rx="1"/>',
+  trend:'<path d="M3 17l6-6 4 3 8-9"/><path d="M15 5h6v6"/>',
+  category:'<path d="M12 2v10l8.7 5A10 10 0 1 1 12 2Z"/><path d="M14 2a10 10 0 0 1 8 8h-8Z"/>',
+  classification:'<circle cx="12" cy="12" r="9"/><path d="M12 3v9l7.8 4.5"/>',
+  people:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+ };
+ return '<svg class="fgts-panel-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(paths[name]||paths.chart)+'</svg>';
+}
 function renderFgtsReport(data){
  const content=el('fgtsReportContent');if(!content)return;
  const a=data,b=data.comparison||{},period=data.period||'FULL',mode=el('fgtsReportMode')?.value||'COMPARE';
@@ -3710,10 +3737,10 @@ function renderFgtsReport(data){
  const months=arr=>(arr||[]).filter(x=>period==='FULL'||(period==='H1'?x.month<=6:x.month>=7));
  const qtyA=months(a.monthlyQty),qtyB=compare?months(b.monthlyQty):[],leadA=months(a.monthlyLead),leadB=compare?months(b.monthlyLead):[];
  const metric=(title,v1,v2,unit)=>'<aside class="fgts-side-metric"><span>'+title+'</span><div class="a">'+reportNumber(v1)+(unit?' '+unit:'')+'</div><small>'+yearA+'</small>'+(compare?'<div class="b">'+reportNumber(v2)+(unit?' '+unit:'')+'</div><small>'+yearB+'</small>':'')+'</aside>';
- const panel=(title,subtitle,body)=>'<section class="report-panel"><header class="fgts-panel-head"><span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
- let html='<div class="report-grid fgts-trend-grid"><section class="report-panel"><header class="fgts-panel-head"><span>Monthly Quantity</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric">'+reportMonthlyQtyBars(qtyA,qtyB,yearA,yearB)+' '+metric('Overall Qty',a.totalQty,b.totalQty,'')+'</div></div></section><section class="report-panel"><header class="fgts-panel-head"><span>Monthly Average Lead Days</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric">'+reportLineChart(leadA,leadB,'average',yearA,yearB,'days')+metric('Overall Avg. Lead Days',a.averageLeadDays,b.averageLeadDays,'days')+'</div></div></section></div>';
- html+='<div class="report-grid fgts-distribution-grid">'+panel('Category Distribution','Quantity share by category · '+periodLabel,reportDonutCompare(a.category,b.category,yearA,yearB,mode))+panel('Classification Distribution','Quantity share by classification · '+periodLabel,reportDonutCompare(a.classification,b.classification,yearA,yearB,mode))+'</div>';
- html+='<div class="report-grid fgts-qc-grid">'+panel('Quantity per QC In-Charge','Completed quantity · '+periodLabel,reportQcProgress(a.qc,b.qc,yearA,yearB,mode,'qty'))+panel('Lead Days per QC In-Charge','Average lead days · '+periodLabel,reportQcProgress(a.qcLead,b.qcLead,yearA,yearB,mode,'days'))+'</div>';
+ const panel=(title,icon,subtitle,body)=>'<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
+ let html='<div class="report-grid fgts-trend-grid"><section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('chart')+'<span>Monthly Quantity</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric">'+reportMonthlyQtyBars(qtyA,qtyB,yearA,yearB)+' '+metric('Overall Qty',a.totalQty,b.totalQty,'')+'</div></div></section><section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('trend')+'<span>Monthly Average Lead Days</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric">'+reportLineChart(leadA,leadB,'average',yearA,yearB,'days')+metric('Overall Avg. Lead Days',a.averageLeadDays,b.averageLeadDays,'days')+'</div></div></section></div>';
+ html+='<div class="report-grid fgts-distribution-grid">'+panel('Category Distribution','category','Quantity share by category · '+periodLabel,reportDonutCompare(a.category,b.category,yearA,yearB,mode))+panel('Classification Distribution','classification','Quantity share by classification · '+periodLabel,reportDonutCompare(a.classification,b.classification,yearA,yearB,mode))+'</div>';
+ html+='<div class="report-grid fgts-qc-grid">'+panel('Quantity per QC In-Charge','people','Completed quantity · '+periodLabel,reportQcProgress(a.qc,b.qc,yearA,yearB,mode,'qty'))+panel('Lead Days per QC In-Charge','clock','Average lead days · '+periodLabel,reportQcProgress(a.qcLead,b.qcLead,yearA,yearB,mode,'days'))+'</div>';
  html+='<div class="fgts-report-footnote">Based on completed FGTS records with a valid Date Finish. All Category, Classification, and QC In-Charge values are included. Average lead days are calculated from valid record-level Lead Days.</div>';
  content.innerHTML=html;
 }
