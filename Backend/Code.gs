@@ -163,7 +163,8 @@ function setupDatabase() {
 
 
 function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod) {
-  const source=getFGTSMonitoringRecords_('');
+  // Reports only read FGTS data; allocation synchronization already runs on Transfer save/update.
+  const source=getFGTSMonitoringRecords_('',true);
   if(!source||!source.ok)throw new Error('Unable to load FGTS source records.');
   const all=source.records||[],months=Array.from({length:12},(_,i)=>i+1);
   const parseDate=value=>{
@@ -1159,7 +1160,7 @@ function syncFGTSTransferAllocations_() {
   return {ok:true,count:out.length};
 }
 
-function getFGTSMonitoringRecords_(searchText) {
+function getFGTSMonitoringRecords_(searchText, skipAllocationSync) {
   const query=String(searchText||'').trim().toLowerCase(),records=[];
   const fgtsSS=SpreadsheetApp.openById(FGTS_SOURCE_ID),fgtsSheet=fgtsSS.getSheets().find(s=>s.getSheetId()===FGTS_SOURCE_GID);
   if(!fgtsSheet)throw new Error('Could not find FGTS source sheet tab gid '+FGTS_SOURCE_GID+'.');
@@ -1179,7 +1180,7 @@ function getFGTSMonitoringRecords_(searchText) {
     const rec={'Classification':classByJob[fgtsJobKey_(so,item)]||'Others','Lead Days':leadDays,'Date Received':received,'Date Finish':finished,'S.O. no.':so,'Client':r[5]||'','Item no.':item,'Panel Name':r[7]||'','Qty':Number(String(r[8]||'').replace(/,/g,''))||r[8]||'','FGTS no.':r[9]||'','QC-In Charge':r[10]||'','Remarks':r[11]||'','Category':r[13]||''};
     if(!query||Object.values(rec).join(' ').toLowerCase().includes(query))records.push(rec);
   });
-  syncFGTSTransferAllocations_();
+  if(skipAllocationSync!==true)syncFGTSTransferAllocations_();
   const db=SpreadsheetApp.openById(DATABASE_ID),derived=db.getSheetByName(FGTS_TRANSFER_SHEET);
   if(derived&&derived.getLastRow()>1){
     const h=derived.getRange(1,1,1,derived.getLastColumn()).getDisplayValues()[0].map(v=>String(v||'').trim()),ix=n=>h.indexOf(n);
