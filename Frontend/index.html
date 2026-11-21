@@ -2141,7 +2141,32 @@ body:has(.modal.open){overflow:hidden}
 #fgtsReportView .fgts-month-value{display:none!important}
 #fgtsReportView .fgts-ref-footnote{margin:0 17px!important;padding:5px 0!important}
 @media(max-width:850px){#fgtsReportView .fgts-reference-top-grid{grid-template-columns:1fr!important}#fgtsReportView .fgts-reference-summary-row{grid-template-columns:1fr!important}}
-</style></head><body>
+</style>
+<style id="fgts-report-header-and-selector-refinement">
+/* Reports catalog keeps the global Reports heading; an opened report uses its own report banner. */
+body:has(#reportPanel[style*="display: block"]) #reportCatalog .report-topline{display:none!important}
+#fgtsReportView .fgts-period-controls{grid-template-columns:minmax(150px,1.2fr) minmax(125px,1fr) minmax(82px,.62fr) minmax(105px,.78fr) minmax(105px,.78fr) minmax(76px,.58fr) minmax(76px,.58fr)!important;grid-auto-flow:column;grid-template-rows:1fr;gap:8px!important;align-items:end;min-width:0}
+#fgtsReportView .fgts-period-controls .report-year-field{min-width:0}
+#fgtsReportView .fgts-view-toggle{gap:5px!important}
+#fgtsReportView .fgts-view-toggle button{min-width:0!important;width:50%;height:31px!important;padding:0 7px!important;font-size:11px!important;white-space:nowrap}
+#fgtsReportView .fgts-period-controls label{font-size:11px!important;font-weight:650!important}
+#fgtsReportView .fgts-period-controls select{height:31px!important;padding:0 7px!important;font-size:11px!important}
+#fgtsReportView .fgts-period-heading{font-size:13px!important}
+#fgtsReportView .fgts-period-help{font-size:10px!important}
+#fgtsReportView .fgts-report-title{font-size:27px!important}
+#fgtsReportView .fgts-report-brand p{font-size:12px!important}
+#fgtsReportView .fgts-live-pill,#fgtsReportView .fgts-updated-label{font-size:10px!important}
+#fgtsReportView .fgts-export-btn{font-size:11px!important;padding:9px 13px!important}
+#fgtsReportView .fgts-kpi-copy b{font-size:13px!important}
+#fgtsReportView .fgts-kpi-copy strong{font-size:26px!important}
+#fgtsReportView .fgts-panel-head{font-size:13px!important}
+#fgtsReportView .fgts-ref-insights li{font-size:11px!important}
+#fgtsReportView .fgts-ref-cat-row>span,#fgtsReportView .fgts-ref-cat-row>b{font-size:10px!important}
+#fgtsReportView .fgts-ref-table{font-size:10px!important}
+@media(max-width:1100px){#fgtsReportView .fgts-period-controls{grid-template-columns:repeat(7,minmax(92px,1fr))!important;overflow-x:auto;overflow-y:hidden;padding-bottom:3px}}
+@media(max-width:720px){#fgtsReportView .fgts-period-panel{overflow-x:auto}#fgtsReportView .fgts-period-controls{grid-template-columns:repeat(7,minmax(92px,1fr))!important;width:max-content;min-width:100%}}
+</style>
+</head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
  <div class="pdi-request-card">
@@ -3951,8 +3976,8 @@ function restoreGuestSession(){
 let activeFgtsReport=null,fgtsReportRequest=0;
 function reportNumber(v){return (Number(v)||0).toLocaleString('en-US',{maximumFractionDigits:2});}
 function reportEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function openFgtsReport(){el('reportCatalog').style.display='none';el('fgtsReportView').style.display='block';if(activeFgtsReport){renderFgtsReport(activeFgtsReport);return;}el('fgtsReportContent').innerHTML='<div class="report-empty">Loading FGTS report…</div>';loadFgtsReport('');}
-function backToReportCatalog(){el('fgtsReportView').style.display='none';el('reportCatalog').style.display='block';}
+function openFgtsReport(){el('reportCatalog').style.display='none';el('fgtsReportView').style.display='block';const intro=document.querySelector('.intro');if(intro)intro.style.display='none';if(activeFgtsReport){renderFgtsReport(activeFgtsReport);return;}el('fgtsReportContent').innerHTML='<div class="report-empty">Loading FGTS report…</div>';loadFgtsReport('');}
+function backToReportCatalog(){el('fgtsReportView').style.display='none';el('reportCatalog').style.display='block';const intro=document.querySelector('.intro');if(intro)intro.style.display='';}
 function updateFgtsReportMode(){
  const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field'),periodB=el('fgtsComparePeriod')?.closest('.report-year-field');
  if(yearB)yearB.style.display=mode==='COMPARE'?'':'none';if(periodB)periodB.style.display=mode==='COMPARE'?'':'none';
