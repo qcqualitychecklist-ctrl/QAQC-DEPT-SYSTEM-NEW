@@ -3981,6 +3981,12 @@ function renderFgtsReport(data){
  html+='<div class="fgts-report-footnote">Based on completed FGTS records with a valid Date Finish. All available categories are included. Classification is limited to Standard, Non-standard, Telcos, and Others. Average lead days are calculated from valid record-level Lead Days.</div>';
  content.innerHTML=html;
 }
+function exportFgtsReportPdf(){
+ const report=el('fgtsReportView');if(!report)return;
+ const style=document.createElement('style');style.id='fgts-report-print-style';
+ style.textContent='@media print{body *{visibility:hidden!important}#fgtsReportView,#fgtsReportView *{visibility:visible!important}#fgtsReportView{display:block!important;position:absolute!important;left:0!important;top:0!important;width:100%!important;margin:0!important;padding:12px!important;background:#edf4fc!important}#fgtsReportView .report-back,#fgtsReportView .fgts-export-btn{display:none!important}#fgtsReportView .report-panel,#fgtsReportView .fgts-period-panel,#fgtsReportView .fgts-final-kpi{break-inside:avoid;page-break-inside:avoid}#fgtsReportView .fgts-final-category{max-height:none!important;overflow:visible!important}@page{size:landscape;margin:10mm}}';
+ document.head.appendChild(style);window.print();setTimeout(()=>style.remove(),1000);
+}
 function restoreQaqcSession(){
  let saved=null;
  try{saved=JSON.parse(localStorage.getItem(QAQC_SESSION_KEY)||'null');}catch(e){}
