@@ -161,6 +161,48 @@ function setupDatabase() {
   return {ok:true,created:created,message:created.length?'Database tabs are ready.':'Database tabs already exist; existing records were preserved.'};
 }
 
+
+function getFGTSReportData(selectedYear) {
+  const source=getFGTSMonitoringRecords_('');
+  if(!source||!source.ok)throw new Error('Unable to load FGTS source records.');
+  const all=source.records||[],months=Array.from({length:12},(_,i)=>i+1);
+  const parseDate=value=>{
+    const s=String(value||'').trim(),m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if(m)return {year:Number(m[1]),month:Number(m[2]),day:Number(m[3])};
+    const d=value instanceof Date?value:new Date(value);
+    return isNaN(d.getTime())?null:{year:d.getFullYear(),month:d.getMonth()+1,day:d.getDate()};
+  };
+  const dated=all.map(r=>({record:r,date:parseDate(r['Date Finish'])})).filter(x=>x.date);
+  const years=[...new Set(dated.map(x=>x.date.year))].sort((a,b)=>b-a);
+  const year=Number(selectedYear)||years[0]||new Date().getFullYear();
+  const selected=dated.filter(x=>x.date.year===year);
+  const qty=r=>{const n=Number(String(r.Qty??0).replace(/,/g,''));return isFinite(n)?n:0;};
+  const clean=v=>String(v||'').trim()||'Unassigned';
+  const monthlyQty=months.map(m=>({month:m,qty:0}));
+  const monthlyLead=months.map(m=>({month:m,total:0,count:0,average:null}));
+  const dimensions={qc:Object.create(null),category:Object.create(null),classification:Object.create(null)};
+  selected.forEach(x=>{
+    const m=x.date.month-1,r=x.record,q=qty(r);
+    monthlyQty[m].qty+=q;
+    const lead=Number(r['Lead Days']);
+    if(String(r['Lead Days']??'').trim()!==''&&isFinite(lead)){monthlyLead[m].total+=lead;monthlyLead[m].count++;}
+    [['qc',clean(r['QC-In Charge'])],['category',clean(r.Category)],['classification',clean(r.Classification)]].forEach(([key,label])=>{
+      const bucket=dimensions[key];
+      if(!bucket[label])bucket[label]=months.map(()=>0);
+      bucket[label][m]+=q;
+    });
+  });
+  monthlyLead.forEach(x=>{x.average=x.count?Number((x.total/x.count).toFixed(2)):null;});
+  const dimensionRows=bucket=>Object.keys(bucket).sort((a,b)=>a.localeCompare(b)).map(name=>({name,monthly:bucket[name],total:bucket[name].reduce((a,b)=>a+b,0)}));
+  const leadValues=selected.filter(x=>String(x.record['Lead Days']??'').trim()!=='').map(x=>Number(x.record['Lead Days'])).filter(n=>isFinite(n));
+  const leadTotal=leadValues.reduce((a,b)=>a+b,0);
+  return {ok:true,year,years,recordCount:selected.length,totalQty:monthlyQty.reduce((a,x)=>a+x.qty,0),
+    totalLeadDays:leadTotal,averageLeadDays:leadValues.length?Number((leadTotal/leadValues.length).toFixed(2)):null,
+    monthlyQty,monthlyLead:monthlyLead.map(x=>({month:x.month,total:x.total,average:x.average,count:x.count})),
+    qc:dimensionRows(dimensions.qc),category:dimensionRows(dimensions.category),classification:dimensionRows(dimensions.classification)};
+}
+
+
 function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll, forceRefresh) {
   if (!['Transfer Monitoring','J.O Register','FGTS Monitoring','Rework Monitoring','Punchlist Monitoring','NCR Monitoring','Complaint Monitoring','PDI Monitoring'].includes(moduleName)) throw new Error('Unsupported monitoring module: '+moduleName+'.');
   const query=String(searchText||'').trim();
