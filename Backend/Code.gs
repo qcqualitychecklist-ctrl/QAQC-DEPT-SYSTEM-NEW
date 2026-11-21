@@ -178,7 +178,7 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod, fromMon
   const year=Number(selectedYear)||years[0]||new Date().getFullYear();
   const compare=Number(comparisonYear)||(years.find(y=>y!==year)||year);
   const period=['H1','H2','Q1','Q2','Q3','Q4','MONTH','CUSTOM'].includes(String(selectedPeriod||'').toUpperCase())?String(selectedPeriod).toUpperCase():'FULL';
-  const periodB=['H1','H2','Q1','Q2','Q3','Q4','MONTH','CUSTOM'].includes(String(comparisonPeriod||'').toUpperCase())?String(comparisonPeriod).toUpperCase():(comparisonPeriod==='FULL'?'FULL':period);
+  const periodB=String(comparisonPeriod||'SAME').toUpperCase()==='SAME'?period:(['H1','H2','Q1','Q2','Q3','Q4','MONTH','CUSTOM'].includes(String(comparisonPeriod||'').toUpperCase())?String(comparisonPeriod).toUpperCase():'FULL');
   const from= Math.min(12,Math.max(1,Number(fromMonth)||1)),to=Math.min(12,Math.max(1,Number(toMonth)||12));
   const inPeriod=(p,m)=>p==='FULL'||(p==='H1'&&m<=6)||(p==='H2'&&m>=7)||(p==='Q1'&&m<=3)||(p==='Q2'&&m>=4&&m<=6)||(p==='Q3'&&m>=7&&m<=9)||(p==='Q4'&&m>=10)||(p==='MONTH'&&m===from)||(p==='CUSTOM'&&m>=Math.min(from,to)&&m<=Math.max(from,to));
   const qty=r=>{const n=Number(String(r.Qty??0).replace(/,/g,''));return isFinite(n)?n:0;};
