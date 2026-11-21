@@ -1932,6 +1932,8 @@ body:has(.modal.open){overflow:hidden}
 /* FGTS monthly trend layout: one full-width graph row at a time, with its KPI cards on the right. */
 #fgtsReportView .fgts-trend-grid{grid-template-columns:minmax(0,1fr)!important}
 #fgtsReportView .fgts-trend-grid .fgts-chart-with-metric{grid-template-columns:minmax(0,1fr) 190px!important;gap:16px;align-items:stretch}
+#fgtsReportView .fgts-trend-grid .fgts-chart-main{min-width:0;grid-column:1;grid-row:1}
+#fgtsReportView .fgts-trend-grid .fgts-chart-with-metric>.fgts-kpi-stack{grid-column:2;grid-row:1;align-self:center;width:100%}
 #fgtsReportView .fgts-trend-grid .fgts-kpi-stack{min-width:0;justify-content:center}
 #fgtsReportView .fgts-trend-grid .fgts-kpi-card{min-height:78px}
 @media(max-width:760px){
@@ -3850,8 +3852,8 @@ function renderFgtsReport(data){
   html+='<div class="report-grid fgts-annual-kpi-grid">'+panel('Overall Quantity','chart','Full-year quantity served',metricCards('Overall Qty',a.totalQty,b.totalQty,''))+panel('Overall Average Lead Days','trend','Full-year average lead days',metricCards('Overall Average Lead Days',a.averageLeadDays,b.averageLeadDays,'days'))+'</div>';
  }else{
   html+='<div class="report-grid fgts-trend-grid">'+
-   '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('chart')+'<span>Monthly Quantity</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric">'+reportMonthlyQtyBars(qtyA,qtyB,yearA,yearB)+' '+metricCards('Overall Qty',a.totalQty,b.totalQty,'')+'</div></div></section>'+
-   '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('trend')+'<span>Monthly Average Lead Days</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric">'+reportLineChart(leadA,leadB,'average',yearA,yearB,'days')+metricCards('Overall Avg. Lead Days',a.averageLeadDays,b.averageLeadDays,'days')+'</div></div></section></div>';
+   '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('chart')+'<span>Monthly Quantity</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric"><div class="fgts-chart-main">'+reportMonthlyQtyBars(qtyA,qtyB,yearA,yearB)+'</div>'+metricCards('Overall Qty',a.totalQty,b.totalQty,'')+'</div></div></section>'+
+   '<section class="report-panel"><header class="fgts-panel-head">'+fgtsReportHeaderIcon('trend')+'<span>Monthly Average Lead Days</span></header><div class="fgts-panel-body"><div class="fgts-chart-with-metric"><div class="fgts-chart-main">'+reportLineChart(leadA,leadB,'average',yearA,yearB,'days')+'</div>'+metricCards('Overall Avg. Lead Days',a.averageLeadDays,b.averageLeadDays,'days')+'</div></div></section></div>';
  }
  html+='<div class="report-grid fgts-distribution-grid">'+panel('Category Distribution','category','Quantity by category · '+periodLabel,reportDistributionBars(a.category,b.category,yearA,yearB,compare?'COMPARE':'SINGLE'))+panel('Classification Distribution','classification','Quantity by classification · '+periodLabel,reportDistributionBars(a.classification,b.classification,yearA,yearB,compare?'COMPARE':'SINGLE'))+'</div>';
  html+='<div class="report-grid fgts-qc-grid">'+panel('Quantity per QC In-Charge','people','Completed quantity · '+periodLabel,reportQcProgress(a.qc,b.qc,yearA,yearB,compare?'COMPARE':'SINGLE','qty'))+panel('Lead Days per QC In-Charge','clock','Average lead days · '+periodLabel,reportQcProgress(a.qcLead,b.qcLead,yearA,yearB,compare?'COMPARE':'SINGLE','days'))+'</div>';
