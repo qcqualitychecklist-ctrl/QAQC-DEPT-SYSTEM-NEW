@@ -1941,6 +1941,46 @@ body:has(.modal.open){overflow:hidden}
  #fgtsReportView .fgts-trend-grid .fgts-kpi-stack{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
 }
 
+</style><style id="fgts-report-reference-layout">
+#fgtsReportView{background:#edf4fc!important;padding:14px!important;border-radius:12px}
+#fgtsReportView .fgts-report-banner{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 22px;margin:0 0 14px;background:linear-gradient(105deg,#0b2858,#17477f);border-radius:10px;color:#fff}
+#fgtsReportView .fgts-report-brand{display:flex;align-items:center;gap:13px}.fgts-report-brand .fgts-brand-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:9px;background:#ffffff1a;color:#fff;font-size:27px}
+#fgtsReportView .fgts-report-title{margin:0;color:#fff;font-size:21px;font-weight:850;letter-spacing:.7px}
+#fgtsReportView .fgts-report-brand p{margin:4px 0 0;color:#d9e8fb;font-size:11px}
+#fgtsReportView .fgts-report-banner-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#fgtsReportView .fgts-live-pill{padding:5px 10px;border-radius:20px;background:#d9f7e5;color:#147a42;font-size:10px;font-weight:850}
+#fgtsReportView .fgts-updated-label{color:#d9e8fb;font-size:10px}
+#fgtsReportView .fgts-export-btn{padding:9px 14px;border:0;border-radius:6px;background:#21a65a;color:white;font-size:11px;font-weight:800;cursor:pointer}
+#fgtsReportView .fgts-period-panel{margin:0 0 15px;padding:0 17px 13px;border:1px solid #cbdcf0;border-radius:10px;background:#fff;box-shadow:0 2px 8px #173a650d}
+#fgtsReportView .fgts-period-heading{padding:13px 0 10px;color:#123461;font-size:13px;font-weight:850;letter-spacing:.45px;border-bottom:1px solid #e3ebf5}
+#fgtsReportView .fgts-period-controls{display:grid;grid-template-columns:1.1fr 1.25fr .8fr .9fr .9fr .9fr;gap:10px;padding-top:12px;align-items:end}
+#fgtsReportView .fgts-period-controls .report-year-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+#fgtsReportView .fgts-period-controls label{font-size:10px;font-weight:750;color:#344b6b}
+#fgtsReportView .fgts-period-controls select{width:100%;min-width:0;height:35px;padding:0 9px;border:1px solid #cbd7e6;border-radius:5px;background:#fff;color:#263c59;font-size:11px}
+#fgtsReportView .fgts-period-help{margin:10px 0 0;color:#74849a;font-size:10px}
+#fgtsReportView .report-topline{display:none!important}
+#fgtsReportView .fgts-final-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:0 0 13px}
+#fgtsReportView .fgts-final-kpi{padding:14px 17px;border:1px solid #d8e4f1;border-radius:9px;background:#fff;box-shadow:0 2px 8px #173a650d}
+#fgtsReportView .fgts-final-kpi small{display:block;color:#536983;font-size:11px;font-weight:750}
+#fgtsReportView .fgts-final-kpi strong{display:block;margin:6px 0;color:#123b70;font-size:25px;font-weight:850}
+#fgtsReportView .fgts-final-kpi span{color:#7b8ba0;font-size:10px}
+#fgtsReportView .fgts-final-distribution{grid-template-columns:1.1fr .9fr}
+#fgtsReportView .fgts-final-category{display:flex;flex-direction:column;gap:12px;max-height:none;overflow:visible}
+#fgtsReportView .fgts-final-cat-row{display:grid;grid-template-columns:minmax(110px,1fr) minmax(100px,2fr) auto;gap:10px;align-items:center}
+#fgtsReportView .fgts-final-cat-row>span{font-size:11px;color:#344b68;overflow-wrap:anywhere}
+#fgtsReportView .fgts-final-cat-bars{height:13px;border-radius:20px;background:#edf2f8;overflow:hidden}
+#fgtsReportView .fgts-final-cat-bars i{display:block;height:100%;border-radius:20px}
+#fgtsReportView .fgts-final-cat-bars i.a{background:#2868bf}
+#fgtsReportView .fgts-final-cat-row>b{font-size:10px;color:#183b68}
+#fgtsReportView .fgts-final-donuts{display:flex;flex-direction:column;gap:12px}
+#fgtsReportView .fgts-final-donut-inner{display:flex;align-items:center;gap:12px}
+#fgtsReportView .fgts-final-donut-inner svg{width:132px;max-width:42%;flex:0 0 42%}
+#fgtsReportView .fgts-final-legend{flex:1;min-width:0}
+#fgtsReportView .fgts-final-legend>div{display:grid;grid-template-columns:9px minmax(0,1fr) auto;gap:6px;align-items:center;margin:7px 0;font-size:10px}
+#fgtsReportView .fgts-final-legend i{width:8px;height:8px;border-radius:50%}
+#fgtsReportView .fgts-final-legend b{font-size:9px;color:#243d5c}
+@media(max-width:850px){#fgtsReportView .fgts-period-controls{grid-template-columns:repeat(3,minmax(0,1fr))}#fgtsReportView .fgts-final-distribution{grid-template-columns:1fr}}
+@media(max-width:580px){#fgtsReportView .fgts-report-banner{align-items:flex-start;flex-direction:column}#fgtsReportView .fgts-period-controls{grid-template-columns:repeat(2,minmax(0,1fr))}#fgtsReportView .fgts-final-kpis{grid-template-columns:1fr}#fgtsReportView .fgts-final-cat-row{grid-template-columns:90px minmax(0,1fr) auto}}
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
@@ -2081,7 +2121,15 @@ body:has(.modal.open){overflow:hidden}
 <button class="report-choice" type="button" disabled><strong>PDI Monitoring Report</strong><small>Coming soon</small></button>
 </div></div>
 <div id="fgtsReportView" style="display:none"><button type="button" class="report-back" onclick="backToReportCatalog()">← Back to Reports</button>
-<div class="report-topline"><div><h3 class="fgts-report-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="4" height="10" rx="1"/><rect x="10" y="6" width="4" height="15" rx="1"/><rect x="17" y="2" width="4" height="19" rx="1"/></svg><span>FGTS REPORT</span></h3><p class="muted" style="margin:5px 0 0;font-size:11px">Compare yearly performance using FGTS Date Finish.</p></div><div class="report-controls"><div class="report-year-field"><label for="fgtsReportMode">Comparison</label><select id="fgtsReportMode" onchange="updateFgtsReportMode()"><option value="SINGLE">Single Year</option><option value="HALF">Half-Year to Half-Year</option></select></div><div class="report-year-field fgts-year-a-field"><label for="fgtsReportYear">Year A</label><select id="fgtsReportYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field fgts-year-b-field"><label for="fgtsCompareYear">Year B</label><select id="fgtsCompareYear" onchange="loadFgtsReport()"></select></div><div class="report-year-field"><label for="fgtsReportPeriod">Period</label><select id="fgtsReportPeriod" onchange="loadFgtsReport()"><option value="FULL">Full Year (Jan–Dec)</option><option value="H1">1st Half (Jan–Jun)</option><option value="H2">2nd Half (Jul–Dec)</option></select></div></div></div>
+<div class="fgts-report-banner"><div class="fgts-report-brand"><span class="fgts-brand-icon">▥</span><div><h3 class="fgts-report-title">FGTS REPORT</h3><p>Quality Assurance &amp; Quality Control Analytics</p></div></div><div class="fgts-report-banner-meta"><span class="fgts-live-pill">● LIVE DATA</span><span class="fgts-updated-label">FGTS Date Finish records</span><button type="button" class="fgts-export-btn" onclick="exportFgtsReportPdf()">Export Report PDF</button></div></div>
+<div class="fgts-period-panel"><div class="fgts-period-heading">REPORT PERIOD SELECTION</div><div class="fgts-period-controls">
+<div class="report-year-field"><label for="fgtsReportMode">Report View</label><select id="fgtsReportMode" onchange="updateFgtsReportMode()"><option value="SINGLE">Single Period</option><option value="COMPARE">Comparison</option></select></div>
+<div class="report-year-field"><label for="fgtsReportPeriod">Period Type</label><select id="fgtsReportPeriod" onchange="updateFgtsPeriodType()"><option value="FULL">Full Year</option><option value="H1">1st Half</option><option value="H2">2nd Half</option><option value="Q1">1st Quarter</option><option value="Q2">2nd Quarter</option><option value="Q3">3rd Quarter</option><option value="Q4">4th Quarter</option><option value="MONTH">Specific Month</option><option value="CUSTOM">Custom Date Range</option></select></div>
+<div class="report-year-field"><label for="fgtsReportYear">Year</label><select id="fgtsReportYear" onchange="loadFgtsReport()"></select></div>
+<div class="report-year-field fgts-year-b-field"><label for="fgtsCompareYear">Compare Year</label><select id="fgtsCompareYear" onchange="loadFgtsReport()"></select></div>
+<div class="report-year-field fgts-from-field"><label for="fgtsFromMonth">From Month</label><select id="fgtsFromMonth" onchange="loadFgtsReport()"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+<div class="report-year-field fgts-to-field"><label for="fgtsToMonth">To Month</label><select id="fgtsToMonth" onchange="loadFgtsReport()"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+</div><p class="fgts-period-help">Choose Full Year, 1st Half, 2nd Half, Quarter, Specific Month, or Custom Date Range.</p></div>
 <div id="fgtsReportContent"><div class="report-empty">Loading FGTS report…</div></div></div></section>
 </main></div>
 
@@ -3746,30 +3794,35 @@ function reportEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;
 function openFgtsReport(){el('reportCatalog').style.display='none';el('fgtsReportView').style.display='block';if(activeFgtsReport){renderFgtsReport(activeFgtsReport);return;}el('fgtsReportContent').innerHTML='<div class="report-empty">Loading FGTS report…</div>';loadFgtsReport('');}
 function backToReportCatalog(){el('fgtsReportView').style.display='none';el('reportCatalog').style.display='block';}
 function updateFgtsReportMode(){
- const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field'),yearA=el('fgtsReportYear')?.closest('.report-year-field'),period=el('fgtsReportPeriod')?.closest('.report-year-field');
- if(yearB)yearB.style.display=mode==='HALF'?'':'none';
- if(period)period.style.display='';
- if(yearA){const label=yearA.querySelector('label');if(label)label.textContent=mode==='SINGLE'?'Year':'Year A';}
+ const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field');
+ if(yearB)yearB.style.display=mode==='COMPARE'?'':'none';
+ loadFgtsReport();
+}
+function updateFgtsPeriodType(){
+ const type=el('fgtsReportPeriod')?.value||'FULL';
+ const from=el('fgtsFromMonth')?.closest('.report-year-field'),to=el('fgtsToMonth')?.closest('.report-year-field');
+ if(from)from.style.display=['MONTH','CUSTOM'].includes(type)?'':'none';
+ if(to)to.style.display=type==='CUSTOM'?'':'none';
+ if(type==='MONTH'&&el('fgtsToMonth'))el('fgtsToMonth').value=el('fgtsFromMonth').value;
  loadFgtsReport();
 }
 function loadFgtsReport(){
- const mode=el('fgtsReportMode')?.value||'SINGLE',year=el('fgtsReportYear')?.value||'',compareYear=el('fgtsCompareYear')?.value||'',period=el('fgtsReportPeriod')?.value||'FULL',token=++fgtsReportRequest,content=el('fgtsReportContent');
+ const mode=el('fgtsReportMode')?.value||'SINGLE',year=el('fgtsReportYear')?.value||'',compareYear=el('fgtsCompareYear')?.value||'',period=el('fgtsReportPeriod')?.value||'FULL',from=el('fgtsFromMonth')?.value||'1',to=el('fgtsToMonth')?.value||'12',token=++fgtsReportRequest,content=el('fgtsReportContent');
  content.innerHTML='<div class="report-empty">Loading FGTS report…</div>';
- callServer('getFGTSReportData',[year,compareYear,period],data=>{
+ callServer('getFGTSReportData',[year,compareYear,period,from,to],data=>{
   if(token!==fgtsReportRequest)return;if(!data||!data.ok){content.innerHTML='<div class="report-empty">Unable to load FGTS report data.</div>';return;}
-  activeFgtsReport=data;const years=data.years||[],yearSelect=el('fgtsReportYear'),compareSelect=el('fgtsCompareYear');
+  activeFgtsReport=data;const years=data.years||[],yearSelect=el('fgtsReportYear'),compareSelect=el('fgtsCompareYear'),chosenYear=year,chosenCompare=compareYear;
   yearSelect.innerHTML=years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');compareSelect.innerHTML=years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');
   if(!years.length){yearSelect.innerHTML='<option value="'+data.year+'">'+data.year+'</option>';compareSelect.innerHTML='<option value="'+data.comparisonYear+'">'+data.comparisonYear+'</option>';}
-  yearSelect.value=String(data.year);compareSelect.value=String(data.comparisonYear);
-  if(el('fgtsReportPeriod'))el('fgtsReportPeriod').value=period;
-  updateFgtsReportModeVisibility();renderFgtsReport(data);
+  yearSelect.value=chosenYear&&years.includes(Number(chosenYear))?chosenYear:String(data.year);
+  compareSelect.value=chosenCompare&&years.includes(Number(chosenCompare))?chosenCompare:String(data.comparisonYear);
+  updateFgtsReportModeVisibility();updateFgtsPeriodTypeVisibility();renderFgtsReport(data);
  },err=>{if(token===fgtsReportRequest)content.innerHTML='<div class="report-empty">'+reportEscape(err&&err.message||'Unable to load FGTS report data.')+'</div>';});
 }
-function updateFgtsReportModeVisibility(){
- const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field'),period=el('fgtsReportPeriod')?.closest('.report-year-field'),yearA=el('fgtsReportYear')?.closest('.report-year-field');
- if(yearB)yearB.style.display=mode==='HALF'?'':'none';
- if(period)period.style.display='';
- if(yearA){const label=yearA.querySelector('label');if(label)label.textContent=mode==='SINGLE'?'Year':'Year A';}
+function updateFgtsReportModeVisibility(){const mode=el('fgtsReportMode')?.value||'SINGLE',yearB=el('fgtsCompareYear')?.closest('.report-year-field');if(yearB)yearB.style.display=mode==='COMPARE'?'':'none';}
+function updateFgtsPeriodTypeVisibility(){
+ const type=el('fgtsReportPeriod')?.value||'FULL',from=el('fgtsFromMonth')?.closest('.report-year-field'),to=el('fgtsToMonth')?.closest('.report-year-field');
+ if(from)from.style.display=['MONTH','CUSTOM'].includes(type)?'':'none';if(to)to.style.display=type==='CUSTOM'?'':'none';
 }
 
 function reportBarChart(items,labelKey,valueKey,formatLabel){const max=Math.max(0,...items.map(x=>Number(x[valueKey])||0));if(!items.length||!max)return '<div class="report-empty">No completed FGTS records for this period.</div>';return '<div class="report-chart">'+items.map(x=>{const v=Number(x[valueKey])||0,h=max?Math.max(2,v/max*100):0;return '<div class="report-bar-col"><span class="report-bar-value">'+reportNumber(v)+'</span><div class="report-bar" style="height:'+h+'%"></div><span class="report-bar-label">'+reportEscape(formatLabel(x[labelKey]))+'</span></div>';}).join('')+'</div>';}
@@ -3880,11 +3933,11 @@ function fgtsReportHeaderIcon(name){
 function renderFgtsReport(data){
  const content=el('fgtsReportContent');if(!content)return;
  const a=data,b=data.comparison||{},period=data.period||'FULL',mode=el('fgtsReportMode')?.value||'SINGLE';
- const yearA=String(a.year),yearB=String(b.year),compare=mode==='HALF';
- const monthFilter=rows=>(rows||[]).filter(x=>period==='FULL'||(period==='H1'?x.month<=6:x.month>=7));
+ const yearA=String(a.year),yearB=String(b.year),compare=mode==='COMPARE';
+ const fromMonth=Number(el('fgtsFromMonth')?.value||1),toMonth=Number(el('fgtsToMonth')?.value||12);const monthFilter=rows=>(rows||[]).filter(x=>period==='FULL'||(period==='H1'?x.month<=6:period==='H2'?x.month>=7:period==='Q1'?x.month<=3:period==='Q2'?x.month>=4&&x.month<=6:period==='Q3'?x.month>=7&&x.month<=9:period==='Q4'?x.month>=10:period==='MONTH'?x.month===fromMonth:period==='CUSTOM'?x.month>=Math.min(fromMonth,toMonth)&&x.month<=Math.max(fromMonth,toMonth):true));
  const qtyA=monthFilter(a.monthlyQty),qtyB=compare?monthFilter(b.monthlyQty):[];
  const leadA=monthFilter(a.monthlyLead),leadB=compare?monthFilter(b.monthlyLead):[];
- const periodLabel=period==='H1'?'1st Half (Jan–Jun)':period==='H2'?'2nd Half (Jul–Dec)':'Full Year';
+ const periodLabel=({FULL:'Full Year',H1:'1st Half (Jan–Jun)',H2:'2nd Half (Jul–Dec)',Q1:'1st Quarter',Q2:'2nd Quarter',Q3:'3rd Quarter',Q4:'4th Quarter',MONTH:'Selected Month',CUSTOM:'Custom Month Range'})[period]||'Selected Period';
  const panel=(title,icon,subtitle,body,cls='')=>'<section class="report-panel '+cls+'"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
  const kpi=(label,value,sub='')=>'<div class="fgts-final-kpi"><small>'+label+'</small><strong>'+reportNumber(value)+'</strong><span>'+sub+'</span></div>';
  const catRows=(()=>{
