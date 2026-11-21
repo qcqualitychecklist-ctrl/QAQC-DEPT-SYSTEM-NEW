@@ -2112,6 +2112,35 @@ body:has(.modal.open){overflow:hidden}
 #fgtsReportView .fgts-month-col{flex:1}
 #fgtsReportView .fgts-month-value{font-size:9px;letter-spacing:-.2px}
 #fgtsReportView .fgts-ref-lead .report-legend{flex-wrap:wrap}
+</style><style id="fgts-report-compact-polish">
+#fgtsReportView .fgts-period-panel{padding:9px 16px!important;margin-bottom:8px!important}
+#fgtsReportView .fgts-period-controls{padding-top:6px!important;gap:7px!important}
+#fgtsReportView .fgts-period-controls select{height:30px!important}
+#fgtsReportView .fgts-period-help{margin-top:5px!important}
+#fgtsReportView .fgts-reference-kpis{gap:10px!important;margin-bottom:9px!important}
+#fgtsReportView .fgts-reference-kpi{min-height:72px!important;padding:8px 14px!important;border-radius:11px!important;gap:12px!important}
+#fgtsReportView .fgts-kpi-icon{width:48px!important;height:48px!important;flex-basis:48px!important;border-radius:14px!important;font-size:28px!important}
+#fgtsReportView .fgts-kpi-copy b{font-size:14px!important}
+#fgtsReportView .fgts-kpi-copy strong{font-size:28px!important}
+#fgtsReportView .fgts-reference-top-grid{grid-template-columns:1fr 1fr!important;gap:12px!important}
+#fgtsReportView .fgts-reference-top-grid .report-panel{min-height:0!important}
+#fgtsReportView .fgts-month-chart{height:235px!important}
+#fgtsReportView .fgts-line-wrap svg{max-height:260px!important}
+#fgtsReportView .fgts-panel-head{min-height:38px!important;padding:8px 13px!important;background:#09275c!important;color:#fff!important;font-size:14px!important}
+#fgtsReportView .fgts-panel-head span{color:#fff!important}
+#fgtsReportView .fgts-panel-icon{color:#fff!important;width:20px!important;height:20px!important;flex-basis:20px!important}
+#fgtsReportView .fgts-ref-insight-panel .fgts-panel-head{font-size:14px!important}
+#fgtsReportView .fgts-reference-summary-row{grid-template-columns:minmax(0,2fr) minmax(240px,1fr)!important;align-items:stretch!important;margin:0 17px!important}
+#fgtsReportView .fgts-ref-insight-panel .fgts-panel-body{padding:10px 14px!important}
+#fgtsReportView .fgts-ref-insights{gap:8px!important}
+#fgtsReportView .fgts-ref-insights li{font-size:12px!important}
+#fgtsReportView .fgts-ref-cat-row{grid-template-columns:115px minmax(0,1fr) 70px!important;gap:9px!important}
+#fgtsReportView .fgts-ref-cat-track{width:100%!important;min-width:0!important}
+#fgtsReportView .fgts-month-bars i{position:relative}
+#fgtsReportView .fgts-month-bars i em{position:absolute;left:50%;top:-17px;transform:translateX(-50%);font-size:9px;font-style:normal;font-weight:800;color:#09275c;white-space:nowrap}
+#fgtsReportView .fgts-month-value{display:none!important}
+#fgtsReportView .fgts-ref-footnote{margin:0 17px!important;padding:5px 0!important}
+@media(max-width:850px){#fgtsReportView .fgts-reference-top-grid{grid-template-columns:1fr!important}#fgtsReportView .fgts-reference-summary-row{grid-template-columns:1fr!important}}
 </style></head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
@@ -3963,12 +3992,12 @@ function reportKpiCompare(title,a,b,unit){return '<div class="report-kpi"><span>
 function reportLineChart(rowsA,rowsB,key,labelA,labelB,unit,pairedHalfMonths){
  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],mapA=new Map((rowsA||[]).filter(x=>x[key]!=null&&Number.isFinite(Number(x[key]))).map(x=>[Number(x.month),Number(x[key])]));let mapB=new Map((rowsB||[]).filter(x=>x[key]!=null&&Number.isFinite(Number(x[key]))).map(x=>[Number(x.month),Number(x[key])]));
  if(pairedHalfMonths)mapB=new Map([...mapB.entries()].map(([m,v])=>[m-6,v]));
- const vals=[...mapA.values(),...mapB.values()],max=Math.max(1,...vals)*1.18;
+ const monthKeys=[...new Set([...mapA.keys(),...mapB.keys()])].sort((a,b)=>a-b),displayMonths=pairedHalfMonths?[1,2,3,4,5,6]:monthKeys;const vals=[...mapA.values(),...mapB.values()],max=Math.max(1,...vals)*1.18;
  if(!vals.length)return '<div class="report-empty">No data available for this period.</div>';
- const w=640,h=230,left=48,right=14,top=24,bottom=36,plotW=w-left-right,plotH=h-top-bottom,x=m=>left+(m-1)*plotW/(pairedHalfMonths?5:11),y=v=>top+plotH-(Number(v||0)/max)*plotH;
+ const w=640,h=230,left=48,right=14,top=24,bottom=36,plotW=w-left-right,plotH=h-top-bottom,x=m=>left+displayMonths.indexOf(m)*plotW/Math.max(1,displayMonths.length-1),y=v=>top+plotH-(Number(v||0)/max)*plotH;
  const grid=[0,.25,.5,.75,1].map(t=>{const yy=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#e9eef5"/><text x="'+(left-9)+'" y="'+(yy+3)+'" text-anchor="end" fill="#8491a3" font-size="10">'+(max*t).toFixed(unit==='days'?1:0)+'</text>';}).join('');
  const series=(map,color,offset)=>{const points=[...map.entries()].sort((a,b)=>a[0]-b[0]);const path=points.map((p,i)=>(i?'L':'M')+x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');return (points.length?'<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>':'')+points.map(p=>'<circle cx="'+x(p[0])+'" cy="'+y(p[1])+'" r="4" fill="'+color+'"/><text x="'+x(p[0])+'" y="'+(y(p[1])+offset)+'" text-anchor="middle" fill="'+color+'" font-size="10" font-weight="700">'+p[1].toFixed(1)+'</text>').join('');};
- const labels=(pairedHalfMonths?months.slice(0,6).map((m,i)=>m+'/'+months[i+6]):months).map((m,i)=>'<text x="'+x(i+1)+'" y="'+(h-12)+'" text-anchor="middle" fill="#68778c" font-size="10">'+m+'</text>').join('');
+ const labels=displayMonths.map((m,i)=>pairedHalfMonths?months[m-1]+'/'+months[m+5]:months[m-1]).map((m,i)=>'<text x="'+x(i+1)+'" y="'+(h-12)+'" text-anchor="middle" fill="#68778c" font-size="10">'+m+'</text>').join('');
  return '<div class="fgts-line-wrap"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by all twelve calendar months">'+grid+series(mapA,'#6941ee',-10)+(rowsB&&rowsB.length?series(mapB,'#20ae68',16):'')+labels+'</svg></div><div class="report-legend"><span><i class="legend-a"></i>'+labelA+'</span>'+(rowsB&&rowsB.length?'<span><i class="legend-b"></i>'+labelB+'</span>':'')+'</div>';
 }
 function reportDonut(rows,year){
@@ -4034,10 +4063,10 @@ function reportDonutCompare(rowsA,rowsB,yearA,yearB,mode){
 }
 function reportMonthlyQtyBars(rowsA,rowsB,labelA,labelB,pairedHalfMonths){
  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],mapA=new Map((rowsA||[]).map(x=>[Number(x.month),Number(x.qty)||0])),mapB=new Map((rowsB||[]).map(x=>[Number(x.month),Number(x.qty)||0]));
- const vals=months.map((_,i)=>Math.max(mapA.get(i+1)||0,mapB.get(i+1)||0)),max=Math.max(1,...vals);
+ const monthKeys=[...new Set([...(rowsA||[]).map(x=>Number(x.month)),...(rowsB||[]).map(x=>Number(x.month))])].filter(m=>m>=1&&m<=12).sort((a,b)=>a-b);const displayMonths=pairedHalfMonths?[1,2,3,4,5,6]:monthKeys;const vals=displayMonths.map(m=>Math.max(mapA.get(m)||0,mapB.get(pairedHalfMonths?m+6:m)||0)),max=Math.max(1,...vals);
  if(!vals.some(v=>v>0))return '<div class="report-empty">No quantity data available for this period.</div>';
  const ticks=[0,.25,.5,.75,1].map(v=>'<span>'+reportNumber(max*v)+'</span>').join('');
- const bars=(pairedHalfMonths?months.slice(0,6):months).map((month,i)=>{const monthA=i+1,monthB=pairedHalfMonths?i+7:i+1,av=mapA.get(monthA)||0,bv=mapB.get(monthB)||0,label=pairedHalfMonths?month+'/'+months[monthB-1]:month;return '<div class="fgts-month-col"><div class="fgts-month-value">'+(rowsB&&rowsB.length?reportNumber(av)+' / '+reportNumber(bv):reportNumber(av))+'</div><div class="fgts-month-bars"><i class="a" style="height:'+(av/max*100)+'%" title="'+labelA+': '+reportNumber(av)+'"></i>'+(rowsB&&rowsB.length?'<i class="b" style="height:'+(bv/max*100)+'%" title="'+labelB+': '+reportNumber(bv)+'"></i>':'')+'</div><span>'+label+'</span></div>';}).join('');
+ const bars=displayMonths.map((monthA,i)=>{const monthB=pairedHalfMonths?monthA+6:monthA,av=mapA.get(monthA)||0,bv=mapB.get(monthB)||0,label=pairedHalfMonths?months[monthA-1]+'/'+months[monthB-1]:months[monthA-1];return '<div class="fgts-month-col"><div class="fgts-month-value">'+(rowsB&&rowsB.length?reportNumber(av)+' / '+reportNumber(bv):reportNumber(av))+'</div><div class="fgts-month-bars"><i class="a" style="height:'+(av/max*100)+'%" title="'+labelA+': '+reportNumber(av)+'"><em>'+reportNumber(av)+'</em></i>'+(rowsB&&rowsB.length?'<i class="b" style="height:'+(bv/max*100)+'%" title="'+labelB+': '+reportNumber(bv)+'"><em>'+reportNumber(bv)+'</em></i>':'')+'</div><span>'+label+'</span></div>';}).join('');
  return '<div class="fgts-month-chart"><div class="fgts-month-yaxis">'+ticks+'</div><div class="fgts-month-plot"><div class="fgts-month-grid"></div><div class="fgts-month-columns">'+bars+'</div></div></div><div class="report-legend"><span><i class="legend-a"></i>'+labelA+'</span>'+(rowsB&&rowsB.length?'<span><i class="legend-b"></i>'+labelB+'</span>':'')+'</div>';
 }
 function reportQcProgress(rowsA,rowsB,yearA,yearB,mode,metric){
@@ -4073,7 +4102,9 @@ function renderFgtsReport(data){
  const periodName={FULL:'Full Year',H1:'1st Half',H2:'2nd Half',Q1:'1st Quarter',Q2:'2nd Quarter',Q3:'3rd Quarter',Q4:'4th Quarter',MONTH:months[from-1],CUSTOM:months[Math.min(from,to)-1]+' – '+months[Math.max(from,to)-1]};
  const periodLabel=periodName[period]||'Selected Period',periodLabelB=periodName[periodB]||'Selected Period';
  const monthlyFilter=(rows,p)=> (rows||[]).filter(x=>p==='FULL'||(p==='H1'?x.month<=6:p==='H2'?x.month>=7:p==='Q1'?x.month<=3:p==='Q2'?x.month>=4&&x.month<=6:p==='Q3'?x.month>=7&&x.month<=9:p==='Q4'?x.month>=10:p==='MONTH'?x.month===from:p==='CUSTOM'?x.month>=Math.min(from,to)&&x.month<=Math.max(from,to):true));
- const qtyA=a.monthlyQty||[],qtyB=compare?(b.monthlyQty||[]):[],leadA=a.monthlyLead||[],leadB=compare?(b.monthlyLead||[]):[],pairedHalfMonths=compare&&yearA===yearB&&period==='H1'&&periodB==='H2';
+ const pairedHalfMonths=compare&&yearA===yearB&&period==='H1'&&periodB==='H2';
+ const rangeRows=(rows,p)=>{let lo=1,hi=12;if(p==='H1')hi=6;else if(p==='H2')lo=7;else if(p==='Q1')hi=3;else if(p==='Q2'){lo=4;hi=6;}else if(p==='Q3'){lo=7;hi=9;}else if(p==='Q4')lo=10;else if(p==='MONTH'){lo=from;hi=from;}else if(p==='CUSTOM'){lo=Math.min(from,to);hi=Math.max(from,to);}return (rows||[]).filter(x=>Number(x.month)>=lo&&Number(x.month)<=hi);};
+ const qtyA=rangeRows(a.monthlyQty,period),qtyB=compare?rangeRows(b.monthlyQty,periodB):[],leadA=rangeRows(a.monthlyLead,period),leadB=compare?rangeRows(b.monthlyLead,periodB):[];
  const fmt=v=>reportNumber(v??0),pct=(x,y)=>!Number(y)?(Number(x)?'—':'0.0%'):((Number(x)-Number(y))/Math.abs(Number(y))*100).toFixed(1)+'%';
  const delta=(x,y)=>Number(x||0)-Number(y||0);
  const trend=(x,y,unit='')=>{if(!compare)return 'Selected reporting period';const d=delta(x,y);return (d>=0?'▲ ':'▼ ')+fmt(Math.abs(d))+unit+' vs comparison period';};
@@ -4095,9 +4126,9 @@ function renderFgtsReport(data){
  const rows=[['Total Quantity',fmt(a.totalQty),compare?fmt(b.totalQty):'—',compare?(delta(b.totalQty,a.totalQty)>=0?'+':'')+fmt(delta(b.totalQty,a.totalQty)):'—',compare?pct(b.totalQty,a.totalQty):'—'],['Average Lead Days',fmt(a.averageLeadDays),compare?fmt(b.averageLeadDays):'—',compare?(delta(b.averageLeadDays,a.averageLeadDays)>=0?'+':'')+fmt(delta(b.averageLeadDays,a.averageLeadDays).toFixed(1)):'—',compare?pct(b.averageLeadDays,a.averageLeadDays):'—']];
  const summary='<div class="fgts-ref-table-wrap"><table class="fgts-ref-table"><thead><tr><th>Metric</th><th>'+yearA+' · '+periodLabel+'</th>'+(compare?'<th>'+yearB+' · '+periodLabelB+'</th><th>Difference</th><th>% Change</th>':'<th>Selected Period</th>')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.slice(0,compare?5:2).map((v,i)=>'<td class="'+(i>=3?'positive':'')+'">'+v+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
  let html='<div class="fgts-reference-kpis">'+kpi('Total Quantity',a.totalQty,'◇','blue',trend(a.totalQty,b.totalQty),b.totalQty)+kpi('Average Lead Days',a.averageLeadDays,'◷','purple',compare?trend(a.averageLeadDays,b.averageLeadDays,' days'):'Record-level average',b.averageLeadDays)+'</div>';
- html+='<div class="fgts-reference-top-grid">'+panel('1. Quantity per Month','chart','Monthly completed quantity · '+periodLabel+(compare?' vs '+periodLabelB:''),reportMonthlyQtyBars(qtyA,qtyB,compare?periodLabel+' · '+yearA:yearA,compare?periodLabelB+' · '+yearB:yearB,pairedHalfMonths),'fgts-ref-quantity')+panel('2. Average Lead Days per Month','clock','Average lead days · '+periodLabel+(compare?' vs '+periodLabelB:''),reportLineChart(leadA,leadB,'average',compare?periodLabel+' · '+yearA:yearA,compare?periodLabelB+' · '+yearB:yearB,'days',pairedHalfMonths),'fgts-ref-lead')+'<section class="report-panel fgts-ref-insight-panel"><header class="fgts-panel-head"><span class="fgts-insight-bulb">💡</span><span>Key Insights</span></header><div class="fgts-panel-body">'+insightHtml+'</div></section></div>';
+ html+='<div class="fgts-reference-top-grid">'+panel('1. Quantity per Month','chart','Monthly completed quantity · '+periodLabel+(compare?' vs '+periodLabelB:''),reportMonthlyQtyBars(qtyA,qtyB,compare?periodLabel+' · '+yearA:yearA,compare?periodLabelB+' · '+yearB:yearB,pairedHalfMonths),'fgts-ref-quantity')+panel('2. Average Lead Days per Month','clock','Average lead days · '+periodLabel+(compare?' vs '+periodLabelB:''),reportLineChart(leadA,leadB,'average',compare?periodLabel+' · '+yearA:yearA,compare?periodLabelB+' · '+yearB:yearB,'days',pairedHalfMonths),'fgts-ref-lead')+'</div>';
  html+='<div class="fgts-reference-bottom-grid">'+panel('3. Category Distribution','category','All categories · sorted by quantity',categoryHtml,'fgts-ref-category-panel')+panel('4. Classification Distribution','classification','Four classifications · quantity and share',classificationHtml,'fgts-ref-class-panel')+'</div>';
- html+='<div class="fgts-reference-summary-row">'+panel('5. Comparison Summary','chart',compare?'Selected period comparison':'Selected reporting period',summary,'fgts-ref-summary-panel')+'<div class="fgts-ref-footnote"><b>ⓘ</b> Data covers '+(compare?periodLabel+' '+yearA+' and '+periodLabelB+' '+yearB:periodLabel+' '+yearA)+'. Figures are based on completed FGTS records with a valid Date Finish.</div></div>';
+ html+='<div class="fgts-reference-summary-row">'+panel('5. Comparison Summary','chart',compare?'Selected period comparison':'Selected reporting period',summary,'fgts-ref-summary-panel')+panel('6. Key Insights','trend','Highlights for the selected reporting period',insightHtml,'fgts-ref-insight-panel')+'</div><div class="fgts-ref-footnote"><b>ⓘ</b> Data covers '+(compare?periodLabel+' '+yearA+' and '+periodLabelB+' '+yearB:periodLabel+' '+yearA)+'. Figures are based on completed FGTS records with a valid Date Finish.</div>
  content.innerHTML=html;
  const updated=el('fgtsReportUpdated');if(updated)updated.textContent=new Date().toLocaleString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
 }
