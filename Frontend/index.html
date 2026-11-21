@@ -2749,13 +2749,7 @@ function openPdiDecisionModal(rec){
   if(decision==='Approved')updated['QC in Charge']=qc.value.trim();
   if(decision==='Rescheduled'){updated['Date of PDI']=date.value;updated.Time=time.value;}
   const logo=document.querySelector('.system-topbar-logo');
-  const requestHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(updated,logo?logo.src:'',decision)+'<style id="fgts-report-compact-pagination">
-#fgtsReportView .fgts-page-item[hidden]{display:none!important}
-#fgtsReportView .fgts-report-pager{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin:7px 0 2px}
-#fgtsReportView .fgts-report-pager button{width:19px!important;min-width:19px!important;height:18px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border:1px solid #d5deea!important;border-radius:4px!important;background:#f8fafc!important;color:#425875!important;font-size:13px!important;line-height:1!important}
-#fgtsReportView .fgts-report-pager button:disabled{opacity:.35!important;cursor:default!important}
-#fgtsReportView .fgts-report-pager span{font-size:9px;color:#718096;min-width:24px;text-align:center}
-</style>
+  const requestHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(updated,logo?logo.src:'',decision)+'
 </body></html>';
   const payload={status:decision,qcInCharge:qc.value.trim(),reason:reason.value.trim(),newDate:date.value,newTime:time.value};
   save.disabled=true;save.textContent='Saving…';
@@ -4289,4 +4283,12 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #monitoringPanel .tablewrap table.pdi-table td:nth-child(14){width:210px!important;min-width:210px!important;max-width:210px!important;box-sizing:border-box!important}
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(13),
 #monitoringPanel .tablewrap table.pdi-table th:nth-child(14){white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+</style>
+
+<style id="fgts-report-compact-pagination">
+#fgtsReportView .fgts-page-item[hidden]{display:none!important}
+#fgtsReportView .fgts-report-pager{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin:7px 0 2px}
+#fgtsReportView .fgts-report-pager button{width:19px!important;min-width:19px!important;height:18px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border:1px solid #d5deea!important;border-radius:4px!important;background:#f8fafc!important;color:#425875!important;font-size:13px!important;line-height:1!important}
+#fgtsReportView .fgts-report-pager button:disabled{opacity:.35!important;cursor:default!important}
+#fgtsReportView .fgts-report-pager span{font-size:9px;color:#718096;min-width:24px;text-align:center}
 </style>
