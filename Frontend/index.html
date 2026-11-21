@@ -1856,6 +1856,30 @@ body:has(.modal.open){overflow:hidden}
 #fgtsReportView .report-topline .report-year-field{display:flex;flex-direction:column;gap:4px}
 #fgtsReportView .report-topline select{background:#fff!important;color:#142b4a!important;border:1px solid #d5e0ee!important}
 
+
+/* FGTS report: keep every category and QC row visible without nested scroll areas. */
+#fgtsReportView .fgts-donut-legend{max-height:none!important;height:auto!important;overflow:visible!important;overflow-y:visible!important;padding:2px 0}
+#fgtsReportView .fgts-donut-layout{height:auto!important;min-height:145px;align-items:center}
+#fgtsReportView .fgts-donut-year{height:auto!important;overflow:visible!important}
+#fgtsReportView .fgts-qc-progress{max-height:none!important;height:auto!important;overflow:visible!important;overflow-y:visible!important;overscroll-behavior:auto;padding:3px 2px}
+#fgtsReportView .fgts-qc-row{min-height:25px}
+#fgtsReportView .fgts-qc-bars{min-width:0}
+#fgtsReportView .fgts-chart-with-metric{display:grid!important;grid-template-columns:minmax(0,1fr) 122px!important;gap:12px;align-items:stretch}
+#fgtsReportView .fgts-chart-with-metric>.fgts-side-metric{min-width:0;align-self:stretch}
+#fgtsReportView .fgts-side-metric{border-left:1px solid #dbe4ef;border-top:0}
+#fgtsReportView .fgts-panel-body{container-type:inline-size}
+@container (max-width:620px){
+ #fgtsReportView .fgts-chart-with-metric{grid-template-columns:minmax(0,1fr)!important}
+ #fgtsReportView .fgts-chart-with-metric>.fgts-side-metric{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));justify-items:center;align-items:center;gap:5px 12px;border-left:0;border-top:1px solid #dbe4ef;padding:12px 8px;margin-top:8px}
+ #fgtsReportView .fgts-side-metric>span{grid-column:1/-1}
+ #fgtsReportView .fgts-side-metric .a,#fgtsReportView .fgts-side-metric .b{font-size:21px;margin:0}
+ #fgtsReportView .fgts-side-metric small{font-size:10px}
+}
+@media(max-width:600px){
+ #fgtsReportView .fgts-donut-layout{align-items:flex-start}
+ #fgtsReportView .fgts-donut-legend{flex:1;min-width:0}
+ #fgtsReportView .fgts-qc-progress{gap:10px}
+}
 /* Match the approved FGTS screenshot: solid navy report toolbar and icon-led chart headers. */
 #fgtsReportView .report-topline{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;padding:13px 18px!important;margin:0 0 12px!important;min-height:76px;background:#0b2858!important;border:0!important;border-radius:11px!important;color:#fff!important;box-shadow:0 3px 10px #0b285826!important}
 #fgtsReportView .fgts-report-title{display:flex;align-items:center;gap:13px;margin:0!important;color:#fff!important;font-size:25px!important;font-weight:850!important;letter-spacing:.35px;white-space:nowrap}
