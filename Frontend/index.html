@@ -1972,7 +1972,10 @@ body:has(.modal.open){overflow:hidden}
 #fgtsReportView .fgts-final-cat-bars i{display:block;height:100%;border-radius:20px}
 #fgtsReportView .fgts-final-cat-bars i.a{background:#2868bf}
 #fgtsReportView .fgts-final-cat-row>b{font-size:10px;color:#183b68}
-#fgtsReportView .fgts-final-donuts{display:flex;flex-direction:column;gap:12px}
+#fgtsReportView .fgts-final-cat-bars.is-compare{height:auto;background:none;display:flex;flex-direction:column;gap:3px;overflow:visible}
+#fgtsReportView .fgts-final-cat-bars.is-compare i{height:6px;min-height:6px}
+#fgtsReportView .fgts-final-cat-bars.is-compare i.b{background:#20a85a}
+#fgtsReportView .fgts-final-donuts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
 #fgtsReportView .fgts-final-donut-inner{display:flex;align-items:center;gap:12px}
 #fgtsReportView .fgts-final-donut-inner svg{width:132px;max-width:42%;flex:0 0 42%}
 #fgtsReportView .fgts-final-legend{flex:1;min-width:0}
