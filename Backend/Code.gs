@@ -180,10 +180,12 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod) {
   const period=['H1','H2'].includes(String(selectedPeriod||'').toUpperCase())?String(selectedPeriod).toUpperCase():'FULL';
   const qty=r=>{const n=Number(String(r.Qty??0).replace(/,/g,''));return isFinite(n)?n:0;};
   const clean=v=>{
-    let label=String(v||'').trim().replace(/\s+/g,' ').replace(/\s*\/\s*/g,'/').toUpperCase();
-    if(!label)return 'UNASSIGNED';
-    if(label==='OTHER')return 'OTHERS';
-    return label;
+    let label=String(v||'').trim().replace(/\s+/g,' ').replace(/\s*\/\s*/g,'/');
+    if(!label)return 'Unassigned';
+    if(label.toLowerCase()==='other'||label.toLowerCase()==='others')return 'Others';
+    label=label.toLowerCase();
+    label=label.charAt(0).toUpperCase()+label.slice(1);
+    return label.replace(/\b(ecb|ats|mts|qc)\b/gi,token=>token.toUpperCase());
   };
   const build=targetYear=>{
     const selected=dated.filter(x=>x.date.year===targetYear&&(period==='FULL'||(period==='H1'?x.date.month<=6:x.date.month>=7)));
