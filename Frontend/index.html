@@ -4307,3 +4307,18 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-category-chart .fgts-category-bar-row>b{font-size:10px!important;color:#142b4a!important;text-align:right!important;white-space:nowrap!important;}
 @media(max-width:600px){#fgtsReportView .fgts-category-chart{grid-template-columns:minmax(72px,95px) minmax(0,1fr)!important;min-height:224px!important}#fgtsReportView .fgts-category-chart>.fgts-page-items{height:190px!important;min-height:190px!important}#fgtsReportView .fgts-category-chart .fgts-category-row{grid-template-columns:minmax(72px,95px) minmax(0,1fr)!important;column-gap:7px!important}#fgtsReportView .fgts-category-chart .fgts-category-bar-row{grid-template-columns:minmax(0,1fr) 34px!important;gap:5px!important}}
 </style>
+
+
+<style id="fgts-qc-fixed-pagination-layout">
+/* FGTS QC In-Charge charts: keep the plot height constant while paging. */
+#fgtsReportView .fgts-qc-progress{height:155px!important;min-height:155px!important;max-height:155px!important;overflow:hidden!important;}
+#fgtsReportView .fgts-qc-progress>.fgts-page-items{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:repeat(5,29px)!important;grid-auto-rows:29px!important;gap:0!important;height:145px!important;min-height:145px!important;max-height:145px!important;align-content:start!important;overflow:hidden!important;}
+#fgtsReportView .fgts-qc-progress .fgts-qc-row{display:grid!important;grid-template-columns:minmax(72px,110px) minmax(0,1fr)!important;gap:8px!important;align-items:center!important;height:29px!important;min-height:29px!important;max-height:29px!important;margin:0!important;padding:2px 2px!important;box-sizing:border-box!important;}
+#fgtsReportView .fgts-qc-progress .fgts-qc-row[hidden]{display:none!important;}
+#fgtsReportView .fgts-qc-progress .fgts-qc-name{min-width:0!important;font-size:10px!important;line-height:1.2!important;overflow-wrap:anywhere!important;text-transform:none!important;}
+#fgtsReportView .fgts-qc-progress .fgts-qc-bars{display:grid!important;grid-template-columns:minmax(0,1fr) 52px!important;gap:4px 7px!important;align-items:center!important;min-width:0!important;}
+#fgtsReportView .fgts-qc-progress .fgts-qc-track{height:12px!important;min-width:0!important;overflow:hidden!important;border-radius:2px!important;}
+#fgtsReportView .fgts-qc-progress .fgts-qc-track i{height:100%!important;min-width:0!important;border-radius:0 2px 2px 0!important;}
+#fgtsReportView .fgts-qc-progress .fgts-qc-bars b{font-size:9px!important;line-height:1!important;white-space:nowrap!important;}
+@media(max-width:600px){#fgtsReportView .fgts-qc-progress .fgts-qc-row{grid-template-columns:minmax(64px,88px) minmax(0,1fr)!important;gap:6px!important}#fgtsReportView .fgts-qc-progress .fgts-qc-bars{grid-template-columns:minmax(0,1fr) 42px!important;gap:4px!important}}
+</style>
