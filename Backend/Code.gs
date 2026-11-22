@@ -180,7 +180,7 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod, fromMon
   const period=['H1','H2','Q1','Q2','Q3','Q4','MONTH','CUSTOM'].includes(String(selectedPeriod||'').toUpperCase())?String(selectedPeriod).toUpperCase():'FULL';
   const periodB=String(comparisonPeriod||'SAME').toUpperCase()==='SAME'?period:(['H1','H2','Q1','Q2','Q3','Q4','MONTH','CUSTOM'].includes(String(comparisonPeriod||'').toUpperCase())?String(comparisonPeriod).toUpperCase():'FULL');
   const from= Math.min(12,Math.max(1,Number(fromMonth)||1)),to=Math.min(12,Math.max(1,Number(toMonth)||12));
-  const inPeriod=(p,m)=>p==='FULL'||(p==='H1'&&m<=6)||(p==='H2'&&m>=7)||(p==='Q1'&&m<=3)||(p==='Q2'&&m>=4&&m<=6)||(p==='Q3'&&m>=7&&m<=9)||(p==='Q4'&&m>=10)||(p==='MONTH'&&m===from)||(p==='CUSTOM'&&m>=Math.min(from,to)&&m<=Math.max(from,to));
+  const inPeriod=(p,m,lo=from,hi=to)=>p==='FULL'||(p==='H1'&&m<=6)||(p==='H2'&&m>=7)||(p==='Q1'&&m<=3)||(p==='Q2'&&m>=4&&m<=6)||(p==='Q3'&&m>=7&&m<=9)||(p==='Q4'&&m>=10)||(p==='MONTH'&&m===lo)||(p==='CUSTOM'&&m>=Math.min(lo,hi)&&m<=Math.max(lo,hi));
   const qty=r=>{const n=Number(String(r.Qty??0).replace(/,/g,''));return isFinite(n)?n:0;};
   const clean=v=>{
     let label=String(v||'').trim().replace(/\s+/g,' ').replace(/\s*\/\s*/g,'/');
@@ -190,8 +190,8 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod, fromMon
     label=label.charAt(0).toUpperCase()+label.slice(1);
     return label.replace(/\b(ecb|ats|mts|qc)\b/gi,token=>token.toUpperCase());
   };
-  const build=(targetYear,targetPeriod)=>{
-    const selected=dated.filter(x=>x.date.year===targetYear&&inPeriod(targetPeriod,x.date.month));
+  const build=(targetYear,targetPeriod,rangeFrom=from,rangeTo=to)=>{
+    const selected=dated.filter(x=>x.date.year===targetYear&&inPeriod(targetPeriod,x.date.month,rangeFrom,rangeTo));
     const monthlyQty=months.map(m=>({month:m,qty:0}));
     const monthlyLead=months.map(m=>({month:m,total:0,count:0,average:null}));
     const dimensions={qc:Object.create(null),category:Object.create(null),classification:Object.create(null),qcLead:Object.create(null)};
@@ -221,7 +221,7 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod, fromMon
     });
     const leadValues=selected.map(x=>Number(String(x.record['Lead Days']??'').replace(/,/g,''))).filter((n,i)=>String(selected[i].record['Lead Days']??'').trim()!==''&&isFinite(n));
     const leadTotal=leadValues.reduce((a,b)=>a+b,0);
-    return {year:targetYear,recordCount:selected.length,totalQty:monthlyQty.reduce((a,x)=>a+x.qty,0),totalLeadDays:leadTotal,
+    return {year:targetYear,recordCount:selected.length,leadCount:leadValues.length,totalQty:monthlyQty.reduce((a,x)=>a+x.qty,0),totalLeadDays:leadTotal,
       averageLeadDays:leadValues.length?Number((leadTotal/leadValues.length).toFixed(2)):null,
       monthlyQty,monthlyLead,qc:dimensionRows(dimensions.qc),qcLead:qcLeadRows,category:dimensionRows(dimensions.category),classification:dimensionRows(dimensions.classification)};
   };
@@ -240,8 +240,25 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod, fromMon
   });
   const primary=build(year,period),comparison=build(compare,periodB);
   const rangeStart=Number(rangeStartYear),rangeEnd=Number(rangeEndYear);
-  const yearRangeData=rangeStart&&rangeEnd?Array.from({length:Math.min(40,Math.abs(rangeEnd-rangeStart)+1)},(_,i)=>build(Math.min(rangeStart,rangeEnd)+i,'FULL')):[];
-  return Object.assign({ok:true,year,comparisonYear:compare,years,period,comparisonPeriod:periodB,comparison,yearlyTrend,yearRangeData},primary);
+  const reportMode=String(arguments.length>8?arguments[8]:'').toUpperCase();
+  const quarterFrom=Math.min(4,Math.max(1,Number(arguments.length>9?arguments[9]:1)||1));
+  const quarterTo=Math.min(4,Math.max(1,Number(arguments.length>10?arguments[10]:4)||4));
+  const halfSelection=String(arguments.length>11?arguments[11]:'BOTH').toUpperCase();
+  const firstYear=Math.min(rangeStart||year,rangeEnd||year),lastYear=Math.max(rangeStart||year,rangeEnd||year);
+  const selectedYears=Array.from({length:Math.min(40,lastYear-firstYear+1)},(_,i)=>firstYear+i);
+  const yearRangeData=rangeStart&&rangeEnd?selectedYears.map(y=>build(y,'FULL')):[];
+  const periodBuckets=[];
+  if(reportMode==='YEAR'){
+    selectedYears.forEach(y=>{const x=build(y,'FULL');periodBuckets.push(Object.assign({},x,{key:String(y),label:String(y),periodType:'Year'}));});
+  }else if(reportMode==='MONTH'){
+    selectedYears.forEach(y=>{for(let m=from;m<=to;m++){const x=build(y,'MONTH',m,m);periodBuckets.push(Object.assign({},x,{key:y+'-'+String(m).padStart(2,'0'),label:months[m-1]+' '+y,year:y,periodType:'Month',periodIndex:m}));}});
+  }else if(reportMode==='QUARTER'){
+    selectedYears.forEach(y=>{for(let q=quarterFrom;q<=quarterTo;q++){const x=build(y,'Q'+q);periodBuckets.push(Object.assign({},x,{key:y+'-Q'+q,label:'Q'+q+' '+y,year:y,periodType:'Quarter',periodIndex:q}));}});
+  }else if(reportMode==='HALF'){
+    const halves=halfSelection==='H1'?['H1']:halfSelection==='H2'?['H2']:['H1','H2'];
+    selectedYears.forEach(y=>halves.forEach(h=>{const x=build(y,h);periodBuckets.push(Object.assign({},x,{key:y+'-'+h,label:(h==='H1'?'1st Half ':'2nd Half ')+y,year:y,periodType:'Half Year',periodIndex:h==='H1'?1:2}));}));
+  }
+  return Object.assign({ok:true,year,comparisonYear:compare,years,period,comparisonPeriod:periodB,comparison,yearlyTrend,yearRangeData,periodBuckets,reportMode,rangeStartYear:firstYear,rangeEndYear:lastYear},primary);
 }
 
 function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll, forceRefresh) {
