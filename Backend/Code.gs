@@ -162,7 +162,7 @@ function setupDatabase() {
 }
 
 
-function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod, fromMonth, toMonth, comparisonPeriod) {
+function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod, fromMonth, toMonth, comparisonPeriod, rangeStartYear, rangeEndYear) {
   // Reports only read FGTS data; allocation synchronization already runs on Transfer save/update.
   const source=getFGTSMonitoringRecords_('',true);
   if(!source||!source.ok)throw new Error('Unable to load FGTS source records.');
@@ -239,7 +239,9 @@ function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod, fromMon
     return {year:y,totalQty:x.qty,averageLeadDays:x.leadCount?Number((x.leadTotal/x.leadCount).toFixed(2)):null,recordCount:x.recordCount};
   });
   const primary=build(year,period),comparison=build(compare,periodB);
-  return Object.assign({ok:true,year,comparisonYear:compare,years,period,comparisonPeriod:periodB,comparison,yearlyTrend},primary);
+  const rangeStart=Number(rangeStartYear),rangeEnd=Number(rangeEndYear);
+  const yearRangeData=rangeStart&&rangeEnd?Array.from({length:Math.min(40,Math.abs(rangeEnd-rangeStart)+1)},(_,i)=>build(Math.min(rangeStart,rangeEnd)+i,'FULL')):[];
+  return Object.assign({ok:true,year,comparisonYear:compare,years,period,comparisonPeriod:periodB,comparison,yearlyTrend,yearRangeData},primary);
 }
 
 function getModuleData(moduleName, searchText, pageNumber, pageSize, returnAll, forceRefresh) {
