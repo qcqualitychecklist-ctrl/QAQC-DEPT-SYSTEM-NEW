@@ -4392,7 +4392,35 @@ function renderFgtsPeriodBuckets(data){
  const periodColor=i=>palette[i%palette.length];
  const chartShell=(svg,label)=>'<div class="fgts-view-chart">'+svg+'</div>';
  const quantityChart=()=>{
-  const vals=buckets.map(x=>Number(x.totalQty)||0),max=Math.max(1,...vals),w=720,h=260,left=48,right=14,top=18,bottom=62,plotH=h-top-bottom,slot=(w-left-right)/buckets.length,bw=Math.min(38,slot*.58);
+  const w=720,h=260,left=48,right=14,top=18,bottom=62,plotH=h-top-bottom;
+  if(mode==='MONTH'){
+   const years=[...new Set(buckets.map(x=>Number(x.year)))].sort((a,b)=>a-b);
+   const monthIndexes=[...new Set(buckets.map(x=>Number(x.periodIndex)))].sort((a,b)=>a-b);
+   const monthGroups=monthIndexes.map(month=>({
+    month,
+    label:(buckets.find(x=>Number(x.periodIndex)===month)||{}).label||String(month),
+    values:years.map(year=>{const item=buckets.find(x=>Number(x.year)===year&&Number(x.periodIndex)===month);return item?Number(item.totalQty)||0:0;})
+   }));
+   const totals=monthGroups.map(group=>group.values.reduce((sum,value)=>sum+value,0));
+   const max=Math.max(1,...totals),slot=(w-left-right)/Math.max(1,monthGroups.length),bw=Math.min(38,slot*.58);
+   const grid=[0,.25,.5,.75,1].map(t=>{const value=max*t,y=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="#e7edf5"/><text x="'+(left-8)+'" y="'+(y+3)+'" text-anchor="end" fill="#8491a3" font-size="10">'+fmt(value)+'</text>';}).join('');
+   const bars=monthGroups.map((group,i)=>{
+    const xx=left+i*slot+(slot-bw)/2;
+    let cumulative=0;
+    const segments=group.values.map((value,yearIndex)=>{
+     if(value<=0)return '';
+     const segmentHeight=value/max*plotH,yy=top+plotH-(cumulative+value)/max*plotH;
+     cumulative+=value;
+     const year=years[yearIndex],color=periodColor(yearIndex);
+     return '<rect class="fgts-qty-segment" tabindex="0" role="img" aria-label="'+escape(String(value))+'" x="'+xx+'" y="'+yy+'" width="'+bw+'" height="'+Math.max(1,segmentHeight)+'" fill="'+color+'"><title>'+fmt(value)+'</title></rect>';
+    }).join('');
+    const monthLabel=String(group.label).replace(/\s+\d{4}$/,'');
+    return '<g class="fgts-qty-bar" aria-label="'+escape(monthLabel)+'">'+segments+'<text x="'+(xx+bw/2)+'" y="'+(h-30)+'" text-anchor="middle" fill="#68778c" font-size="9">'+escape(monthLabel)+'</text></g>';
+   }).join('');
+   const legend='<div class="fgts-year-legend">'+years.map((year,i)=>'<span><i style="background:'+periodColor(i)+'"></i>'+year+'</span>').join('')+'</div>';
+   return chartShell('<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Monthly quantity stacked by year">'+grid+bars+'</svg>'+legend,'Quantity');
+  }
+  const vals=buckets.map(x=>Number(x.totalQty)||0),max=Math.max(1,...vals),slot=(w-left-right)/buckets.length,bw=Math.min(38,slot*.58);
   const grid=[0,.25,.5,.75,1].map(t=>{const y=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="#e7edf5"/><text x="'+(left-8)+'" y="'+(y+3)+'" text-anchor="end" fill="#8491a3" font-size="10">'+fmt(max*t)+'</text>';}).join('');
   const bars=buckets.map((x,i)=>{const v=vals[i],bh=v?Math.max(2,v/max*plotH):0,xx=left+i*slot+(slot-bw)/2,yy=top+plotH-bh;return '<g class="fgts-qty-bar" tabindex="0" role="img" aria-label="'+escape(x.label)+': '+fmt(v)+'"><title>'+fmt(v)+'</title><rect x="'+xx+'" y="'+yy+'" width="'+bw+'" height="'+bh+'" rx="3" fill="'+periodColor(i)+'"><title>'+fmt(v)+'</title></rect><text x="'+(xx+bw/2)+'" y="'+(h-30)+'" text-anchor="middle" fill="#68778c" font-size="9">'+escape(x.label)+'</text></g>';}).join('');
   return chartShell('<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Quantity by selected period">'+grid+bars+'</svg>','Quantity');
