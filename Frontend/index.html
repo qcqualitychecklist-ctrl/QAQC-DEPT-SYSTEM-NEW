@@ -4327,9 +4327,15 @@ function renderFgtsYearRangeReport(data){
 }
 
 
+let fgtsPreviousViewMode='SINGLE_YEAR';
 function fgtsViewMode(){return el('fgtsReportMode')?.value||'SINGLE_YEAR';}
 function updateFgtsReportMode(){
  const mode=fgtsViewMode();
+ if(fgtsPreviousViewMode==='SINGLE_YEAR'&&mode!=='SINGLE_YEAR'){
+  const options=[...(el('fgtsReportYear')?.options||[])].map(o=>Number(o.value)).filter(Number.isFinite).sort((a,b)=>a-b);
+  if(options.length>1){el('fgtsReportYear').value=String(options[0]);el('fgtsCompareYear').value=String(options[options.length-1]);}
+ }
+ fgtsPreviousViewMode=mode;
  const show=(selector,yes)=>{const n=document.querySelector(selector);if(n)n.style.display=yes?'':'none';};
  show('.fgts-view-year-b',mode!=='SINGLE_YEAR');
  show('.fgts-view-month-from',mode==='SINGLE_YEAR'||mode==='MONTH');
