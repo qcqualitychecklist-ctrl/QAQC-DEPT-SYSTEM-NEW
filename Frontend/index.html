@@ -4311,6 +4311,7 @@ function renderFgtsYearRangeReport(data){
  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
  const years=[...new Set(buckets.map(x=>Number(x.year)).filter(Number.isFinite))].sort((a,b)=>a-b);
  const yearColor=year=>palette[Math.max(0,years.indexOf(Number(year)))%palette.length];
+ const periodColor=i=>palette[i%palette.length];
  const periodLabel=x=>mode==='MONTH'?monthNames[(Number(x.periodIndex)||1)-1]||String(x.periodIndex):mode==='QUARTER'?'Q'+(Number(x.periodIndex)||''):mode==='HALF'?(Number(x.periodIndex)===1?'H1':'H2'):String(x.year??x.label??'');
  const chartShell=(svg,label)=>'<div class="fgts-view-chart">'+svg+'</div>';
  const quantityChart=()=>{
