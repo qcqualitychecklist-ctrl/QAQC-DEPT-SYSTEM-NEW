@@ -4231,6 +4231,11 @@ function fgtsReportHeaderIcon(name){
 }
 function setFgtsReportMode(mode){
  const select=el('fgtsReportMode');if(select)select.value=mode;
+ if(mode==='YEAR_RANGE'){
+  const from=el('fgtsReportYear'),to=el('fgtsCompareYear');
+  const available=[...(from?.options||[])].map(o=>Number(o.value)).filter(Number.isFinite).sort((a,b)=>a-b);
+  if(available.length){if(from)from.value=String(available[0]);if(to)to.value=String(available[available.length-1]);}
+ }
  document.querySelectorAll('#fgtsReportView .fgts-view-toggle button').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===mode));
  updateFgtsReportMode();
 }
