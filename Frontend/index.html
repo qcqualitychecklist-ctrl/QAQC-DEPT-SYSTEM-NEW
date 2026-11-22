@@ -4465,7 +4465,8 @@ function renderFgtsPeriodBuckets(data){
  const highest=buckets.reduce((a,b)=>(Number(b.totalQty)||0)>(Number(a.totalQty)||0)?b:a,buckets[0]),lowest=buckets.filter(x=>x.averageLeadDays!=null).reduce((a,b)=>!a||Number(b.averageLeadDays)<Number(a.averageLeadDays)?b:a,null);
  const insights=['Highest quantity: <b>'+escape(highest.label)+'</b> with <b>'+fmt(highest.totalQty)+'</b>.'];if(lowest)insights.push('Lowest average lead days: <b>'+escape(lowest.label)+'</b> at <b>'+fmt(lowest.averageLeadDays)+' days</b>.');if(buckets.length>1){const first=buckets[0],last=buckets[buckets.length-1];insights.push('Quantity changed by <b>'+fmt((Number(last.totalQty)||0)-(Number(first.totalQty)||0))+'</b> from '+escape(first.label)+' to '+escape(last.label)+'.');}
  const insightHtml='<ul class="fgts-ref-insights">'+insights.map(x=>'<li><i>✓</i><span>'+x+'</span></li>').join('')+'</ul>';
- const kpis='<div class="fgts-reference-kpis"><article class="fgts-reference-kpi blue"><span class="fgts-kpi-icon">◇</span><div class="fgts-kpi-copy"><b>Total Quantity · Selected Range</b><strong>'+fmt(totalQty)+'</strong><small>'+escape(buckets[0].label)+' – '+escape(buckets[buckets.length-1].label)+'</small></div></article><article class="fgts-reference-kpi purple"><span class="fgts-kpi-icon">◷</span><div class="fgts-kpi-copy"><b>Average Lead Days · Selected Range</b><strong>'+fmt(avgLead)+'</strong><small>Based on '+fmt(leadCount)+' records with valid lead days</small></div></article></div>';
+ const rangeCaption=mode==='MONTH'?monthNames[(Number(buckets[0].periodIndex)||1)-1]+' – '+monthNames[(Number(buckets[buckets.length-1].periodIndex)||12)-1]:escape(buckets[0].label)+' – '+escape(buckets[buckets.length-1].label);
+ const kpis='<div class="fgts-reference-kpis"><article class="fgts-reference-kpi blue"><span class="fgts-kpi-icon">◇</span><div class="fgts-kpi-copy"><b>Total Quantity · Selected Range</b><strong>'+fmt(totalQty)+'</strong><small>'+rangeCaption+'</small></div></article><article class="fgts-reference-kpi purple"><span class="fgts-kpi-icon">◷</span><div class="fgts-kpi-copy"><b>Average Lead Days · Selected Range</b><strong>'+fmt(avgLead)+'</strong><small>Based on '+fmt(leadCount)+' records with valid lead days</small></div></article></div>';
  const title=mode==='YEAR'?'Year':mode==='MONTH'?'Month':mode==='QUARTER'?'Quarter':'Half-Year';
  let html=kpis;
  html+='<div class="fgts-reference-top-grid">'+panel(mode==='YEAR'?'Overall Quantity per Year':'Quantity per '+title,'chart','Completed FGTS quantity · hover over a bar to see its quantity',quantityChart(),'fgts-ref-quantity')+panel('Average Lead Days per '+title,'clock','Average record-level lead time for each selected period',leadLineChart(),'fgts-ref-lead')+'</div>';
@@ -4955,5 +4956,24 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-final-bottom{grid-template-columns:1.1fr .9fr}
 @media(max-width:900px){#fgtsReportView .fgts-final-distribution,#fgtsReportView .fgts-final-bottom{grid-template-columns:1fr}}
 @media(max-width:600px){#fgtsReportView .fgts-final-kpis{grid-template-columns:1fr}#fgtsReportView .fgts-final-donuts,#fgtsReportView .fgts-final-donuts:has(.fgts-final-donut:nth-child(2)){grid-template-columns:1fr}#fgtsReportView .fgts-final-cat-row{grid-template-columns:90px minmax(0,1fr) auto}}
+
+
+/* FGTS Report refinements: readable chart axes, centered legends, aligned classification values, and full-width title banner. */
+#fgtsReportView .fgts-view-chart svg text{font-size:12px!important;font-weight:700!important}
+#fgtsReportView .fgts-year-legend{justify-content:center!important;align-items:center}
+#fgtsReportView .fgts-year-donut-legend{min-width:0}
+#fgtsReportView .fgts-year-donut-legend>div{display:grid;grid-template-columns:8px minmax(0,1fr) auto!important;align-items:center;gap:4px 7px;white-space:nowrap}
+#fgtsReportView .fgts-year-donut-legend span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+#fgtsReportView .fgts-year-donut-legend b{grid-column:auto!important;white-space:nowrap;font-size:9px!important}
+#fgtsReportView .fgts-year-donut-legend small{white-space:nowrap;font-size:9px!important}
+#fgtsReportView .fgts-report-banner{width:calc(100% + 36px);box-sizing:border-box;margin-left:-18px;margin-right:-18px;align-items:center}
+#fgtsReportView .fgts-report-brand{align-items:center;min-height:56px}
+#fgtsReportView .fgts-brand-icon{flex:0 0 56px;display:flex;align-items:center;justify-content:center;line-height:0}
+#fgtsReportView .fgts-brand-icon svg{display:block;flex:0 0 56px}
+#fgtsReportView .fgts-report-brand>div{display:flex;flex-direction:column;justify-content:center;min-width:0}
+@media(max-width:720px){
+ #fgtsReportView .fgts-report-banner{width:calc(100% + 20px);margin-left:-10px;margin-right:-10px}
+ #fgtsReportView .fgts-year-donut-legend>div{gap:3px 5px}
+}
 
 </style>
