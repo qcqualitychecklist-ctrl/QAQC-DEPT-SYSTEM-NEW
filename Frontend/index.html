@@ -4305,7 +4305,7 @@ function renderFgtsYearRangeReport(data){
  const palette=['#2463bd','#20a85a','#f39a24','#8654c7','#159eaa','#d65c78','#66758a','#9aab28'];
  const classNames=['Standard','Non-standard','Telcos','Others'],classColors=['#1769ed','#22b36b','#ff9e1b','#7848ed'];
  const panel=(title,icon,subtitle,body,cls='')=>'<section class="report-panel '+cls+'"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
- const yearlyBars=(key,unit)=>{const vals=rows.map(x=>Number(x[key])||0),max=Math.max(1,...vals);return '<div class="fgts-year-bar-scroll"><div class="fgts-year-bars">'+rows.map((x,i)=>{const v=Number(x[key])||0,h=v?Math.max(2,v/max*100):0;return '<div class="fgts-year-bar-col"><b>'+fmt(v)+(unit||'')+'</b><div class="fgts-year-bar-track"><i style="height:'+h+'%;background:'+palette[i%palette.length]+'"></i></div><span>'+x.year+'</span></div>';}).join('')+'</div></div>';};
+ const yearlyBars=(key,unit)=>{const vals=rows.map(x=>Number(x[key])||0),max=Math.max(1,...vals);return '<div class="fgts-year-bar-scroll"><div class="fgts-year-bars">'+rows.map((x,i)=>{const v=Number(x[key])||0,h=v?Math.max(2,v/max*100):0;return '<div class="fgts-year-bar-col"><b>'+fmt(v)+(unit||'')+'</b><div class="fgts-year-bar-track"><i style="height:'+h+'%;background:'+palette[(Number(buckets[i].year)-Number(buckets[0].year)+palette.length)%palette.length]+'"></i></div><span>'+x.year+'</span></div>';}).join('')+'</div></div>';};
  const kpis='<div class="fgts-reference-kpis"><article class="fgts-reference-kpi blue"><span class="fgts-kpi-icon">◇</span><div class="fgts-kpi-copy"><b>Total Quantity · Selected Years</b><strong>'+fmt(totalQty)+'</strong><small>'+years[0]+'–'+years[years.length-1]+'</small></div></article><article class="fgts-reference-kpi purple"><span class="fgts-kpi-icon">◷</span><div class="fgts-kpi-copy"><b>Average Lead Days · Selected Years</b><strong>'+fmt(overallLead)+'</strong><small>Record-level average across '+fmt(leadCount)+' completed records</small></div></article></div>';
  const categoryMap=new Map();rows.forEach((yr,yi)=>(yr.category||[]).forEach(c=>{const name=String(c.name||'Unassigned');if(!categoryMap.has(name))categoryMap.set(name,[]);categoryMap.get(name)[yi]=Number(c.total)||0;}));
  const catItems=[...categoryMap.entries()].filter(([name,values])=>Math.max(0,...values.map(v=>Number(v)||0))>0).sort((a,b)=>Math.max(...b[1].map(v=>v||0))-Math.max(...a[1].map(v=>v||0)));
@@ -4355,7 +4355,7 @@ function loadFgtsReport(){
   const options=years.slice().sort((a,b)=>a-b).map(y=>'<option value="'+y+'">'+y+'</option>').join('');
   yearSelect.innerHTML=options;toSelect.innerHTML=options;
   if(!years.length){yearSelect.innerHTML='<option value="'+data.year+'">'+data.year+'</option>';toSelect.innerHTML='<option value="'+data.year+'">'+data.year+'</option>';}
-  yearSelect.value=years.includes(Number(year))?String(year):String((years.length?Math.min(...years):data.year));
+  yearSelect.value=years.includes(Number(year))?String(year):String((years.length?(mode==='SINGLE_YEAR'?Math.max(...years):Math.min(...years)):data.year));
   toSelect.value=years.includes(Number(toYear))?String(toYear):String((years.length?Math.max(...years):data.year));
   const monthFrom=el('fgtsFromMonth'),monthTo=el('fgtsToMonth');
   if(monthFrom)monthFrom.value=String(from);if(monthTo)monthTo.value=String(to);
