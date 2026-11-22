@@ -4421,7 +4421,7 @@ function renderFgtsPeriodBuckets(data){
     const monthLabel=monthNames[group.month-1]||String(group.month);
     return '<g class="fgts-qty-bar" aria-label="'+escape(monthLabel)+'">'+segments+'<text x="'+(xx+bw/2)+'" y="'+(h-30)+'" text-anchor="middle" fill="#68778c" font-size="9">'+escape(monthLabel)+'</text></g>';
    }).join('');
-   const legend='<div class="fgts-year-legend">'+years.map(year=>'<span><i style="background:'+yearColor(year)+'"></i>'+year+'</span>).join('')+'</div>';
+   const legend='<div class="fgts-year-legend">'+years.map(year=>'<span><i style="background:'+yearColor(year)+'"></i>'+year+'</span>').join('')+'</div>';
    return chartShell('<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Monthly quantity stacked by year">'+grid+bars+'</svg>'+legend,'Quantity');
   }
   const vals=buckets.map(x=>Number(x.totalQty)||0),max=Math.max(1,...vals),slot=(w-left-right)/buckets.length,bw=Math.min(38,slot*.58);
