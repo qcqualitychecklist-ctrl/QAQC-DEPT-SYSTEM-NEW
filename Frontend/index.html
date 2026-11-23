@@ -4958,6 +4958,23 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 @media(max-width:600px){#fgtsReportView .fgts-final-kpis{grid-template-columns:1fr}#fgtsReportView .fgts-final-donuts,#fgtsReportView .fgts-final-donuts:has(.fgts-final-donut:nth-child(2)){grid-template-columns:1fr}#fgtsReportView .fgts-final-cat-row{grid-template-columns:90px minmax(0,1fr) auto}}
 
 
+
+/* FGTS Report: apply consistent axis typography to every period-selector chart renderer. */
+#fgtsReportView .fgts-view-chart svg text,
+#fgtsReportView .fgts-yearly-svg-wrap svg text,
+#fgtsReportView .fgts-line-wrap svg text{font-size:15px!important;font-weight:800!important}
+#fgtsReportView .fgts-month-yaxis,
+#fgtsReportView .fgts-month-col>span{font-size:13px!important;font-weight:800!important}
+#fgtsReportView .fgts-year-legend{display:flex!important;justify-content:center!important;align-items:center!important;text-align:center}
+#fgtsReportView .fgts-reference-top-grid>.report-panel{display:flex;flex-direction:column}
+#fgtsReportView .fgts-reference-top-grid>.report-panel>.fgts-panel-body{display:flex;flex:1;flex-direction:column}
+#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-yearly-svg-wrap,
+#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-line-wrap,
+#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-month-chart,
+#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart{margin-top:auto!important;margin-bottom:auto!important;align-self:stretch}
+#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart{display:flex;flex-direction:column;justify-content:center}
+#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart svg{flex:0 0 auto}
+
 /* FGTS Report refinements: readable chart axes, centered legends, aligned classification values, and full-width title banner. */
 #fgtsReportView .fgts-view-chart svg text{font-size:15px!important;font-weight:800!important}
 #fgtsReportView .fgts-year-legend{justify-content:center!important;align-items:center}
