@@ -4975,6 +4975,15 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart{display:flex;flex-direction:column;justify-content:center}
 #fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart svg{flex:0 0 auto}
 
+
+/* Lock the exact same axis typography on BOTH top report charts. */
+#fgtsReportView .fgts-ref-quantity .fgts-view-chart svg text,
+#fgtsReportView .fgts-ref-lead .fgts-view-chart svg text{
+ font-family:Arial,sans-serif!important;
+ font-size:12px!important;
+ font-weight:700!important;
+}
+
 /* FGTS Report refinements: readable chart axes, centered legends, aligned classification values, and full-width title banner. */
 #fgtsReportView .fgts-view-chart svg text{font-size:12px!important;font-weight:700!important}
 #fgtsReportView .fgts-year-legend{justify-content:center!important;align-items:center}
