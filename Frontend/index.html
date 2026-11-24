@@ -5342,22 +5342,28 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 </style>
 
 <style id="fgts-chart-edge-and-solid-category-fix">
-/* Keep all FGTS chart panels aligned, with a small even gap from the report edges. */
+/* Use one consistent, modest outer gap for every FGTS report content row. */
+#fgtsReportView .fgts-reference-kpis,
 #fgtsReportView .fgts-reference-top-grid,
-#fgtsReportView .fgts-reference-bottom-grid{
-  margin-left:0!important;
-  margin-right:0!important;
+#fgtsReportView .fgts-reference-bottom-grid,
+#fgtsReportView .fgts-reference-summary-row,
+#fgtsReportView .fgts-ref-footnote{
+  margin-left:10px!important;
+  margin-right:10px!important;
 }
-/* Match Category Distribution bars to the clean horizontal bar treatment used in Quarter view. */
-#fgtsReportView .fgts-category-chart .fgts-category-plot{
+/* Category Distribution: use the real category tracks and the same clean bar treatment as Quarter view. */
+#fgtsReportView .fgts-ref-cat-track,
+#fgtsReportView .fgts-stacked-track{
   height:17px!important;
+  min-height:17px!important;
   background:#edf2f8!important;
   background-image:none!important;
   border:0!important;
   border-radius:5px!important;
   box-shadow:none!important;
 }
-#fgtsReportView .fgts-category-chart .fgts-category-plot i{
+#fgtsReportView .fgts-ref-cat-track i,
+#fgtsReportView .fgts-stacked-track>i{
   display:block!important;
   height:100%!important;
   min-height:100%!important;
