@@ -2286,6 +2286,39 @@ body.fgts-report-open .intro{display:none!important}
 #fgtsReportView .fgts-ref-insight-panel .fgts-panel-icon{color:#f7c948!important}
 @media(max-width:900px){#fgtsReportView .fgts-ref-table th,#fgtsReportView .fgts-ref-table td{padding:5px 3px;font-size:9px}}
 </style>
+
+<style id="fgts-chart-edge-spacing-correction">
+/* Let the two FGTS trend charts use nearly the full report width, with a small even outer gap. */
+#fgtsReportView .fgts-reference-top-grid{
+  margin-left:8px!important;
+  margin-right:8px!important;
+  gap:10px!important;
+}
+#fgtsReportView .fgts-reference-top-grid>.fgts-ref-quantity,
+#fgtsReportView .fgts-reference-top-grid>.fgts-ref-lead{
+  min-width:0!important;
+}
+#fgtsReportView .fgts-reference-top-grid>.fgts-ref-quantity .fgts-panel-body,
+#fgtsReportView .fgts-reference-top-grid>.fgts-ref-lead .fgts-panel-body{
+  padding-left:5px!important;
+  padding-right:5px!important;
+}
+#fgtsReportView .fgts-monthly-ref-panel .fgts-panel-body{
+  padding-left:5px!important;
+  padding-right:5px!important;
+}
+#fgtsReportView .fgts-monthly-ref-layout{
+  gap:4px!important;
+}
+@media(max-width:850px){
+  #fgtsReportView .fgts-reference-top-grid{
+    margin-left:6px!important;
+    margin-right:6px!important;
+    gap:9px!important;
+  }
+}
+</style>
+
 </head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
