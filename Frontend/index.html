@@ -4959,12 +4959,24 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 
 
 
-/* FGTS Report: apply consistent axis typography to every period-selector chart renderer. */
+/* FGTS Report: keep chart text at one consistent 10px size for every report-period selection. */
 #fgtsReportView .fgts-view-chart svg text,
 #fgtsReportView .fgts-yearly-svg-wrap svg text,
-#fgtsReportView .fgts-line-wrap svg text{font-size:12px!important;font-weight:700!important}
+#fgtsReportView .fgts-line-wrap svg text{font-family:Arial,sans-serif!important;font-size:10px!important;font-weight:700!important}
 #fgtsReportView .fgts-month-yaxis,
-#fgtsReportView .fgts-month-col>span{font-size:12px!important;font-weight:700!important}
+#fgtsReportView .fgts-month-col>span,
+#fgtsReportView .fgts-year-legend,
+#fgtsReportView .report-legend,
+#fgtsReportView .fgts-stacked-row,
+#fgtsReportView .fgts-stacked-row>b,
+#fgtsReportView .fgts-stacked-row>strong,
+#fgtsReportView .fgts-ref-cat-row>b,
+#fgtsReportView .fgts-ref-legend>div,
+#fgtsReportView .fgts-ref-legend b,
+#fgtsReportView .fgts-year-donut-legend>div,
+#fgtsReportView .fgts-year-donut-legend b,
+#fgtsReportView .fgts-year-donut-legend span,
+#fgtsReportView .fgts-year-donut-legend small{font-size:10px!important;font-weight:700!important}
 #fgtsReportView .fgts-year-legend{display:flex!important;justify-content:center!important;align-items:center!important;text-align:center}
 #fgtsReportView .fgts-reference-top-grid>.report-panel{display:flex;flex-direction:column}
 #fgtsReportView .fgts-reference-top-grid>.report-panel>.fgts-panel-body{display:flex;flex:1;flex-direction:column}
@@ -4976,19 +4988,14 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart svg{flex:0 0 auto}
 
 
-/* Keep the two top report charts consistent at the requested 14px. */
+/* Keep all report chart panels aligned with the same 10px chart typography above. */
 #fgtsReportView .fgts-ref-quantity .fgts-view-chart svg text,
-#fgtsReportView .fgts-ref-lead .fgts-view-chart svg text{
- font-family:Arial,sans-serif!important;
- font-size:14px!important;
- font-weight:700!important;
-}
-
-/* Restore Category Distribution row labels and totals to 16px; keep this scoped to that panel. */
+#fgtsReportView .fgts-ref-lead .fgts-view-chart svg text,
 #fgtsReportView .fgts-ref-category-panel .fgts-stacked-row,
 #fgtsReportView .fgts-ref-category-panel .fgts-stacked-row>b,
 #fgtsReportView .fgts-ref-category-panel .fgts-stacked-row>strong{
- font-size:16px!important;
+ font-size:10px!important;
+ font-weight:700!important;
 }
 
 /* FGTS Report refinements: centered legends, aligned classification values, and full-width title banner. */
