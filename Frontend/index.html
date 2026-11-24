@@ -3116,7 +3116,25 @@ function openPdiDecisionModal(rec){
   if(decision==='Approved')updated['QC in Charge']=qc.value.trim();
   if(decision==='Rescheduled'){updated['Date of PDI']=date.value;updated.Time=time.value;}
   const logo=document.querySelector('.system-topbar-logo');
-  const requestHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(updated,logo?logo.src:'',decision)+'\n</body></html>';
+  const requestHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(updated,logo?logo.src:'',decision)+'\n
+<style id="fgts-restore-category-classification-original-typography">
+/* Restore Category Distribution and Classification Distribution typography to the pre-FGTS-font-change values. */
+/* Category Distribution: preserve its original 10px labels/values, without the added Arial/bold override. */
+#fgtsReportView .fgts-ref-cat-row>span,
+#fgtsReportView .fgts-ref-cat-row>b{font-size:10px!important;font-family:inherit!important;font-weight:unset!important}
+/* Classification Distribution (reference-period donuts): restore original title and legend sizes. */
+#fgtsReportView .fgts-ref-donut-card>b{font-size:12px!important;font-family:inherit!important;font-weight:unset!important}
+#fgtsReportView .fgts-ref-legend>div{font-size:11px!important;font-family:inherit!important;font-weight:unset!important}
+#fgtsReportView .fgts-ref-legend span{font-size:inherit!important;font-family:inherit!important;font-weight:unset!important}
+#fgtsReportView .fgts-ref-legend b{font-size:10px!important;font-family:inherit!important;font-weight:unset!important}
+/* Classification Distribution (yearly donuts): restore original 8px labels and 9px values/percentages. */
+#fgtsReportView .fgts-year-donut-legend>div{font-size:8px!important;font-family:inherit!important;font-weight:unset!important}
+#fgtsReportView .fgts-year-donut-legend span{font-size:8px!important;font-family:inherit!important;font-weight:unset!important}
+#fgtsReportView .fgts-year-donut-legend b,
+#fgtsReportView .fgts-year-donut-legend small{font-size:9px!important;font-family:inherit!important;font-weight:unset!important}
+</style>
+
+</body></html>';
   const payload={status:decision,qcInCharge:qc.value.trim(),reason:reason.value.trim(),newDate:date.value,newTime:time.value};
   save.disabled=true;save.textContent='Saving…';
   callServer('updatePdiStatusAndNotify',[ref,payload,requestHtml],result=>{
