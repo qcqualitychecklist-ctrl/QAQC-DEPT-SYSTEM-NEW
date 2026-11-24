@@ -5342,25 +5342,27 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 </style>
 
 <style id="fgts-chart-edge-and-solid-category-fix">
-/* Extend only the two FGTS trend panels toward the report's outer edges. */
-#fgtsReportView .fgts-reference-top-grid{
-  margin-left:-27px!important;
-  margin-right:-27px!important;
+/* Keep all FGTS chart panels aligned, with a small even gap from the report edges. */
+#fgtsReportView .fgts-reference-top-grid,
+#fgtsReportView .fgts-reference-bottom-grid{
+  margin-left:0!important;
+  margin-right:0!important;
 }
-/* Category Distribution: show one clean solid bar per category, with no track or grid shadow. */
+/* Match Category Distribution bars to the clean horizontal bar treatment used in Quarter view. */
 #fgtsReportView .fgts-category-chart .fgts-category-plot{
-  background:transparent!important;
-  background-color:transparent!important;
+  height:17px!important;
+  background:#edf2f8!important;
   background-image:none!important;
   border:0!important;
+  border-radius:5px!important;
   box-shadow:none!important;
 }
 #fgtsReportView .fgts-category-chart .fgts-category-plot i{
   display:block!important;
-  height:14px!important;
-  min-height:14px!important;
+  height:100%!important;
+  min-height:100%!important;
   border:0!important;
-  border-radius:0 2px 2px 0!important;
+  border-radius:5px!important;
   box-shadow:none!important;
 }
 </style>
