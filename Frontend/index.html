@@ -5342,14 +5342,20 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 </style>
 
 <style id="fgts-chart-edge-and-solid-category-fix">
-/* Use one consistent, modest outer gap for every FGTS report content row. */
+/* Set the actual FGTS report outer spacing to exactly 5px on both sides. */
+#fgtsReportView{
+  box-sizing:border-box!important;
+  padding-left:5px!important;
+  padding-right:5px!important;
+}
+#fgtsReportView .fgts-period-panel,
 #fgtsReportView .fgts-reference-kpis,
 #fgtsReportView .fgts-reference-top-grid,
 #fgtsReportView .fgts-reference-bottom-grid,
 #fgtsReportView .fgts-reference-summary-row,
 #fgtsReportView .fgts-ref-footnote{
-  margin-left:10px!important;
-  margin-right:10px!important;
+  margin-left:0!important;
+  margin-right:0!important;
 }
 /* Category Distribution: use the real category tracks and the same clean bar treatment as Quarter view. */
 #fgtsReportView .fgts-ref-cat-track,
