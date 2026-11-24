@@ -3164,7 +3164,32 @@ function openPdiDecisionModal(rec){
   if(decision==='Approved')updated['QC in Charge']=qc.value.trim();
   if(decision==='Rescheduled'){updated['Date of PDI']=date.value;updated.Time=time.value;}
   const logo=document.querySelector('.system-topbar-logo');
-  const requestHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(updated,logo?logo.src:'',decision)+'\n</body></html>';
+  const requestHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(updated,logo?logo.src:'',decision)+'\n
+<style id="fgts-chart-edge-and-solid-category-fix">
+/* Extend only the two FGTS trend panels toward the report's outer edges. */
+#fgtsReportView .fgts-reference-top-grid{
+  margin-left:-27px!important;
+  margin-right:-27px!important;
+}
+/* Category Distribution: show one clean solid bar per category, with no track or grid shadow. */
+#fgtsReportView .fgts-category-chart .fgts-category-plot{
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+#fgtsReportView .fgts-category-chart .fgts-category-plot i{
+  display:block!important;
+  height:14px!important;
+  min-height:14px!important;
+  border:0!important;
+  border-radius:0 2px 2px 0!important;
+  box-shadow:none!important;
+}
+</style>
+
+</body></html>';
   const payload={status:decision,qcInCharge:qc.value.trim(),reason:reason.value.trim(),newDate:date.value,newTime:time.value};
   save.disabled=true;save.textContent='Saving…';
   callServer('updatePdiStatusAndNotify',[ref,payload,requestHtml],result=>{
