@@ -4211,7 +4211,7 @@ function reportDistributionBars(rowsA,rowsB,yearA,yearB,mode){
  const items=[...map.values()].sort((x,y)=>Math.max(y.a,y.b)-Math.max(x.a,x.b));
  const max=Math.max(1,...items.map(x=>Math.max(x.a,x.b)));
  if(!items.length)return '<div class="report-empty">No distribution data available.</div>';
- const ticks=[0,.25,.5,.75,1].map(v=>'<span>'+reportNumber(max*v)+'</span>').join('');
+ const ticks=[0,.25,.5,.75,1].map(v=>'<span>'+reportNumber(Math.round(max*v))+'</span>').join('');
  const rows=items.map(x=>{
   const bar=(value,cls,label)=>'<div class="fgts-category-bar-row"><div class="fgts-category-plot"><i class="'+cls+'" style="width:'+(value>0?Math.max(1,value/max*100):0)+'%"></i></div><b title="'+label+'">'+reportNumber(value)+'</b></div>';
   return '<div class="fgts-category-row fgts-page-item"><span class="fgts-category-name" title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><div class="fgts-category-values">'+bar(x.a,'a',yearA)+(mode==='COMPARE'?bar(x.b,'b',yearB):'')+'</div></div>';
@@ -4276,7 +4276,7 @@ function renderFgtsReportLegacy(data){
  const delta=(x,y)=>Number(x||0)-Number(y||0);
  const trend=(x,y,unit='')=>{if(!compare)return 'Selected reporting period';const d=delta(x,y);return (d>=0?'▲ ':'▼ ')+fmt(Math.abs(d))+unit+' vs comparison period';};
  const panel=(title,icon,subtitle,body,cls='')=>'<section class="report-panel '+cls+'"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
- const kpi=(label,value,icon,accent,sub,second,secondLabel)=>'<article class="fgts-reference-kpi '+accent+'"><span class="fgts-kpi-icon">'+icon+'</span><div class="fgts-kpi-copy"><b>'+label+'</b><strong>'+(compare?fmt(value)+' <span class="fgts-kpi-vs">/</span> '+fmt(second):fmt(value))+'</strong>'+(compare?'<small class="fgts-kpi-period-labels"><span>'+reportEscape(periodLabel)+'</span><span>'+reportEscape(periodLabelB)+'</span></small>':'<small>'+sub+'</small>')+'</div></article>';
+ const kpi=(label,value,icon,accent,sub,second,secondLabel)=>'<article class="fgts-reference-kpi '+accent+'"><span class="fgts-kpi-icon">'+(icon==='◇'?'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 43 24 24 43 5 24Z" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/></svg>':'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M24 12v13l9 5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>')+'</span><div class="fgts-kpi-copy"><b>'+label+'</b><strong>'+(compare?fmt(value)+' <span class="fgts-kpi-vs">/</span> '+fmt(second):fmt(value))+'</strong>'+(compare?'<small class="fgts-kpi-period-labels"><span>'+reportEscape(periodLabel)+'</span><span>'+reportEscape(periodLabelB)+'</span></small>':'<small>'+sub+'</small>')+'</div></article>';
  const categoryMap=new Map();(a.category||[]).forEach(x=>categoryMap.set(String(x.name),{name:String(x.name),a:Number(x.total)||0,b:0}));if(compare)(b.category||[]).forEach(x=>{const key=String(x.name),v=categoryMap.get(key)||{name:key,a:0,b:0};v.b=Number(x.total)||0;categoryMap.set(key,v);});
  const cats=[...categoryMap.values()].filter(x=>Math.max(x.a,x.b)>0).sort((x,y)=>Math.max(y.a,y.b)-Math.max(x.a,x.b)),maxCat=Math.max(1,...cats.map(x=>Math.max(x.a,x.b)));
  const categoryHtml=cats.length?'<div class="fgts-ref-category">'+cats.map(x=>'<div class="fgts-ref-cat-row"><span title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><div class="fgts-ref-cat-track"><i class="a" style="width:'+(x.a/maxCat*100)+'%"></i>'+(compare?'<i class="b" style="width:'+(x.b/maxCat*100)+'%"></i>':'')+'</div><b>'+fmt(x.a)+(compare?' / '+fmt(x.b):'')+'</b></div>').join('')+'</div><div class="report-legend"><span><i class="legend-a"></i>'+yearA+'</span>'+(compare?'<span><i class="legend-b"></i>'+yearB+'</span>':'')+'</div>':'<div class="report-empty">No category data available.</div>';
@@ -4308,7 +4308,7 @@ function renderFgtsYearRangeReport(data){
  const classNames=['Standard','Non-standard','Telcos','Others'],classColors=['#1769ed','#22b36b','#ff9e1b','#7848ed'];
  const panel=(title,icon,subtitle,body,cls='')=>'<section class="report-panel '+cls+'"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
  const yearlyBars=(key,unit)=>{const vals=rows.map(x=>Number(x[key])||0),max=Math.max(1,...vals);return '<div class="fgts-year-bar-scroll"><div class="fgts-year-bars">'+rows.map((x,i)=>{const v=Number(x[key])||0,h=v?Math.max(2,v/max*100):0;return '<div class="fgts-year-bar-col"><b>'+fmt(v)+(unit||'')+'</b><div class="fgts-year-bar-track"><i style="height:'+h+'%;background:'+palette[i%palette.length]+'"></i></div><span>'+x.year+'</span></div>';}).join('')+'</div></div>';};
- const kpis='<div class="fgts-reference-kpis"><article class="fgts-reference-kpi blue"><span class="fgts-kpi-icon">◇</span><div class="fgts-kpi-copy"><b>Total Quantity · Selected Years</b><strong>'+fmt(totalQty)+'</strong><small>'+years[0]+'–'+years[years.length-1]+'</small></div></article><article class="fgts-reference-kpi purple"><span class="fgts-kpi-icon">◷</span><div class="fgts-kpi-copy"><b>Average Lead Days · Selected Years</b><strong>'+fmt(overallLead)+'</strong><small>Record-level average across '+fmt(leadCount)+' completed records</small></div></article></div>';
+ const kpis='<div class="fgts-reference-kpis"><article class="fgts-reference-kpi blue"><span class="fgts-kpi-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 43 24 24 43 5 24Z" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/></svg></span><div class="fgts-kpi-copy"><b>Total Quantity · Selected Years</b><strong>'+fmt(totalQty)+'</strong><small>'+years[0]+'–'+years[years.length-1]+'</small></div></article><article class="fgts-reference-kpi purple"><span class="fgts-kpi-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M24 12v13l9 5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="fgts-kpi-copy"><b>Average Lead Days · Selected Years</b><strong>'+fmt(overallLead)+'</strong><small>Record-level average across '+fmt(leadCount)+' completed records</small></div></article></div>';
  const categoryMap=new Map();rows.forEach((yr,yi)=>(yr.category||[]).forEach(c=>{const name=String(c.name||'Unassigned');if(!categoryMap.has(name))categoryMap.set(name,[]);categoryMap.get(name)[yi]=Number(c.total)||0;}));
  const catItems=[...categoryMap.entries()].filter(([name,values])=>Math.max(0,...values.map(v=>Number(v)||0))>0).sort((a,b)=>Math.max(...b[1].map(v=>v||0))-Math.max(...a[1].map(v=>v||0)));
  const catMax=Math.max(1,...catItems.flatMap(x=>x[1].map(v=>Number(v)||0)));
@@ -5176,4 +5176,32 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
  #fgtsReportView .fgts-year-donut-legend>div{gap:3px 5px}
 }
 
+</style>
+
+
+<style id="fgts-root-cause-chart-fix">
+/* Single Year Quantity: restore full-height month columns and visible bars. */
+#fgtsReportView .fgts-ref-quantity .fgts-month-chart{width:100%!important;max-width:100%!important;height:230px!important;grid-template-columns:42px minmax(0,1fr)!important;margin:0 auto!important;align-items:stretch!important}
+#fgtsReportView .fgts-ref-quantity .fgts-month-plot{width:100%!important;height:100%!important;min-width:0!important}
+#fgtsReportView .fgts-ref-quantity .fgts-month-columns{position:absolute!important;inset:0!important;height:100%!important;display:flex!important;flex-direction:row!important;justify-content:space-between!important;align-items:stretch!important;gap:2px!important}
+#fgtsReportView .fgts-ref-quantity .fgts-month-col{box-sizing:border-box!important;height:100%!important;min-width:0!important;flex:1 1 0!important;padding:13px 1px 0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-end!important}
+#fgtsReportView .fgts-ref-quantity .fgts-month-bars{box-sizing:border-box!important;width:100%!important;height:calc(100% - 35px)!important;flex:1 1 auto!important;min-height:0!important;display:flex!important;align-items:flex-end!important;justify-content:center!important;gap:1px!important}
+#fgtsReportView .fgts-ref-quantity .fgts-month-bars i{display:block!important;flex:0 1 28px!important;width:58%!important;min-width:3px!important;min-height:1px!important;max-width:28px!important}
+#fgtsReportView .fgts-ref-quantity .fgts-month-col>span{display:block!important;flex:0 0 20px!important;width:100%!important;height:20px!important;padding:4px 0 0!important;text-align:center!important;white-space:nowrap!important;font:700 8px Arial,sans-serif!important}
+#fgtsReportView .fgts-ref-quantity .fgts-month-yaxis{font:700 8px Arial,sans-serif!important;padding:4px 2px 20px 0!important}
+#fgtsReportView .fgts-ref-quantity .fgts-month-chart,#fgtsReportView .fgts-ref-lead .fgts-line-wrap{margin-left:auto!important;margin-right:auto!important}
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap{width:100%!important;max-width:100%!important}
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap svg{display:block!important;width:100%!important;height:auto!important;margin:0 auto!important;max-height:230px!important}
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap svg text{font:700 8px Arial,sans-serif!important}
+/* 570-unit SVG viewBox shrinks in the plot beside Overall summaries.
+   12px viewBox text compensates so the rendered axis labels stay near 8px. */
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-plot{min-width:0!important;width:100%!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-plot svg{display:block!important;width:100%!important;max-width:100%!important;height:auto!important;overflow:visible!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-plot svg text{font-family:Arial,sans-serif!important;font-size:12px!important;font-weight:700!important}
+#fgtsReportView .fgts-monthly-ref-layout{grid-template-columns:minmax(0,1fr) minmax(105px,145px)!important;align-items:stretch!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-side{min-width:105px!important;max-width:145px!important}
+/* Larger vector drawings inside the existing KPI icon tiles. */
+#fgtsReportView .fgts-reference-kpi .fgts-kpi-icon{width:62px!important;height:62px!important;min-width:62px!important;flex:0 0 62px!important;font-size:initial!important}
+#fgtsReportView .fgts-reference-kpi .fgts-kpi-icon svg{display:block!important;width:46px!important;height:46px!important;overflow:visible!important}
+@media(max-width:720px){#fgtsReportView .fgts-monthly-ref-layout{grid-template-columns:minmax(0,1fr) minmax(92px,118px)!important}#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-side{min-width:92px!important;max-width:118px!important}}
 </style>
