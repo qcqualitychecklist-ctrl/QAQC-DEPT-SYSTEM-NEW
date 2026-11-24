@@ -5693,3 +5693,29 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
   font-weight:700!important;
 }
 </style>
+
+
+<style id="fgts-single-report-equal-plot-height-v3">
+/* Single Report View only: make the Lead Days plotting viewport the same 230px height as Quantity. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap{
+  box-sizing:border-box!important;
+  height:230px!important;
+  min-height:230px!important;
+  max-height:230px!important;
+  display:flex!important;
+  align-items:stretch!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg{
+  box-sizing:border-box!important;
+  display:block!important;
+  width:100%!important;
+  height:230px!important;
+  max-height:none!important;
+  flex:0 0 230px!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
+  font-family:Arial,sans-serif!important;
+  font-size:14px!important;
+  font-weight:700!important;
+}
+</style>
