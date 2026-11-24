@@ -5010,6 +5010,35 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
  font-weight:700!important;
 }
 
+/* FGTS Report: enforce 10px typography on the ACTUAL chart elements used by every period renderer. */
+#fgtsReportView .fgts-month-yaxis,
+#fgtsReportView .fgts-month-col>span,
+#fgtsReportView .fgts-line-wrap svg text,
+#fgtsReportView .fgts-yearly-svg-wrap svg text,
+#fgtsReportView .fgts-view-chart svg text,
+#fgtsReportView .fgts-ref-cat-row>span,
+#fgtsReportView .fgts-ref-cat-row>b,
+#fgtsReportView .fgts-ref-donut-card>b,
+#fgtsReportView .fgts-ref-legend>div,
+#fgtsReportView .fgts-ref-legend span,
+#fgtsReportView .fgts-ref-legend b,
+#fgtsReportView .fgts-year-donut-legend>div,
+#fgtsReportView .fgts-year-donut-legend span,
+#fgtsReportView .fgts-year-donut-legend b,
+#fgtsReportView .fgts-year-donut-legend small,
+#fgtsReportView .fgts-year-legend,
+#fgtsReportView .report-legend{
+ font-family:Arial,sans-serif!important;
+ font-size:10px!important;
+ font-weight:700!important;
+}
+/* Keep the visible hover values at 10px and ensure the plot can show them. */
+#fgtsReportView .fgts-month-bars i{position:relative;cursor:help}
+#fgtsReportView .fgts-month-hover-value{font:700 10px Arial,sans-serif!important}
+#fgtsReportView .fgts-line-wrap,
+#fgtsReportView .fgts-view-chart{overflow:visible!important}
+#fgtsReportView .fgts-report-svg-tooltip{font-family:Arial,sans-serif!important}
+
 /* FGTS Report refinements: centered legends, aligned classification values, and full-width title banner. */
 #fgtsReportView .fgts-year-legend{justify-content:center!important;align-items:center}
 #fgtsReportView .fgts-year-donut-legend{min-width:0}
