@@ -1685,7 +1685,13 @@ body:has(.modal.open){overflow:hidden}
 .report-note{padding:12px;margin-top:9px;background:#f5f8fc;border:1px solid #e7edf5;border-radius:8px;color:#526176;font-size:11px;line-height:1.55}.report-note strong{color:#142b4a}
 @media(max-width:700px){.report-controls{width:100%}.report-controls .report-year-field{flex:1}.report-dimension-row{grid-template-columns:1fr}.report-pair-values{font-size:7px}}
 
-.fgts-view-controls{display:flex;align-items:end;gap:9px;flex-wrap:wrap}.fgts-view-controls .report-year-field{min-width:125px;flex:1 1 125px}.fgts-view-controls select{height:34px;padding:7px 9px;font-size:11px}.fgts-view-chart{width:100%;max-width:100%;overflow:hidden}.fgts-view-chart svg{display:block;width:100%;max-width:100%;height:auto;overflow:visible}.fgts-qty-bar,.fgts-lead-point{cursor:help;outline:none}.fgts-qty-bar:focus rect,.fgts-qty-bar:hover rect{filter:brightness(.92);stroke:#142b4a;stroke-width:1}.fgts-lead-point:focus circle,.fgts-lead-point:hover circle{r:7;stroke:#142b4a}.fgts-stacked-categories{display:flex;flex-direction:column;gap:9px}.fgts-stacked-row{display:grid;grid-template-columns:minmax(90px,145px) minmax(100px,1fr) 58px;align-items:center;gap:8px;font-size:10px}.fgts-stacked-row>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#34445c}.fgts-stacked-row>strong{text-align:right;color:#34445c;font-size:10px}.fgts-stacked-track{display:flex;width:100%;height:17px;overflow:visible;border-radius:5px;background:#edf2f8}.fgts-stacked-track>i{position:relative;display:block;height:100%;min-width:2px;cursor:help}.fgts-stacked-track>i:first-child{border-radius:5px 0 0 5px}.fgts-stacked-track>i:last-child{border-radius:0 5px 5px 0}.fgts-segment-tooltip{position:absolute;left:50%;bottom:calc(100% + 7px);z-index:5;display:none;transform:translateX(-50%);padding:4px 7px;border-radius:5px;background:#142b4a;color:#fff;font-size:10px;white-space:nowrap;box-shadow:0 3px 10px #142b4a35}.fgts-stacked-track>i:hover .fgts-segment-tooltip{display:block}.fgts-year-legend{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:10px;font-size:9px;color:#68778c}.fgts-year-legend span{display:inline-flex;align-items:center;gap:5px}.fgts-year-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}.fgts-year-donut-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important}.fgts-year-donut-card{min-width:0}.fgts-ref-table{table-layout:fixed}.fgts-ref-table th,.fgts-ref-table td{white-space:normal;overflow-wrap:anywhere}@media(max-width:650px){.fgts-stacked-row{grid-template-columns:82px minmax(80px,1fr) 48px;gap:5px}.fgts-view-controls .report-year-field{flex:1 1 42%}}
+.fgts-view-controls{display:flex;align-items:end;gap:9px;flex-wrap:wrap}.fgts-view-controls .report-year-field{min-width:125px;flex:1 1 125px}.fgts-view-controls select{height:34px;padding:7px 9px;font-size:11px}.fgts-view-chart{width:100%;max-width:100%;overflow:hidden}.fgts-view-chart svg{display:block;width:100%;max-width:100%;height:auto;overflow:visible}.fgts-qty-bar,.fgts-lead-point{cursor:help;outline:none}
+#fgtsReportView .fgts-qty-segment-wrap .fgts-report-svg-tooltip,
+#fgtsReportView .fgts-lead-point .fgts-report-svg-tooltip{opacity:0;pointer-events:none;transition:opacity .12s}
+#fgtsReportView .fgts-qty-segment-wrap:hover .fgts-report-svg-tooltip,
+#fgtsReportView .fgts-qty-segment-wrap:focus .fgts-report-svg-tooltip,
+#fgtsReportView .fgts-lead-point:hover .fgts-report-svg-tooltip,
+#fgtsReportView .fgts-lead-point:focus .fgts-report-svg-tooltip{opacity:1}.fgts-qty-bar:focus rect,.fgts-qty-bar:hover rect{filter:brightness(.92);stroke:#142b4a;stroke-width:1}.fgts-lead-point:focus circle,.fgts-lead-point:hover circle{r:7;stroke:#142b4a}.fgts-stacked-categories{display:flex;flex-direction:column;gap:9px}.fgts-stacked-row{display:grid;grid-template-columns:minmax(90px,145px) minmax(100px,1fr) 58px;align-items:center;gap:8px;font-size:10px}.fgts-stacked-row>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#34445c}.fgts-stacked-row>strong{text-align:right;color:#34445c;font-size:10px}.fgts-stacked-track{display:flex;width:100%;height:17px;overflow:visible;border-radius:5px;background:#edf2f8}.fgts-stacked-track>i{position:relative;display:block;height:100%;min-width:2px;cursor:help}.fgts-stacked-track>i:first-child{border-radius:5px 0 0 5px}.fgts-stacked-track>i:last-child{border-radius:0 5px 5px 0}.fgts-segment-tooltip{position:absolute;left:50%;bottom:calc(100% + 7px);z-index:5;display:none;transform:translateX(-50%);padding:4px 7px;border-radius:5px;background:#142b4a;color:#fff;font-size:10px;white-space:nowrap;box-shadow:0 3px 10px #142b4a35}.fgts-stacked-track>i:hover .fgts-segment-tooltip{display:block}.fgts-year-legend{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:10px;font-size:9px;color:#68778c}.fgts-year-legend span{display:inline-flex;align-items:center;gap:5px}.fgts-year-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}.fgts-year-donut-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important}.fgts-year-donut-card{min-width:0}.fgts-ref-table{table-layout:fixed}.fgts-ref-table th,.fgts-ref-table td{white-space:normal;overflow-wrap:anywhere}@media(max-width:650px){.fgts-stacked-row{grid-template-columns:82px minmax(80px,1fr) 48px;gap:5px}.fgts-view-controls .report-year-field{flex:1 1 42%}}
 
 .fgts-view-chart{width:100%;max-width:100%;overflow:hidden}.fgts-view-chart svg{display:block;width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;overflow:visible}.fgts-view-chart-scroll{overflow:visible!important}.fgts-view-chart-scroll svg{min-width:0!important;width:100%!important}.fgts-qty-bar rect{pointer-events:all}
 </style><style>#monitoringPanel .tablewrap table.pdi-table{min-width:2000px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(15),#monitoringPanel .tablewrap table.pdi-table td:nth-child(15){width:125px;min-width:125px;max-width:125px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(16),#monitoringPanel .tablewrap table.pdi-table td:nth-child(16){width:125px;min-width:125px;max-width:125px}#monitoringPanel .tablewrap table.pdi-table td.pdi-action-cell{overflow:visible;text-overflow:clip;text-align:center}#monitoringPanel .tablewrap table.pdi-table td.pdi-action-cell button{white-space:nowrap}.pdi-request-view-dialog{width:min(1160px,96vw);max-width:1160px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}.pdi-request-preview-body{overflow:auto;min-height:0;padding:12px 4px}.pdi-request-view-actions{position:sticky;bottom:0;flex:0 0 auto;justify-content:flex-end;padding:10px 0 2px;background:#fff;border-top:1px solid var(--line)}@media(max-width:700px){.pdi-request-view-dialog{width:96vw;max-height:94vh}.pdi-request-preview-body{padding:8px 2px}}#monitoringPanel .tablewrap table.pdi-table{min-width:2180px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(3),#monitoringPanel .tablewrap table.pdi-table td:nth-child(3){width:165px;min-width:165px;max-width:165px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(4),#monitoringPanel .tablewrap table.pdi-table td:nth-child(4){width:140px;min-width:140px;max-width:140px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(5),#monitoringPanel .tablewrap table.pdi-table td:nth-child(5),#monitoringPanel .tablewrap table.pdi-table th:nth-child(6),#monitoringPanel .tablewrap table.pdi-table td:nth-child(6){width:90px;min-width:90px;max-width:90px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(7),#monitoringPanel .tablewrap table.pdi-table td:nth-child(7){width:130px;min-width:130px;max-width:130px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(8),#monitoringPanel .tablewrap table.pdi-table td:nth-child(8){width:105px;min-width:105px;max-width:105px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(9),#monitoringPanel .tablewrap table.pdi-table td:nth-child(9){width:75px;min-width:75px;max-width:75px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(10),#monitoringPanel .tablewrap table.pdi-table td:nth-child(10){width:145px;min-width:145px;max-width:145px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(11),#monitoringPanel .tablewrap table.pdi-table td:nth-child(11){width:115px;min-width:115px;max-width:115px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(12),#monitoringPanel .tablewrap table.pdi-table td:nth-child(12),#monitoringPanel .tablewrap table.pdi-table th:nth-child(13),#monitoringPanel .tablewrap table.pdi-table td:nth-child(13){width:220px;min-width:220px;max-width:220px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(13){white-space:nowrap!important;width:260px;min-width:260px;max-width:260px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(14),#monitoringPanel .tablewrap table.pdi-table td:nth-child(14){width:125px;min-width:125px;max-width:125px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(15),#monitoringPanel .tablewrap table.pdi-table td:nth-child(15){width:100px;min-width:100px;max-width:100px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(16),#monitoringPanel .tablewrap table.pdi-table td:nth-child(16){width:180px;min-width:180px;max-width:180px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(1),#monitoringPanel .tablewrap table.pdi-table td:nth-child(1){width:120px;min-width:120px;max-width:120px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(2),#monitoringPanel .tablewrap table.pdi-table td:nth-child(2){width:135px;min-width:135px;max-width:135px}#monitoringPanel .tablewrap table.pdi-table th:nth-child(17),#monitoringPanel .tablewrap table.pdi-table td:nth-child(17){width:125px;min-width:125px;max-width:125px}.pdi-ref-value{font-weight:800!important;font-size:14px!important;color:#142b4a!important}@media print{@page{size:A4 portrait;margin:8mm}.pdi-request-sheet{width:100%;max-width:none;margin:0;padding:0}.pdi-doc-top{grid-template-columns:minmax(0,1fr) 165px;gap:10px;margin-bottom:8px}.pdi-doc-logo{width:205px;height:55px}.pdi-meta-grid{gap:4px 4%;margin-bottom:8px}.pdi-meta-col{gap:2px}.pdi-field{min-height:18px;gap:5px}.pdi-field label{font-size:10px}.pdi-field .pdi-value{font-size:10px;min-height:16px}.pdi-doc-title{font-size:19px;padding:6px}.pdi-band{font-size:12px;margin-top:10px;padding:4px}.pdi-rep-grid{padding:7px 0 3px}.pdi-writing-box{min-height:70px;padding:6px}.pdi-writing-box.comments{min-height:60px}}</style><style>/* PDI only: keep the full Comments or Special Requests heading visible */#monitoringPanel .tablewrap table.pdi-table{min-width:2260px!important}#monitoringPanel .tablewrap table.pdi-table th:nth-child(13),#monitoringPanel .tablewrap table.pdi-table td:nth-child(13){width:340px!important;min-width:340px!important;max-width:340px!important;box-sizing:border-box}#monitoringPanel .tablewrap table.pdi-table th:nth-child(13){white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important}/* Requested module layout refinements */
@@ -1768,7 +1774,11 @@ body:has(.modal.open){overflow:hidden}
 #fgtsReportView .fgts-summary-metric small{font-size:9px;color:#c8d7e9}
 #fgtsReportView .fgts-summary-metric strong{font-size:12px;color:#9be5b1;margin-left:auto}
 #fgtsReportView .report-section-heading{margin:16px 0 9px}
-#fgtsReportView .fgts-line-wrap{width:100%;overflow:hidden}
+#fgtsReportView .fgts-report-line-point{cursor:help;outline:none}
+#fgtsReportView .fgts-report-svg-tooltip{opacity:0;pointer-events:none;transition:opacity .12s}
+#fgtsReportView .fgts-report-line-point:hover .fgts-report-svg-tooltip,
+#fgtsReportView .fgts-report-line-point:focus .fgts-report-svg-tooltip{opacity:1}
+#fgtsReportView .fgts-line-wrap{width:100%;overflow:visible}
 #fgtsReportView .fgts-line-wrap svg{display:block;width:100%;height:auto;max-height:230px}
 #fgtsReportView .report-legend{margin-top:6px}
 #fgtsReportView .fgts-distribution-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -1822,8 +1832,10 @@ body:has(.modal.open){overflow:hidden}
 #fgtsReportView .fgts-month-grid{position:absolute;inset:0 0 23px;background:repeating-linear-gradient(to bottom, #e7edf5 0 1px,transparent 1px 25%)}
 #fgtsReportView .fgts-month-columns{position:absolute;inset:0 0 0;display:flex;align-items:stretch;justify-content:space-around;gap:4px}
 #fgtsReportView .fgts-month-col{display:flex;flex:1;min-width:0;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}
-#fgtsReportView .fgts-month-bars{height:calc(100% - 23px);width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px}
-#fgtsReportView .fgts-month-bars i{display:block;width:min(40%,19px);min-height:0;border-radius:3px 3px 0 0}
+#fgtsReportView .fgts-month-bars{position:relative;height:calc(100% - 23px);width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px}
+#fgtsReportView .fgts-month-bars i{position:relative;display:block;width:min(40%,19px);min-height:0;border-radius:3px 3px 0 0;cursor:help}
+#fgtsReportView .fgts-month-hover-value{display:none;position:absolute;left:50%;bottom:calc(100% + 5px);transform:translateX(-50%);z-index:8;padding:3px 6px;border-radius:4px;background:#142b4a;color:#fff;font:700 10px Arial,sans-serif;white-space:nowrap;pointer-events:none}
+#fgtsReportView .fgts-month-bars i:hover .fgts-month-hover-value{display:block}
 #fgtsReportView .fgts-month-bars i.a{background:#2463bd}
 #fgtsReportView .fgts-month-bars i.b{background:#20a85a}
 #fgtsReportView .fgts-month-col>span{height:18px;font-size:9px;color:#34445c}
@@ -4156,7 +4168,7 @@ function reportLineChart(rowsA,rowsB,key,labelA,labelB,unit,pairedHalfMonths){
  if(!vals.length)return '<div class="report-empty">No data available for this period.</div>';
  const w=640,h=230,left=48,right=14,top=24,bottom=36,plotW=w-left-right,plotH=h-top-bottom,x=m=>left+displayMonths.indexOf(m)*plotW/Math.max(1,displayMonths.length-1),y=v=>top+plotH-(Number(v||0)/max)*plotH;
  const grid=[0,.25,.5,.75,1].map(t=>{const yy=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#e9eef5"/><text x="'+(left-9)+'" y="'+(yy+3)+'" text-anchor="end" fill="#8491a3" font-size="14">'+(max*t).toFixed(unit==='days'?1:0)+'</text>';}).join('');
- const series=(map,color,offset,seriesLabel)=>{const points=[...map.entries()].sort((a,b)=>a[0]-b[0]);const path=points.map((p,i)=>(i?'L':'M')+x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');return (points.length?'<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>':'')+points.map(p=>'<circle cx="'+x(p[0])+'" cy="'+y(p[1])+'" r="4" fill="'+color+'"><title>'+seriesLabel+' · '+months[p[0]-1]+': '+p[1].toFixed(1)+' '+unit+'</title></circle>').join('');};
+ const series=(map,color,offset,seriesLabel)=>{const points=[...map.entries()].sort((a,b)=>a[0]-b[0]);const path=points.map((p,i)=>(i?'L':'M')+x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');return (points.length?'<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>':'')+points.map(p=>'<g class="fgts-report-line-point" tabindex="0"><circle cx="'+x(p[0])+'" cy="'+y(p[1])+'" r="4" fill="'+color+'"><title>'+seriesLabel+' · '+months[p[0]-1]+': '+p[1].toFixed(1)+' '+unit+'</title></circle><g class="fgts-report-svg-tooltip" transform="translate('+x(p[0])+','+(y(p[1])-9)+')"><rect x="-34" y="-29" width="68" height="20" rx="4" fill="#142b4a"/><text x="0" y="-15" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">'+p[1].toFixed(1)+' '+unit+'</text></g></g>').join('');};
  const labels=displayMonths.map((m,i)=>pairedHalfMonths?months[m-1]+'/'+months[m+5]:months[m-1]).map((m,i)=>'<text x="'+x(i+1)+'" y="'+(h-12)+'" text-anchor="middle" fill="#68778c" font-size="14">'+m+'</text>').join('');
  return '<div class="fgts-line-wrap"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by all twelve calendar months">'+grid+series(mapA,'#6941ee',-10,labelA)+(rowsB&&rowsB.length?series(mapB,'#20ae68',16,labelB):'')+labels+'</svg></div><div class="report-legend"><span><i class="legend-a"></i>'+labelA+'</span>'+(rowsB&&rowsB.length?'<span><i class="legend-b"></i>'+labelB+'</span>':'')+'</div>';
 }
@@ -4226,7 +4238,7 @@ function reportMonthlyQtyBars(rowsA,rowsB,labelA,labelB,pairedHalfMonths){
  const monthKeys=[...new Set([...(rowsA||[]).map(x=>Number(x.month)),...(rowsB||[]).map(x=>Number(x.month))])].filter(m=>m>=1&&m<=12).sort((a,b)=>a-b);const displayMonths=pairedHalfMonths?[1,2,3,4,5,6]:monthKeys;const vals=displayMonths.map(m=>Math.max(mapA.get(m)||0,mapB.get(pairedHalfMonths?m+6:m)||0)),max=Math.max(1,...vals);
  if(!vals.some(v=>v>0))return '<div class="report-empty">No quantity data available for this period.</div>';
  const ticks=[0,.25,.5,.75,1].map(v=>'<span style="font-size:14px">'+reportNumber(max*v)+'</span>').join('');
- const bars=displayMonths.map((monthA,i)=>{const monthB=pairedHalfMonths?monthA+6:monthA,av=mapA.get(monthA)||0,bv=mapB.get(monthB)||0,label=pairedHalfMonths?months[monthA-1]+'/'+months[monthB-1]:months[monthA-1];return '<div class="fgts-month-col"><div class="fgts-month-bars"><i class="a" style="height:'+(av/max*100)+'%" title="'+labelA+' · '+label+': '+reportNumber(av)+'"></i>'+(rowsB&&rowsB.length?'<i class="b" style="height:'+(bv/max*100)+'%" title="'+labelB+' · '+label+': '+reportNumber(bv)+'"></i>':'')+'</div><span style="font-size:14px">'+label+'</span></div>';}).join('');
+ const bars=displayMonths.map((monthA,i)=>{const monthB=pairedHalfMonths?monthA+6:monthA,av=mapA.get(monthA)||0,bv=mapB.get(monthB)||0,label=pairedHalfMonths?months[monthA-1]+'/'+months[monthB-1]:months[monthA-1];return '<div class="fgts-month-col"><div class="fgts-month-bars"><i class="a" style="height:'+(av/max*100)+'%" title="'+labelA+' · '+label+': '+reportNumber(av)+'"><span class="fgts-month-hover-value">'+reportNumber(av)+'</span></i>'+(rowsB&&rowsB.length?'<i class="b" style="height:'+(bv/max*100)+'%" title="'+labelB+' · '+label+': '+reportNumber(bv)+'"><span class="fgts-month-hover-value">'+reportNumber(bv)+'</span></i>':'')+'</div><span style="font-size:14px">'+label+'</span></div>';}).join('');
  return '<div class="fgts-month-chart"><div class="fgts-month-yaxis">'+ticks+'</div><div class="fgts-month-plot"><div class="fgts-month-grid"></div><div class="fgts-month-columns">'+bars+'</div></div></div><div class="report-legend"><span><i class="legend-a"></i>'+labelA+'</span>'+(rowsB&&rowsB.length?'<span><i class="legend-b"></i>'+labelB+'</span>':'')+'</div>';
 }
 function reportQcProgress(rowsA,rowsB,yearA,yearB,mode,metric){
@@ -4416,7 +4428,7 @@ function renderFgtsPeriodBuckets(data){
      const segmentHeight=value/max*plotH,yy=top+plotH-(cumulative+value)/max*plotH;
      cumulative+=value;
      const year=years[yearIndex],color=yearColor(year);
-     return '<rect class="fgts-qty-segment" tabindex="0" role="img" aria-label="'+escape(String(value))+'" x="'+xx+'" y="'+yy+'" width="'+bw+'" height="'+Math.max(1,segmentHeight)+'" fill="'+color+'"><title>'+fmt(value)+'</title></rect>';
+     return '<g class="fgts-qty-segment-wrap" tabindex="0" role="img" aria-label="'+escape(String(value))+'"><rect x="'+xx+'" y="'+yy+'" width="'+bw+'" height="'+Math.max(1,segmentHeight)+'" fill="'+color+'"><title>'+fmt(value)+'</title></rect><g class="fgts-report-svg-tooltip" transform="translate('+(xx+bw/2)+','+(yy-5)+')"><rect x="-29" y="-24" width="58" height="19" rx="4" fill="#142b4a"/><text x="0" y="-11" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">'+fmt(value)+'</text></g></g>';
     }).join('');
     const monthLabel=monthNames[group.month-1]||String(group.month);
     return '<g class="fgts-qty-bar" aria-label="'+escape(monthLabel)+'">'+segments+'<text x="'+(xx+bw/2)+'" y="'+(h-30)+'" text-anchor="middle" fill="#68778c" font-size="14">'+escape(monthLabel)+'</text></g>';
@@ -4448,7 +4460,7 @@ function renderFgtsPeriodBuckets(data){
    if(current.length)segments.push(current);
    const color=multiYear?yearColor(line.year):palette[0];
    segments.forEach(arr=>paths.push('<polyline points="'+arr.map(c=>c[0]+','+c[1]).join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'));
-   coords.forEach(c=>{if(!c)return;points.push('<g class="fgts-lead-point" tabindex="0" role="img" aria-label="'+escape(c[3].label)+': '+fmt(c[2])+' days"><title>'+fmt(c[2])+' days</title><circle cx="'+c[0]+'" cy="'+c[1]+'" r="4.5" fill="'+color+'" stroke="#fff" stroke-width="2"><title>'+fmt(c[2])+' days</title></circle></g>');});
+   coords.forEach(c=>{if(!c)return;points.push('<g class="fgts-lead-point" tabindex="0" role="img" aria-label="'+escape(c[3].label)+': '+fmt(c[2])+' days"><title>'+fmt(c[2])+' days</title><circle cx="'+c[0]+'" cy="'+c[1]+'" r="4.5" fill="'+color+'" stroke="#fff" stroke-width="2"><title>'+fmt(c[2])+' days</title></circle><g class="fgts-report-svg-tooltip" transform="translate('+c[0]+','+(c[1]-7)+')"><rect x="-32" y="-24" width="64" height="19" rx="4" fill="#142b4a"/><text x="0" y="-11" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">'+fmt(c[2])+' days</text></g></g>');});
    if(multiYear)legend.push('<span><i style="background:'+color+'"></i>'+line.year+'</span>');
   });
   return chartShell('<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by month or period">'+grid+paths.join('')+points.join('')+labels.map((label,i)=>'<text x="'+x(i)+'" y="'+(h-30)+'" text-anchor="middle" fill="#68778c" font-size="14">'+escape(label)+'</text>').join('')+'</svg>'+(legend.length?'<div class="fgts-year-legend">'+legend.join('')+'</div>':''),'Average Lead Days');
@@ -4959,12 +4971,24 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 
 
 
-/* FGTS Report: apply consistent axis typography to every period-selector chart renderer. */
+/* FGTS Report: keep chart text at one consistent 10px size for every report-period selection. */
 #fgtsReportView .fgts-view-chart svg text,
 #fgtsReportView .fgts-yearly-svg-wrap svg text,
-#fgtsReportView .fgts-line-wrap svg text{font-size:12px!important;font-weight:700!important}
+#fgtsReportView .fgts-line-wrap svg text{font-family:Arial,sans-serif!important;font-size:10px!important;font-weight:700!important}
 #fgtsReportView .fgts-month-yaxis,
-#fgtsReportView .fgts-month-col>span{font-size:12px!important;font-weight:700!important}
+#fgtsReportView .fgts-month-col>span,
+#fgtsReportView .fgts-year-legend,
+#fgtsReportView .report-legend,
+#fgtsReportView .fgts-stacked-row,
+#fgtsReportView .fgts-stacked-row>b,
+#fgtsReportView .fgts-stacked-row>strong,
+#fgtsReportView .fgts-ref-cat-row>b,
+#fgtsReportView .fgts-ref-legend>div,
+#fgtsReportView .fgts-ref-legend b,
+#fgtsReportView .fgts-year-donut-legend>div,
+#fgtsReportView .fgts-year-donut-legend b,
+#fgtsReportView .fgts-year-donut-legend span,
+#fgtsReportView .fgts-year-donut-legend small{font-size:10px!important;font-weight:700!important}
 #fgtsReportView .fgts-year-legend{display:flex!important;justify-content:center!important;align-items:center!important;text-align:center}
 #fgtsReportView .fgts-reference-top-grid>.report-panel{display:flex;flex-direction:column}
 #fgtsReportView .fgts-reference-top-grid>.report-panel>.fgts-panel-body{display:flex;flex:1;flex-direction:column}
@@ -4976,19 +5000,14 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart svg{flex:0 0 auto}
 
 
-/* Keep the two top report charts consistent at the requested 14px. */
+/* Keep all report chart panels aligned with the same 10px chart typography above. */
 #fgtsReportView .fgts-ref-quantity .fgts-view-chart svg text,
-#fgtsReportView .fgts-ref-lead .fgts-view-chart svg text{
- font-family:Arial,sans-serif!important;
- font-size:14px!important;
- font-weight:700!important;
-}
-
-/* Restore Category Distribution row labels and totals to 16px; keep this scoped to that panel. */
+#fgtsReportView .fgts-ref-lead .fgts-view-chart svg text,
 #fgtsReportView .fgts-ref-category-panel .fgts-stacked-row,
 #fgtsReportView .fgts-ref-category-panel .fgts-stacked-row>b,
 #fgtsReportView .fgts-ref-category-panel .fgts-stacked-row>strong{
- font-size:16px!important;
+ font-size:10px!important;
+ font-weight:700!important;
 }
 
 /* FGTS Report refinements: centered legends, aligned classification values, and full-width title banner. */
