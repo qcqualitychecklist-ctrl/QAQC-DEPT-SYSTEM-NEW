@@ -4494,7 +4494,7 @@ function renderFgtsPeriodBuckets(data){
  const insights=['Highest quantity: <b>'+escape(highest.label)+'</b> with <b>'+fmt(highest.totalQty)+'</b>.'];if(lowest)insights.push('Lowest average lead days: <b>'+escape(lowest.label)+'</b> at <b>'+fmt(lowest.averageLeadDays)+' days</b>.');if(buckets.length>1){const first=buckets[0],last=buckets[buckets.length-1];insights.push('Quantity changed by <b>'+fmt((Number(last.totalQty)||0)-(Number(first.totalQty)||0))+'</b> from '+escape(first.label)+' to '+escape(last.label)+'.');}
  const insightHtml='<ul class="fgts-ref-insights">'+insights.map(x=>'<li><i>✓</i><span>'+x+'</span></li>').join('')+'</ul>';
  const rangeCaption=mode==='MONTH'?monthNames[(Number(buckets[0].periodIndex)||1)-1]+' – '+monthNames[(Number(buckets[buckets.length-1].periodIndex)||12)-1]:escape(buckets[0].label)+' – '+escape(buckets[buckets.length-1].label);
- const kpis='<div class="fgts-reference-kpis"><article class="fgts-reference-kpi blue"><span class="fgts-kpi-icon">◇</span><div class="fgts-kpi-copy"><b>Total Quantity · Selected Range</b><strong>'+fmt(totalQty)+'</strong><small>'+rangeCaption+'</small></div></article><article class="fgts-reference-kpi purple"><span class="fgts-kpi-icon">◷</span><div class="fgts-kpi-copy"><b>Average Lead Days · Selected Range</b><strong>'+fmt(avgLead)+'</strong><small>Based on '+fmt(leadCount)+' records with valid lead days</small></div></article></div>';
+ const kpis='<div class="fgts-reference-kpis"><article class="fgts-reference-kpi blue"><span class="fgts-kpi-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 43 24 24 43 5 24Z" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/></svg></span><div class="fgts-kpi-copy"><b>Total Quantity · Selected Range</b><strong>'+fmt(totalQty)+'</strong><small>'+rangeCaption+'</small></div></article><article class="fgts-reference-kpi purple"><span class="fgts-kpi-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M24 12v13l9 5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="fgts-kpi-copy"><b>Average Lead Days · Selected Range</b><strong>'+fmt(avgLead)+'</strong><small>Based on '+fmt(leadCount)+' records with valid lead days</small></div></article></div>';
  const title=mode==='YEAR'?'Year':mode==='MONTH'?'Month':mode==='QUARTER'?'Quarter':'Half-Year';
  let html=kpis;
  html+='<div class="fgts-reference-top-grid fgts-monthly-ref-grid">'+panel(mode==='MONTH'?'Monthly Quantity':mode==='YEAR'?'Overall Quantity per Year':'Quantity per '+title,'chart','Completed FGTS quantity · hover over a bar to see its quantity',quantityChart(),'fgts-ref-quantity '+(mode==='MONTH'?'fgts-monthly-ref-panel':''))+panel(mode==='MONTH'?'Monthly Average Lead Days':'Average Lead Days per '+title,'trend','Average record-level lead time for each selected period',leadLineChart(),'fgts-ref-lead '+(mode==='MONTH'?'fgts-monthly-ref-panel':''))+'</div>';
@@ -5230,5 +5230,28 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-side{max-width:82px!important;padding-left:4px!important}
 #fgtsReportView .fgts-reference-kpi .fgts-kpi-icon{width:62px!important;height:62px!important;min-width:62px!important;flex-basis:62px!important}
 #fgtsReportView .fgts-reference-kpi .fgts-kpi-icon svg{width:46px!important;height:46px!important;flex-basis:46px!important}
+}
+</style>
+
+
+<style id="fgts-period-view-final-correction">
+/* Keep the existing KPI tiles unchanged; enlarge the actual vector drawings inside them. */
+#fgtsReportView .fgts-reference-kpi .fgts-kpi-icon{width:62px!important;height:62px!important;min-width:62px!important;flex:0 0 62px!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:initial!important}
+#fgtsReportView .fgts-reference-kpi .fgts-kpi-icon svg{display:block!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;max-width:none!important;max-height:none!important;flex:0 0 42px!important;overflow:visible!important}
+/* Reclaim chart width from the Overall summaries instead of shrinking the plots. */
+#fgtsReportView .fgts-monthly-ref-layout{grid-template-columns:minmax(0,1fr) 78px!important;gap:4px!important;align-items:stretch!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-plot{min-width:0!important;width:100%!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-plot svg{display:block!important;width:100%!important;max-width:100%!important;height:auto!important;overflow:visible!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-plot svg text{font-family:Arial,sans-serif!important;font-size:10px!important;font-weight:700!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-side{box-sizing:border-box!important;min-width:0!important;width:78px!important;max-width:78px!important;padding:5px 2px 5px 4px!important;gap:7px!important;overflow:hidden!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-side>b{font-size:10px!important;line-height:1.1!important;font-weight:800!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-side>div{gap:2px!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-side>div>span{font-size:9px!important;gap:3px!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-side>div>span i{width:7px!important;height:7px!important}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-side strong{font-size:15px!important;line-height:1!important;white-space:nowrap!important}
+@media(max-width:720px){
+ #fgtsReportView .fgts-monthly-ref-layout{grid-template-columns:minmax(0,1fr) 74px!important;gap:3px!important}
+ #fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-side{width:74px!important;max-width:74px!important;padding-left:3px!important}
+ #fgtsReportView .fgts-reference-kpi .fgts-kpi-icon svg{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important}
 }
 </style>
