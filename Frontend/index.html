@@ -4991,6 +4991,28 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
  font-weight:700!important;
 }
 
+/* Quantity graph: keep both axes at 8px bold in monthly and yearly renderers. */
+#fgtsReportView .fgts-ref-quantity .fgts-view-chart svg text,
+#fgtsReportView .fgts-ref-quantity .fgts-yearly-svg-wrap svg text{
+ font-family:Arial,sans-serif!important;
+ font-size:8px!important;
+ font-weight:700!important;
+}
+#fgtsReportView .fgts-ref-quantity .fgts-month-yaxis,
+#fgtsReportView .fgts-ref-quantity .fgts-month-col>span{
+ font-size:8px!important;
+ font-weight:700!important;
+}
+
+/* Restore the original full-size icons on Total Quantity and Average Lead Days cards. */
+#fgtsReportView .fgts-reference-kpi .fgts-kpi-icon{
+ width:62px!important;
+ height:62px!important;
+ flex:0 0 62px!important;
+ border-radius:20px!important;
+ font-size:37px!important;
+}
+
 /* FGTS Report refinements: readable chart axes, centered legends, aligned classification values, and full-width title banner. */
 #fgtsReportView .fgts-view-chart svg text{font-size:12px!important;font-weight:700!important}
 #fgtsReportView .fgts-year-legend{justify-content:center!important;align-items:center}
