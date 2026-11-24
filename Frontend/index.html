@@ -5475,3 +5475,117 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
   min-width:0!important;
 }
 </style>
+
+<style id="fgts-single-year-click-and-category-adjustments">
+/* Single Year only: axis sizing and category labels/tracks. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-yaxis,
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-col>span{
+  font:700 9px Arial,sans-serif!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-bars i{
+  cursor:pointer!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text{
+  font:700 11px Arial,sans-serif!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-monthly-ref-legend{
+  margin-bottom:5px!important;
+  transform:translateY(-5px);
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-lead-point{
+  cursor:pointer!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-row{
+  display:grid!important;
+  grid-template-columns:125px minmax(0,1fr) 62px!important;
+  align-items:center!important;
+  gap:8px!important;
+  width:100%!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-row>span{
+  min-width:0!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  font:700 10px/1.25 Arial,sans-serif!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-row>b{
+  min-width:0!important;
+  white-space:nowrap!important;
+  text-align:right!important;
+  font:700 10px Arial,sans-serif!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-track{
+  box-sizing:border-box!important;
+  display:flex!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#fgtsReportView .fgts-single-click-tooltip{
+  position:fixed;
+  z-index:99999;
+  display:none;
+  pointer-events:none;
+  transform:translate(-50%,-100%);
+  padding:6px 9px;
+  border-radius:6px;
+  background:#142b4a;
+  color:#fff;
+  box-shadow:0 3px 12px #142b4a35;
+  font:700 11px Arial,sans-serif;
+  white-space:nowrap;
+}
+#fgtsReportView .fgts-single-click-tooltip.is-visible{display:block}
+</style>
+<script id="fgts-single-year-click-tooltip-handler">
+(function(){
+  if(window.__fgtsSingleYearClickTooltipBound)return;
+  window.__fgtsSingleYearClickTooltipBound=true;
+  function reportRoot(){return document.getElementById('fgtsReportView')}
+  function singleYearActive(){
+    var mode=document.getElementById('fgtsReportMode');
+    return !!(mode&&mode.value==='SINGLE_YEAR');
+  }
+  function tooltip(){
+    var root=reportRoot();if(!root)return null;
+    var node=root.querySelector('.fgts-single-click-tooltip');
+    if(!node){node=document.createElement('div');node.className='fgts-single-click-tooltip';node.setAttribute('role','status');root.appendChild(node)}
+    return node;
+  }
+  function hide(){
+    var root=reportRoot(),node=root&&root.querySelector('.fgts-single-click-tooltip');
+    if(node){node.classList.remove('is-visible');node.textContent=''}
+  }
+  document.addEventListener('click',function(event){
+    var root=reportRoot();
+    if(!root||!root.contains(event.target)||!singleYearActive()){hide();return}
+    var target=event.target.closest('.fgts-month-bars i, .fgts-lead-point');
+    if(!target||!root.contains(target)){hide();return}
+    var value=target.getAttribute('title')||target.querySelector('title')?.textContent||'';
+    if(!value){
+      var label=target.getAttribute('aria-label')||'';
+      value=label.includes(':')?label.split(':').slice(1).join(':').trim():label;
+    }
+    if(!value)return;
+    var node=tooltip(),rect=target.getBoundingClientRect();
+    if(!node)return;
+    node.textContent=value;
+    node.style.left=Math.max(54,Math.min(window.innerWidth-54,rect.left+rect.width/2))+'px';
+    node.style.top=Math.max(42,rect.top-7)+'px';
+    node.classList.add('is-visible');
+    event.preventDefault();
+  },true);
+  document.addEventListener('keydown',function(event){
+    if(event.key==='Escape')hide();
+    if((event.key==='Enter'||event.key===' ')&&singleYearActive()){
+      var target=event.target.closest&&event.target.closest('.fgts-month-bars i, .fgts-lead-point');
+      if(target){event.preventDefault();target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}
+    }
+  });
+  document.addEventListener('change',function(event){
+    if(event.target&&event.target.id==='fgtsReportMode')hide();
+  });
+  window.addEventListener('scroll',hide,true);
+})();
+</script>
