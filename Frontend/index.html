@@ -2319,6 +2319,33 @@ body.fgts-report-open .intro{display:none!important}
 }
 </style>
 
+
+<style id="fgts-quantity-lead-axis-9px-bold">
+/* Quantity and Average Lead Days axis labels: consistent 9px bold in every period view. */
+#fgtsReportView .fgts-ref-quantity .fgts-view-chart svg text,
+#fgtsReportView .fgts-ref-quantity .fgts-yearly-svg-wrap svg text,
+#fgtsReportView .fgts-ref-quantity .fgts-line-wrap svg text,
+#fgtsReportView .fgts-ref-quantity .fgts-monthly-ref-plot svg text,
+#fgtsReportView .fgts-ref-lead .fgts-view-chart svg text,
+#fgtsReportView .fgts-ref-lead .fgts-yearly-svg-wrap svg text,
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap svg text,
+#fgtsReportView .fgts-ref-lead .fgts-monthly-ref-plot svg text,
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-plot svg text,
+#fgtsReportView .fgts-ref-quantity .fgts-month-yaxis,
+#fgtsReportView .fgts-ref-quantity .fgts-month-col>span,
+#fgtsReportView .fgts-ref-lead .fgts-month-yaxis,
+#fgtsReportView .fgts-ref-lead .fgts-month-col>span{
+  font-family:Arial,sans-serif!important;
+  font-size:9px!important;
+  font-weight:700!important;
+}
+/* Explicitly reinforce bold 9px axis text on the Lead Days SVG. */
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
+  font-size:9px!important;
+  font-weight:700!important;
+}
+</style>
+
 </head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
