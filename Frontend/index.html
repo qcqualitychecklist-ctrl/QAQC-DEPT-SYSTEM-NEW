@@ -4976,16 +4976,22 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart svg{flex:0 0 auto}
 
 
-/* Lock the exact same axis typography on BOTH top report charts. */
+/* Keep the two top report charts consistent at the requested 14px. */
 #fgtsReportView .fgts-ref-quantity .fgts-view-chart svg text,
 #fgtsReportView .fgts-ref-lead .fgts-view-chart svg text{
  font-family:Arial,sans-serif!important;
- font-size:12px!important;
+ font-size:14px!important;
  font-weight:700!important;
 }
 
-/* FGTS Report refinements: readable chart axes, centered legends, aligned classification values, and full-width title banner. */
-#fgtsReportView .fgts-view-chart svg text{font-size:12px!important;font-weight:700!important}
+/* Restore Category Distribution row labels and totals to 16px; keep this scoped to that panel. */
+#fgtsReportView .fgts-ref-category-panel .fgts-stacked-row,
+#fgtsReportView .fgts-ref-category-panel .fgts-stacked-row>b,
+#fgtsReportView .fgts-ref-category-panel .fgts-stacked-row>strong{
+ font-size:16px!important;
+}
+
+/* FGTS Report refinements: centered legends, aligned classification values, and full-width title banner. */
 #fgtsReportView .fgts-year-legend{justify-content:center!important;align-items:center}
 #fgtsReportView .fgts-year-donut-legend{min-width:0}
 #fgtsReportView .fgts-year-donut-legend>div{display:grid;grid-template-columns:8px minmax(0,1fr) auto!important;align-items:center;gap:4px 7px;white-space:nowrap}
