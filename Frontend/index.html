@@ -5665,3 +5665,31 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
   font-size:10px!important;
 }
 </style>
+
+
+<style id="fgts-single-report-graph-adjustments-v2">
+/* Single Report View only: nudge Quantity slightly left without changing its size. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-chart{
+  transform:translateX(-8px)!important;
+}
+/* Match Lead Days plot footprint to Quantity and set axis labels to a true 10px visual size. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap{
+  box-sizing:border-box!important;
+  width:94%!important;
+  max-width:620px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg{
+  display:block!important;
+  width:100%!important;
+  max-height:230px!important;
+  height:auto!important;
+  margin:0 auto!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
+  font-family:Arial,sans-serif!important;
+  font-size:13px!important;
+  font-weight:700!important;
+}
+</style>
