@@ -5589,3 +5589,25 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
   window.addEventListener('scroll',hide,true);
 })();
 </script>
+
+
+<style id="fgts-single-year-final-chart-spacing">
+/* SINGLE YEAR only: center Quantity, enlarge Lead Days axes, and slightly lengthen Category bars. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-chart{
+  width:96%!important;
+  max-width:96%!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  grid-template-columns:30px minmax(0,1fr)!important;
+  gap:4px!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text{
+  font-family:Arial,sans-serif!important;
+  font-size:13px!important;
+  font-weight:700!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-row{
+  grid-template-columns:110px minmax(0,1fr) 56px!important;
+  gap:8px!important;
+}
+</style>
