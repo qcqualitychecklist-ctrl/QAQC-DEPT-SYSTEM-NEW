@@ -5413,3 +5413,65 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
   box-shadow:none!important;
 }
 </style>
+
+<style id="fgts-single-year-view-precision-fix">
+/* SINGLE YEAR only. Keep every other report mode and all monitoring modules untouched. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked){
+  padding-top:0!important;
+}
+/* Raise only the FGTS Report banner to the monitoring-header top alignment. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-report-banner{
+  margin-top:0!important;
+}
+/* Quantity: reclaim the unused right gutter so the actual plot is wider. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-chart{
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  padding-right:0!important;
+  grid-template-columns:30px minmax(0,1fr)!important;
+  gap:4px!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-plot{
+  width:100%!important;
+  min-width:0!important;
+  border-bottom:0!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-yaxis,
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-col>span{
+  font-family:Arial,sans-serif!important;
+  font-size:10px!important;
+  font-weight:700!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-bars i{
+  cursor:help!important;
+}
+/* Lead Days: axis labels remain 10px; move the 2026 legend closer to the chart. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
+  font-family:Arial,sans-serif!important;
+  font-size:10px!important;
+  font-weight:700!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .report-legend{
+  margin-top:0!important;
+  transform:translateY(-4px);
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-lead-point{
+  cursor:help!important;
+}
+/* Category Distribution only: give the bars more horizontal room and use bold 11px text. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-row{
+  grid-template-columns:minmax(60px,.55fr) minmax(0,5fr) auto!important;
+  gap:6px!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-row>span,
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-row>b{
+  font-family:Arial,sans-serif!important;
+  font-size:11px!important;
+  font-weight:800!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-track{
+  width:100%!important;
+  min-width:0!important;
+}
+</style>
