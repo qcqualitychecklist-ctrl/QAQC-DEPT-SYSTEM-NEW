@@ -3117,22 +3117,7 @@ function openPdiDecisionModal(rec){
   if(decision==='Rescheduled'){updated['Date of PDI']=date.value;updated.Time=time.value;}
   const logo=document.querySelector('.system-topbar-logo');
   const requestHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(updated,logo?logo.src:'',decision)+'\n
-<style id="fgts-restore-category-classification-original-typography">
-/* Restore Category Distribution and Classification Distribution typography to the pre-FGTS-font-change values. */
-/* Category Distribution: preserve its original 10px labels/values, without the added Arial/bold override. */
-#fgtsReportView .fgts-ref-cat-row>span,
-#fgtsReportView .fgts-ref-cat-row>b{font-size:10px!important;font-family:inherit!important;font-weight:unset!important}
-/* Classification Distribution (reference-period donuts): restore original title and legend sizes. */
-#fgtsReportView .fgts-ref-donut-card>b{font-size:12px!important;font-family:inherit!important;font-weight:unset!important}
-#fgtsReportView .fgts-ref-legend>div{font-size:11px!important;font-family:inherit!important;font-weight:unset!important}
-#fgtsReportView .fgts-ref-legend span{font-size:inherit!important;font-family:inherit!important;font-weight:unset!important}
-#fgtsReportView .fgts-ref-legend b{font-size:10px!important;font-family:inherit!important;font-weight:unset!important}
-/* Classification Distribution (yearly donuts): restore original 8px labels and 9px values/percentages. */
-#fgtsReportView .fgts-year-donut-legend>div{font-size:8px!important;font-family:inherit!important;font-weight:unset!important}
-#fgtsReportView .fgts-year-donut-legend span{font-size:8px!important;font-family:inherit!important;font-weight:unset!important}
-#fgtsReportView .fgts-year-donut-legend b,
-#fgtsReportView .fgts-year-donut-legend small{font-size:9px!important;font-family:inherit!important;font-weight:unset!important}
-</style>
+
 
 </body></html>';
   const payload={status:decision,qcInCharge:qc.value.trim(),reason:reason.value.trim(),newDate:date.value,newTime:time.value};
@@ -4989,89 +4974,22 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 
 
 
-/* FGTS Report: keep chart text at one consistent 10px size for every report-period selection. */
-#fgtsReportView .fgts-view-chart svg text,
-#fgtsReportView .fgts-yearly-svg-wrap svg text,
-#fgtsReportView .fgts-line-wrap svg text{font-family:Arial,sans-serif!important;font-size:10px!important;font-weight:700!important}
-#fgtsReportView .fgts-month-yaxis,
-#fgtsReportView .fgts-month-col>span,
-#fgtsReportView .fgts-year-legend,
-#fgtsReportView .report-legend,
-#fgtsReportView .fgts-stacked-row,
-#fgtsReportView .fgts-stacked-row>b,
-#fgtsReportView .fgts-stacked-row>strong,
-#fgtsReportView .fgts-ref-cat-row>b,
-#fgtsReportView .fgts-ref-legend>div,
-#fgtsReportView .fgts-ref-legend b,
-#fgtsReportView .fgts-year-donut-legend>div,
-#fgtsReportView .fgts-year-donut-legend b,
-#fgtsReportView .fgts-year-donut-legend span,
-#fgtsReportView .fgts-year-donut-legend small{font-size:10px!important;font-weight:700!important}
-#fgtsReportView .fgts-year-legend{display:flex!important;justify-content:center!important;align-items:center!important;text-align:center}
-#fgtsReportView .fgts-reference-top-grid>.report-panel{display:flex;flex-direction:column}
-#fgtsReportView .fgts-reference-top-grid>.report-panel>.fgts-panel-body{display:flex;flex:1;flex-direction:column}
-#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-yearly-svg-wrap,
-#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-line-wrap,
-#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-month-chart,
-#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart{margin-top:auto!important;margin-bottom:auto!important;align-self:stretch}
-#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart{display:flex;flex-direction:column;justify-content:center}
-#fgtsReportView .fgts-reference-top-grid>.report-panel .fgts-view-chart svg{flex:0 0 auto}
-
-
-/* Keep all report chart panels aligned with the same 10px chart typography above. */
+/* Fixed 10px axes for Quantity Bar Graph and Lead Days Line Graph only, across all report periods. */
 #fgtsReportView .fgts-ref-quantity .fgts-view-chart svg text,
 #fgtsReportView .fgts-ref-lead .fgts-view-chart svg text,
-#fgtsReportView .fgts-ref-category-panel .fgts-stacked-row,
-#fgtsReportView .fgts-ref-category-panel .fgts-stacked-row>b,
-#fgtsReportView .fgts-ref-category-panel .fgts-stacked-row>strong{
+#fgtsReportView .fgts-ref-quantity .fgts-month-yaxis,
+#fgtsReportView .fgts-ref-quantity .fgts-month-col>span,
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap svg text{
  font-size:10px!important;
- font-weight:700!important;
 }
+/* Hover values are restricted to the two requested charts. */
+#fgtsReportView .fgts-ref-quantity .fgts-month-bars i{position:relative;cursor:help}
+#fgtsReportView .fgts-ref-quantity .fgts-month-hover-value{font:700 10px Arial,sans-serif!important}
+#fgtsReportView .fgts-ref-quantity .fgts-view-chart,
+#fgtsReportView .fgts-ref-lead .fgts-view-chart,
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap{overflow:visible!important}
+#fgtsReportView .fgts-ref-quantity .fgts-report-svg-tooltip,
+#fgtsReportView .fgts-ref-lead .fgts-report-svg-tooltip{font-family:Arial,sans-serif!important}
 
-/* FGTS Report: enforce 10px typography on the ACTUAL chart elements used by every period renderer. */
-#fgtsReportView .fgts-month-yaxis,
-#fgtsReportView .fgts-month-col>span,
-#fgtsReportView .fgts-line-wrap svg text,
-#fgtsReportView .fgts-yearly-svg-wrap svg text,
-#fgtsReportView .fgts-view-chart svg text,
-#fgtsReportView .fgts-ref-cat-row>span,
-#fgtsReportView .fgts-ref-cat-row>b,
-#fgtsReportView .fgts-ref-donut-card>b,
-#fgtsReportView .fgts-ref-legend>div,
-#fgtsReportView .fgts-ref-legend span,
-#fgtsReportView .fgts-ref-legend b,
-#fgtsReportView .fgts-year-donut-legend>div,
-#fgtsReportView .fgts-year-donut-legend span,
-#fgtsReportView .fgts-year-donut-legend b,
-#fgtsReportView .fgts-year-donut-legend small,
-#fgtsReportView .fgts-year-legend,
-#fgtsReportView .report-legend{
- font-family:Arial,sans-serif!important;
- font-size:10px!important;
- font-weight:700!important;
-}
-/* Keep the visible hover values at 10px and ensure the plot can show them. */
-#fgtsReportView .fgts-month-bars i{position:relative;cursor:help}
-#fgtsReportView .fgts-month-hover-value{font:700 10px Arial,sans-serif!important}
-#fgtsReportView .fgts-line-wrap,
-#fgtsReportView .fgts-view-chart{overflow:visible!important}
-#fgtsReportView .fgts-report-svg-tooltip{font-family:Arial,sans-serif!important}
-
-/* FGTS Report refinements: centered legends, aligned classification values, and full-width title banner. */
-#fgtsReportView .fgts-year-legend{justify-content:center!important;align-items:center}
-#fgtsReportView .fgts-year-donut-legend{min-width:0}
-#fgtsReportView .fgts-year-donut-legend>div{display:grid;grid-template-columns:8px minmax(0,1fr) auto!important;align-items:center;gap:4px 7px;white-space:nowrap}
-#fgtsReportView .fgts-year-donut-legend span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
-#fgtsReportView .fgts-year-donut-legend b{grid-column:auto!important;white-space:nowrap;font-size:9px!important}
-#fgtsReportView .fgts-year-donut-legend small{white-space:nowrap;font-size:9px!important}
-#fgtsReportView .fgts-report-banner{width:calc(100% + 36px);box-sizing:border-box;margin-left:-18px;margin-right:-18px;align-items:center}
-#fgtsReportView .fgts-report-brand{align-items:center;min-height:56px}
-#fgtsReportView .fgts-brand-icon{flex:0 0 56px;display:flex;align-items:center;justify-content:center;line-height:0}
-#fgtsReportView .fgts-brand-icon svg{display:block;flex:0 0 56px}
-#fgtsReportView .fgts-report-brand>div{display:flex;flex-direction:column;justify-content:center;min-width:0}
-@media(max-width:720px){
- #fgtsReportView .fgts-report-banner{width:calc(100% + 20px);margin-left:-10px;margin-right:-10px}
- #fgtsReportView .fgts-year-donut-legend>div{gap:3px 5px}
-}
 
 </style>
