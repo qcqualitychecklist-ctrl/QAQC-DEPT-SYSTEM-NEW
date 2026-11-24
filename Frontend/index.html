@@ -4877,6 +4877,70 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
  font-weight:700!important;
 }
 </style>
+
+<style id="fgts-chart-axis-and-kpi-final-fix">
+/* Single Year: center both legacy charts within their panels. */
+#fgtsReportView .fgts-ref-quantity .fgts-month-chart,
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap,
+#fgtsReportView .fgts-ref-lead .fgts-yearly-svg-wrap,
+#fgtsReportView .fgts-ref-quantity .fgts-yearly-svg-wrap{
+  width:100%!important;
+  max-width:100%!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  justify-content:center!important;
+}
+#fgtsReportView .fgts-ref-quantity .fgts-month-plot,
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap svg,
+#fgtsReportView .fgts-ref-lead .fgts-yearly-svg-wrap svg,
+#fgtsReportView .fgts-ref-quantity .fgts-yearly-svg-wrap svg{
+  margin-left:auto!important;
+  margin-right:auto!important;
+  display:block!important;
+}
+/* Single Year axis labels: actual 8px bold on both axes. */
+#fgtsReportView .fgts-ref-quantity .fgts-month-yaxis,
+#fgtsReportView .fgts-ref-quantity .fgts-month-col>span,
+#fgtsReportView .fgts-ref-lead .fgts-month-chart .fgts-month-yaxis,
+#fgtsReportView .fgts-ref-lead .fgts-month-col>span,
+#fgtsReportView .fgts-ref-quantity .fgts-line-wrap svg text,
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap svg text,
+#fgtsReportView .fgts-ref-quantity .fgts-yearly-svg-wrap svg text,
+#fgtsReportView .fgts-ref-lead .fgts-yearly-svg-wrap svg text{
+  font-family:Arial,sans-serif!important;
+  font-size:8px!important;
+  font-weight:700!important;
+}
+/* Period modes reserve room for the Overall summaries without shrinking axis labels.
+   SVG text uses a slightly larger viewBox font so its rendered size remains about 8px. */
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-plot svg text{
+  font-family:Arial,sans-serif!important;
+  font-size:10px!important;
+  font-weight:700!important;
+}
+#fgtsReportView .fgts-monthly-ref-layout .fgts-monthly-ref-plot svg{
+  width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+}
+/* Enlarge only the two FGTS KPI icons; leave card dimensions and text unchanged. */
+#fgtsReportView .fgts-reference-kpi .fgts-kpi-icon{
+  width:58px!important;
+  height:58px!important;
+  min-width:58px!important;
+  font-size:38px!important;
+  line-height:1!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+@media(max-width:850px){
+ #fgtsReportView .fgts-reference-kpi .fgts-kpi-icon{
+  width:48px!important;height:48px!important;min-width:48px!important;font-size:32px!important;
+ }
+}
+</style>
+
 </body></html>
 <!-- Trigger syntax validation for restored #242 source -->
 
