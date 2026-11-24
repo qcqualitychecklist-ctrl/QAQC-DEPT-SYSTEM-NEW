@@ -4293,7 +4293,7 @@ function renderFgtsReportLegacy(data){
  const rows=[['Total Quantity',fmt(a.totalQty),compare?fmt(b.totalQty):'—',compare?(delta(b.totalQty,a.totalQty)>=0?'+':'')+fmt(delta(b.totalQty,a.totalQty)):'—',compare?pct(b.totalQty,a.totalQty):'—'],['Average Lead Days',fmt(a.averageLeadDays),compare?fmt(b.averageLeadDays):'—',compare?(delta(b.averageLeadDays,a.averageLeadDays)>=0?'+':'')+fmt(delta(b.averageLeadDays,a.averageLeadDays).toFixed(1)):'—',compare?pct(b.averageLeadDays,a.averageLeadDays):'—']];
  const summary='<div class="fgts-ref-table-wrap"><table class="fgts-ref-table"><thead><tr><th>Metric</th><th>'+yearA+' · '+periodLabel+'</th>'+(compare?'<th>'+yearB+' · '+periodLabelB+'</th><th>Difference</th><th>% Change</th>':'<th>Selected Period</th>')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.slice(0,compare?5:2).map((v,i)=>{const change=i>=3?Number(String(v).replace(/,/g,'').replace('%','')):NaN;return '<td class="'+(i<3?'':Number.isFinite(change)?change>0?'positive':change<0?'negative':'':'')+'">'+v+'</td>';}).join('')+'</tr>').join('')+'</tbody></table></div>';
  let html='<div class="fgts-reference-kpis">'+kpi('Total Quantity',a.totalQty,'◇','blue',trend(a.totalQty,b.totalQty),b.totalQty)+kpi('Average Lead Days',a.averageLeadDays,'◷','purple',compare?trend(a.averageLeadDays,b.averageLeadDays,' days'):'Record-level average',b.averageLeadDays)+'</div>';
- html+='<div class="fgts-reference-top-grid">'+panel('Quantity per Month','chart','Monthly completed quantity · '+periodLabel+(compare?' vs '+periodLabelB:''),reportMonthlyQtyBars(qtyA,qtyB,compare?periodLabel+' · '+yearA:yearA,compare?periodLabelB+' · '+yearB:yearB,pairedHalfMonths),'fgts-ref-quantity')+panel('Average Lead Days per Month','clock','Average lead days · '+periodLabel+(compare?' vs '+periodLabelB:''),reportLineChart(leadA,leadB,'average',compare?periodLabel+' · '+yearA:yearA,compare?periodLabelB+' · '+yearB:yearB,'days',pairedHalfMonths),'fgts-ref-lead')+'</div>';
+ html+='<div class="fgts-reference-top-grid fgts-monthly-ref-grid">'+panel('Quantity per Month','chart','Monthly completed quantity · '+periodLabel+(compare?' vs '+periodLabelB:''),reportMonthlyQtyBars(qtyA,qtyB,compare?periodLabel+' · '+yearA:yearA,compare?periodLabelB+' · '+yearB:yearB,pairedHalfMonths),'fgts-ref-quantity fgts-monthly-ref-panel')+panel('Average Lead Days per Month','clock','Average lead days · '+periodLabel+(compare?' vs '+periodLabelB:''),reportLineChart(leadA,leadB,'average',compare?periodLabel+' · '+yearA:yearA,compare?periodLabelB+' · '+yearB:yearB,'days',pairedHalfMonths),'fgts-ref-lead fgts-monthly-ref-panel')+'</div>';
  html+='<div class="fgts-reference-bottom-grid">'+panel('Category Distribution','category','All categories · sorted by quantity',categoryHtml,'fgts-ref-category-panel')+panel('Classification Distribution','classification','Four classifications · quantity and share',classificationHtml,'fgts-ref-class-panel')+'</div>';
  html+='<div class="fgts-reference-summary-row">'+panel('Comparison Summary','chart',compare?'Selected period comparison':'Selected reporting period',summary,'fgts-ref-summary-panel')+panel('Key Insights','bulb','Highlights for the selected reporting period',insightHtml,'fgts-ref-insight-panel')+'</div><div class="fgts-ref-footnote"><b>ⓘ</b> Data covers '+(compare?periodLabel+' '+yearA+' and '+periodLabelB+' '+yearB:periodLabel+' '+yearA)+'. Figures are based on completed FGTS records with a valid Date Finish.</div>';
  content.innerHTML=html;
@@ -4388,7 +4388,7 @@ function renderFgtsPeriodBuckets(data){
  const palette=['#2463bd','#20a85a','#f39a24','#8654c7','#159eaa','#d65c78','#66758a','#9aab28','#d65a31','#477fba','#a06bb7','#679a44'];
  const fmt=v=>reportNumber(v??0),escape=reportEscape;
  const totalQty=buckets.reduce((s,x)=>s+(Number(x.totalQty)||0),0),leadCount=buckets.reduce((s,x)=>s+(Number(x.leadCount)||0),0),leadTotal=buckets.reduce((s,x)=>s+(Number(x.totalLeadDays)||0),0),avgLead=leadCount?leadTotal/leadCount:null;
- const panel=(title,icon,subtitle,body,cls='')=>'<section class="report-panel '+cls+'"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
+ const panel=(title,icon,subtitle,body,cls='')=>'<section class="report-panel fgts-monthly-ref-panel '+cls+'"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
  const years=[...new Set(buckets.map(x=>Number(x.year)).filter(Number.isFinite))].sort((a,b)=>a-b);
  const yearColor=year=>palette[Math.max(0,years.indexOf(Number(year)))%palette.length];
@@ -4407,7 +4407,7 @@ function renderFgtsPeriodBuckets(data){
    const side='<aside class="fgts-monthly-ref-side"><b>Overall Qty</b>'+totals.map(x=>'<div><span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span><strong style="color:'+yearColor(x.year)+'">'+fmt(x.total)+'</strong></div>').join('')+'</aside>';
    return '<div class="fgts-monthly-ref-layout"><div class="fgts-monthly-ref-plot">'+legend+'<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Monthly quantity comparison">'+grid+bars+'</svg></div>'+side+'</div>';
   }
-  const w=720,h=260,left=48,right=48,top=18,bottom=62,plotH=h-top-bottom;
+  const w=570,h=230,left=42,right=8,top=30,bottom=34,plotH=h-top-bottom;
   if(mode==='MONTH'){
    const years=[...new Set(buckets.map(x=>Number(x.year)))].sort((a,b)=>a-b);
    const monthIndexes=[...new Set(buckets.map(x=>Number(x.periodIndex)))].sort((a,b)=>a-b);
@@ -4439,7 +4439,10 @@ function renderFgtsPeriodBuckets(data){
   const grid=[0,.25,.5,.75,1].map(t=>{const y=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="#e7edf5"/><text x="'+(left-8)+'" y="'+(y+3)+'" text-anchor="end" fill="#8491a3" font-size="10">'+fmt(Math.round(max*t))+'</text>';}).join('');
   const bars=buckets.map((x,i)=>{const v=vals[i],bh=v?Math.max(2,v/max*plotH):0,xx=left+i*slot+(slot-bw)/2,yy=top+plotH-bh;return '<g class="fgts-qty-bar" tabindex="0" role="img" aria-label="'+escape(periodLabel(x))+': '+fmt(v)+'"><title>'+fmt(v)+'</title><rect x="'+xx+'" y="'+yy+'" width="'+bw+'" height="'+bh+'" rx="3" fill="'+yearColor(x.year)+'"><title>'+fmt(v)+'</title></rect><text x="'+(xx+bw/2)+'" y="'+(h-30)+'" text-anchor="middle" fill="#68778c" font-size="9">'+escape(periodLabel(x))+'</text></g>';}).join('');
   const legend=(mode==='YEAR'||mode==='QUARTER'||mode==='HALF')?'<div class="fgts-year-legend">'+years.map(year=>'<span><i style="background:'+yearColor(year)+'"></i>'+year+'</span>').join('')+'</div>':'';
-  return chartShell('<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Quantity by selected period">'+grid+bars+'</svg>'+legend,'Quantity');
+  const totals=years.map(year=>({year,total:buckets.filter(x=>Number(x.year)===year).reduce((n,x)=>n+(Number(x.totalQty)||0),0)}));
+  const side='<aside class="fgts-monthly-ref-side"><b>Overall Qty</b>'+totals.map(x=>'<div><span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span><strong style="color:'+yearColor(x.year)+'">'+fmt(x.total)+'</strong></div>').join('')+'</aside>';
+  const legendHtml=legend?'<div class="fgts-monthly-ref-legend">'+years.map(year=>'<span><i style="background:'+yearColor(year)+'"></i>'+year+'</span>').join('')+'</div>':'';
+  return '<div class="fgts-monthly-ref-layout"><div class="fgts-monthly-ref-plot">'+legendHtml+'<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Quantity by selected period">'+grid+bars+'</svg></div>'+side+'</div>';
  };
  const leadLineChart=()=>{
   if(mode==='MONTH'){
@@ -4453,7 +4456,7 @@ function renderFgtsPeriodBuckets(data){
    const side='<aside class="fgts-monthly-ref-side"><b>Overall Avg.<br>Lead Days</b>'+averages.map(x=>'<div><span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span><strong style="color:'+yearColor(x.year)+'">'+x.avg.toFixed(1)+'</strong></div>').join('')+'</aside>';
    return '<div class="fgts-monthly-ref-layout"><div class="fgts-monthly-ref-plot">'+legend+'<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Monthly average lead days comparison">'+grid+lines+monthLabels+'</svg></div>'+side+'</div>';
   }
-  const w=720,h=260,left=48,right=48,top=18,bottom=62,plotH=h-top-bottom;
+  const w=570,h=230,left=42,right=8,top=30,bottom=34,plotH=h-top-bottom;
   const multiYear=['MONTH','QUARTER','HALF'].includes(mode);
   const periodIndexes=multiYear?[...new Set(buckets.map(x=>Number(x.periodIndex)))].sort((a,b)=>a-b):buckets.map((x,i)=>i);
   const labels=multiYear?periodIndexes.map(p=>mode==='MONTH'?monthNames[p-1]||String(p):mode==='QUARTER'?'Q'+p:(p===1?'H1':'H2')):buckets.map(x=>String(x.year??x.label??''));
@@ -4473,7 +4476,10 @@ function renderFgtsPeriodBuckets(data){
    coords.forEach(c=>{if(!c)return;points.push('<g class="fgts-lead-point" tabindex="0" role="img" aria-label="'+escape(c[3].label)+': '+fmt(c[2])+' days"><title>'+fmt(c[2])+' days</title><circle cx="'+c[0]+'" cy="'+c[1]+'" r="4.5" fill="'+color+'" stroke="#fff" stroke-width="2"><title>'+fmt(c[2])+' days</title></circle></g>');});
    if(multiYear)legend.push('<span><i style="background:'+color+'"></i>'+line.year+'</span>');
   });
-  return chartShell('<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by month or period">'+grid+paths.join('')+points.join('')+labels.map((label,i)=>'<text x="'+x(i)+'" y="'+(h-30)+'" text-anchor="middle" fill="#68778c" font-size="9">'+escape(label)+'</text>').join('')+'</svg>'+(legend.length?'<div class="fgts-year-legend">'+legend.join('')+'</div>':''),'Average Lead Days');
+  const averages=years.map(year=>{const group=buckets.filter(b=>Number(b.year)===year&&b.averageLeadDays!=null),count=group.reduce((n,b)=>n+(Number(b.leadCount)||0),0),days=group.reduce((n,b)=>n+(Number(b.totalLeadDays)||0),0),avg=count?days/count:(group.length?group.reduce((n,b)=>n+Number(b.averageLeadDays),0)/group.length:0);return {year,avg};});
+  const side='<aside class="fgts-monthly-ref-side"><b>Overall Avg.<br>Lead Days</b>'+averages.map(x=>'<div><span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span><strong style="color:'+yearColor(x.year)+'">'+x.avg.toFixed(1)+'</strong></div>').join('')+'</aside>';
+  const legendHtml=legend.length?'<div class="fgts-monthly-ref-legend">'+legend.map((item,i)=>'<span><i style="background:'+yearColor(years[i])+'"></i>'+years[i]+'</span>').join('')+'</div>':'';
+  return '<div class="fgts-monthly-ref-layout"><div class="fgts-monthly-ref-plot">'+legendHtml+'<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by selected period">'+grid+paths.join('')+points.join('')+labels.map((label,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#68778c" font-size="9">'+escape(label)+'</text>').join('')+'</svg></div>'+side+'</div>';
  };
  const distributionBuckets=mode==='MONTH'?[...new Map(buckets.map(x=>[x.year,x.year])).keys()].map(year=>{const group=buckets.filter(x=>Number(x.year)===Number(year)),sumDimension=key=>{const map=new Map();group.forEach(row=>(row[key]||[]).forEach(item=>map.set(item.name,(map.get(item.name)||0)+(Number(item.total)||0))));return [...map.entries()].map(([name,total])=>({name,total}));};return {year,label:String(year),category:sumDimension('category'),classification:sumDimension('classification')};}):buckets;
  const categoryMap=new Map();distributionBuckets.forEach((bucket,i)=>(bucket.category||[]).forEach(c=>{const name=String(c.name||'Unassigned');if(!categoryMap.has(name))categoryMap.set(name,Array(distributionBuckets.length).fill(0));categoryMap.get(name)[i]=Number(c.total)||0;}));
@@ -4491,7 +4497,7 @@ function renderFgtsPeriodBuckets(data){
  const kpis='<div class="fgts-reference-kpis"><article class="fgts-reference-kpi blue"><span class="fgts-kpi-icon">◇</span><div class="fgts-kpi-copy"><b>Total Quantity · Selected Range</b><strong>'+fmt(totalQty)+'</strong><small>'+rangeCaption+'</small></div></article><article class="fgts-reference-kpi purple"><span class="fgts-kpi-icon">◷</span><div class="fgts-kpi-copy"><b>Average Lead Days · Selected Range</b><strong>'+fmt(avgLead)+'</strong><small>Based on '+fmt(leadCount)+' records with valid lead days</small></div></article></div>';
  const title=mode==='YEAR'?'Year':mode==='MONTH'?'Month':mode==='QUARTER'?'Quarter':'Half-Year';
  let html=kpis;
- html+='<div class="fgts-reference-top-grid '+(mode==='MONTH'?'fgts-monthly-ref-grid':'')+'">'+panel(mode==='MONTH'?'Monthly Quantity':mode==='YEAR'?'Overall Quantity per Year':'Quantity per '+title,'chart','Completed FGTS quantity · hover over a bar to see its quantity',quantityChart(),'fgts-ref-quantity '+(mode==='MONTH'?'fgts-monthly-ref-panel':''))+panel(mode==='MONTH'?'Monthly Average Lead Days':'Average Lead Days per '+title,'trend','Average record-level lead time for each selected period',leadLineChart(),'fgts-ref-lead '+(mode==='MONTH'?'fgts-monthly-ref-panel':''))+'</div>';
+ html+='<div class="fgts-reference-top-grid fgts-monthly-ref-grid">'+panel(mode==='MONTH'?'Monthly Quantity':mode==='YEAR'?'Overall Quantity per Year':'Quantity per '+title,'chart','Completed FGTS quantity · hover over a bar to see its quantity',quantityChart(),'fgts-ref-quantity '+(mode==='MONTH'?'fgts-monthly-ref-panel':''))+panel(mode==='MONTH'?'Monthly Average Lead Days':'Average Lead Days per '+title,'trend','Average record-level lead time for each selected period',leadLineChart(),'fgts-ref-lead '+(mode==='MONTH'?'fgts-monthly-ref-panel':''))+'</div>';
  html+='<div class="fgts-reference-bottom-grid">'+panel('Category Distribution','category','All categories · stacked quantities by selected period',categoryHtml,'fgts-ref-category-panel')+panel('Classification Distribution','classification','Standard · Non-standard · Telcos · Others · one donut per selected period','<div class="fgts-year-donut-grid">'+donuts+'</div>','fgts-ref-class-panel')+'</div>';
  html+='<div class="fgts-reference-summary-row">'+panel('Comparison Summary','chart','Period totals and changes versus the previous period',summary,'fgts-ref-summary-panel')+panel('Key Insights','bulb','Highlights across the selected reporting range',insightHtml,'fgts-ref-insight-panel')+'</div>';
  content.innerHTML=html;const updated=el('fgtsReportUpdated');if(updated)updated.textContent=new Date().toLocaleString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -5026,12 +5032,20 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 
 
 
-/* FGTS Report: apply consistent axis typography to every period-selector chart renderer. */
-#fgtsReportView .fgts-view-chart svg text,
-#fgtsReportView .fgts-yearly-svg-wrap svg text,
-#fgtsReportView .fgts-line-wrap svg text{font-size:12px!important;font-weight:700!important}
-#fgtsReportView .fgts-month-yaxis,
-#fgtsReportView .fgts-month-col>span{font-size:12px!important;font-weight:700!important}
+/* FGTS Report: one chart typography standard across every reporting period. */
+#fgtsReportView .fgts-ref-quantity svg text,
+#fgtsReportView .fgts-ref-lead svg text,
+#fgtsReportView .fgts-ref-quantity .fgts-month-yaxis,
+#fgtsReportView .fgts-ref-quantity .fgts-month-col>span,
+#fgtsReportView .fgts-ref-lead .fgts-month-yaxis,
+#fgtsReportView .fgts-ref-lead .fgts-month-col>span{
+ font-family:Arial,sans-serif!important;
+ font-size:8px!important;
+ font-weight:700!important;
+}
+#fgtsReportView .fgts-ref-quantity .fgts-month-chart{height:230px!important}
+#fgtsReportView .fgts-ref-quantity .fgts-month-chart .fgts-month-yaxis{padding-top:4px!important}
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap svg{max-height:230px!important}
 #fgtsReportView .fgts-year-legend{display:flex!important;justify-content:center!important;align-items:center!important;text-align:center}
 #fgtsReportView .fgts-reference-top-grid>.report-panel{display:flex;flex-direction:column}
 #fgtsReportView .fgts-reference-top-grid>.report-panel>.fgts-panel-body{display:flex;flex:1;flex-direction:column}
