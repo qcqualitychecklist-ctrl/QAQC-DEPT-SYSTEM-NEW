@@ -4848,6 +4848,29 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-monthly-ref-side strong{font-size:28px;line-height:1.05;font-weight:850;white-space:nowrap}
 @media(max-width:850px){#fgtsReportView .fgts-monthly-ref-grid{grid-template-columns:minmax(0,1fr)!important}#fgtsReportView .fgts-monthly-ref-layout{grid-template-columns:minmax(0,1fr) 105px}}
 </style>
+
+<style>
+/* FGTS Quantity and Lead Days: lock chart axis/value-label typography to 8px bold for every period mode. */
+#fgtsReportView .fgts-ref-quantity .fgts-view-chart svg text,
+#fgtsReportView .fgts-ref-lead .fgts-view-chart svg text,
+#fgtsReportView .fgts-ref-quantity .fgts-yearly-svg-wrap svg text,
+#fgtsReportView .fgts-ref-lead .fgts-yearly-svg-wrap svg text,
+#fgtsReportView .fgts-ref-quantity .fgts-line-wrap svg text,
+#fgtsReportView .fgts-ref-lead .fgts-line-wrap svg text,
+#fgtsReportView .fgts-monthly-ref-panel svg text{
+ font-family:Arial,sans-serif!important;
+ font-size:8px!important;
+ font-weight:700!important;
+}
+#fgtsReportView .fgts-ref-quantity .fgts-month-yaxis,
+#fgtsReportView .fgts-ref-quantity .fgts-month-col>span,
+#fgtsReportView .fgts-ref-lead .fgts-month-yaxis,
+#fgtsReportView .fgts-ref-lead .fgts-month-col>span{
+ font-family:Arial,sans-serif!important;
+ font-size:8px!important;
+ font-weight:700!important;
+}
+</style>
 </body></html>
 <!-- Trigger syntax validation for restored #242 source -->
 
