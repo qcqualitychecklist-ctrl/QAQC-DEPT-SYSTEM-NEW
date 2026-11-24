@@ -4211,7 +4211,7 @@ function reportDistributionBars(rowsA,rowsB,yearA,yearB,mode){
  const items=[...map.values()].sort((x,y)=>Math.max(y.a,y.b)-Math.max(x.a,x.b));
  const max=Math.max(1,...items.map(x=>Math.max(x.a,x.b)));
  if(!items.length)return '<div class="report-empty">No distribution data available.</div>';
- const ticks=[0,.25,.5,.75,1].map(v=>'<span>'+reportNumber(Math.round(max*v))+'</span>').join('');
+ const ticks=[0,.25,.5,.75,1].map(v=>'<span>'+reportNumber(max*v)+'</span>').join('');
  const rows=items.map(x=>{
   const bar=(value,cls,label)=>'<div class="fgts-category-bar-row"><div class="fgts-category-plot"><i class="'+cls+'" style="width:'+(value>0?Math.max(1,value/max*100):0)+'%"></i></div><b title="'+label+'">'+reportNumber(value)+'</b></div>';
   return '<div class="fgts-category-row fgts-page-item"><span class="fgts-category-name" title="'+reportEscape(x.name)+'">'+reportEscape(x.name)+'</span><div class="fgts-category-values">'+bar(x.a,'a',yearA)+(mode==='COMPARE'?bar(x.b,'b',yearB):'')+'</div></div>';
@@ -4225,7 +4225,7 @@ function reportMonthlyQtyBars(rowsA,rowsB,labelA,labelB,pairedHalfMonths){
  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],mapA=new Map((rowsA||[]).map(x=>[Number(x.month),Number(x.qty)||0])),mapB=new Map((rowsB||[]).map(x=>[Number(x.month),Number(x.qty)||0]));
  const monthKeys=[...new Set([...(rowsA||[]).map(x=>Number(x.month)),...(rowsB||[]).map(x=>Number(x.month))])].filter(m=>m>=1&&m<=12).sort((a,b)=>a-b);const displayMonths=pairedHalfMonths?[1,2,3,4,5,6]:monthKeys;const vals=displayMonths.map(m=>Math.max(mapA.get(m)||0,mapB.get(pairedHalfMonths?m+6:m)||0)),max=Math.max(1,...vals);
  if(!vals.some(v=>v>0))return '<div class="report-empty">No quantity data available for this period.</div>';
- const ticks=[0,.25,.5,.75,1].map(v=>'<span>'+reportNumber(max*v)+'</span>').join('');
+ const ticks=[0,.25,.5,.75,1].map(v=>'<span>'+reportNumber(Math.round(max*v))+'</span>').join('');
  const bars=displayMonths.map((monthA,i)=>{const monthB=pairedHalfMonths?monthA+6:monthA,av=mapA.get(monthA)||0,bv=mapB.get(monthB)||0,label=pairedHalfMonths?months[monthA-1]+'/'+months[monthB-1]:months[monthA-1];return '<div class="fgts-month-col"><div class="fgts-month-bars"><i class="a" style="height:'+(av/max*100)+'%" title="'+labelA+': '+reportNumber(av)+'"></i>'+(rowsB&&rowsB.length?'<i class="b" style="height:'+(bv/max*100)+'%" title="'+labelB+': '+reportNumber(bv)+'"></i>':'')+'</div><span>'+label+'</span></div>';}).join('');
  return '<div class="fgts-month-chart"><div class="fgts-month-yaxis">'+ticks+'</div><div class="fgts-month-plot"><div class="fgts-month-grid"></div><div class="fgts-month-columns">'+bars+'</div></div></div><div class="report-legend"><span><i class="legend-a"></i>'+labelA+'</span>'+(rowsB&&rowsB.length?'<span><i class="legend-b"></i>'+labelB+'</span>':'')+'</div>';
 }
