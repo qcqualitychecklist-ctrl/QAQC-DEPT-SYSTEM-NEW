@@ -5593,28 +5593,6 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 </script>
 
 
-<style id="fgts-single-year-final-chart-spacing">
-/* SINGLE YEAR only: center Quantity, enlarge Lead Days axes, and slightly lengthen Category bars. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-chart{
-  width:96%!important;
-  max-width:96%!important;
-  margin-left:auto!important;
-  margin-right:auto!important;
-  grid-template-columns:30px minmax(0,1fr)!important;
-  gap:4px!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text{
-  font-family:Arial,sans-serif!important;
-  font-size:13px!important;
-  font-weight:700!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-row{
-  grid-template-columns:110px minmax(0,1fr) 56px!important;
-  gap:8px!important;
-}
-</style>
-
-
 <style id="fgts-single-year-final-chart-alignment-v2">
 /* SINGLE YEAR only: center the complete Quantity plot, including its y-axis. */
 #fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-chart{
@@ -5646,10 +5624,6 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-chart{
   width:94%!important;max-width:620px!important;margin-inline:auto!important;
 }
-/* Lead Days: 11px visual axis text with the original compact single-year plot height. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
-  font-family:Arial,sans-serif!important;font-size:14px!important;font-weight:700!important;
-}
 /* Category labels get enough room to keep Components/breaker readable; bars sit slightly farther from labels and closer to quantities. */
 #fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-category .fgts-ref-cat-row{
   grid-template-columns:118px minmax(0,1fr) 70px!important;column-gap:9px!important;
@@ -5667,262 +5641,28 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 </style>
 
 
-<style id="fgts-single-report-graph-adjustments-v2">
-/* Single Report View only: nudge Quantity slightly left without changing its size. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-quantity .fgts-month-chart{
-  transform:translateX(-8px)!important;
-}
-/* Match Lead Days plot footprint to Quantity and set axis labels to a true 10px visual size. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap{
-  box-sizing:border-box!important;
-  width:94%!important;
-  max-width:620px!important;
-  margin-left:auto!important;
-  margin-right:auto!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg{
-  display:block!important;
-  width:100%!important;
-  max-height:230px!important;
-  height:auto!important;
-  margin:0 auto!important;
-}
+<style id="fgts-single-report-lead-clean-authoritative-v11">
+/* One authoritative Single Year rule set; match Quantity axis typography. */
 #fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
   font-family:Arial,sans-serif!important;
-  font-size:13px!important;
-  font-weight:700!important;
-}
-</style>
-
-
-<style id="fgts-single-report-equal-plot-height-v3">
-/* Single Report View only: make the Lead Days plotting viewport the same 230px height as Quantity. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap{
-  box-sizing:border-box!important;
-  height:230px!important;
-  min-height:230px!important;
-  max-height:230px!important;
-  display:flex!important;
-  align-items:stretch!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg{
-  box-sizing:border-box!important;
-  display:block!important;
-  width:100%!important;
-  height:230px!important;
-  max-height:none!important;
-  flex:0 0 230px!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
-  font-family:Arial,sans-serif!important;
-  font-size:14px!important;
-  font-weight:700!important;
-}
-</style>
-
-
-<style id="fgts-single-report-lead-svg-full-width-v4">
-/* Correct the Lead Days SVG itself: the previous flex-basis accidentally constrained it to 230px wide. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap{
-  display:block!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  max-width:100%!important;
-  height:230px!important;
-  min-height:230px!important;
-  max-height:230px!important;
-  overflow:hidden!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg{
-  display:block!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  min-width:100%!important;
-  max-width:100%!important;
-  height:230px!important;
-  max-height:230px!important;
-  flex:none!important;
-  margin:0!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
-  font-family:Arial,sans-serif!important;
-  font-size:14px!important;
-  font-weight:700!important;
-}
-</style>
-
-
-<style id="fgts-single-report-lead-match-quantity-v5">
-/* Single Report View: lock the Lead Days plot to the same 230px chart height as Quantity. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap{
-  display:block!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  max-width:100%!important;
-  height:230px!important;
-  min-height:230px!important;
-  max-height:230px!important;
-  flex:0 0 230px!important;
-  margin-top:0!important;
-  margin-bottom:0!important;
-  overflow:visible!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg{
-  display:block!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  min-width:100%!important;
-  max-width:100%!important;
-  height:230px!important;
-  min-height:230px!important;
-  max-height:230px!important;
-  flex:none!important;
-  margin:0!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
-  font-family:Arial,sans-serif!important;
-  font-size:12px!important;
-  font-weight:700!important;
-}
-</style>
-
-
-<style id="fgts-single-report-lead-plot-height-and-black-axes-v6">
-/* Single Report View: match the actual Lead Days plotting height to Quantity's 230px plot. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap{
-  display:block!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  max-width:100%!important;
-  height:296px!important;
-  min-height:296px!important;
-  max-height:296px!important;
-  overflow:visible!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg{
-  display:block!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  min-width:100%!important;
-  max-width:100%!important;
-  height:296px!important;
-  min-height:296px!important;
-  max-height:296px!important;
-  flex:none!important;
-  margin:0!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
-  font-family:Arial,sans-serif!important;
-  font-size:11px!important;
-  font-weight:700!important;
-  fill:#000!important;
-}
-</style>
-
-
-<style id="fgts-single-report-lead-match-quantity-axes-v7">
-/* Match Quantity's 230px total chart viewport; preserve the original compact plot geometry. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap{
-  display:block!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  max-width:100%!important;
-  height:230px!important;
-  min-height:230px!important;
-  max-height:230px!important;
-  overflow:visible!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg{
-  display:block!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  min-width:100%!important;
-  max-width:100%!important;
-  height:230px!important;
-  min-height:230px!important;
-  max-height:230px!important;
-  flex:none!important;
-  margin:0!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
-  font-family:Arial,sans-serif!important;
-  font-size:12px!important;
-  font-weight:700!important;
-  fill:#000!important;
-}
-</style>
-
-
-<style id="fgts-single-report-lead-final-match-v8">
-/* Single Report View only: lock Lead Days to Quantity's 230px chart height. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap{
-  display:block!important;box-sizing:border-box!important;
-  width:100%!important;max-width:100%!important;
-  height:230px!important;min-height:230px!important;max-height:230px!important;
-  margin:0!important;overflow:visible!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg{
-  display:block!important;box-sizing:border-box!important;
-  width:100%!important;min-width:100%!important;max-width:100%!important;
-  height:230px!important;min-height:230px!important;max-height:230px!important;
-  margin:0!important;flex:none!important;
-}
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
-  font-family:Arial,sans-serif!important;font-size:12.4px!important;
-  font-weight:700!important;fill:#000!important;
-}
-</style>
-
-
-<style id="fgts-single-report-lead-axis-match-quantity-v9">
-/* Match Quantity axis typography exactly; do not change chart geometry. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
-  font-family:inherit!important;
-  font-size:9.5px!important;
-  font-weight:400!important;
-  fill:#09275c!important;
-}
-</style>
-
-
-<style id="fgts-single-report-lead-axis-legend-match-quantity-v10">
-/* Single Report View only: make Lead Days axis typography and legend match Quantity. */
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg text.fgts-lead-axis-label{
-  font-family:Arial,sans-serif!important;
-  font-size:12px!important;
+  font-size:11.3px!important;
   font-weight:700!important;
   fill:#09275c!important;
 }
+/* Match shared legend typography and alignment while retaining series colors. */
 #fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .report-legend{
-  display:flex!important;
-  justify-content:center!important;
-  align-items:center!important;
-  gap:15px!important;
-  margin-top:7px!important;
-  color:#09275c!important;
-  font-family:Arial,sans-serif!important;
-  font-size:10px!important;
-  font-weight:400!important;
-  transform:none!important;
+  display:flex!important;justify-content:center!important;align-items:center!important;
+  flex-wrap:nowrap!important;gap:15px!important;margin:7px 0 0!important;padding:0!important;
+  transform:none!important;color:#09275c!important;font-family:Arial,sans-serif!important;
+  font-size:10px!important;font-weight:400!important;
 }
 #fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .report-legend>span{
-  display:flex!important;
-  align-items:center!important;
-  gap:5px!important;
-  color:#09275c!important;
-  font-family:Arial,sans-serif!important;
-  font-size:10px!important;
-  font-weight:400!important;
+  display:flex!important;align-items:center!important;gap:5px!important;
+  color:#09275c!important;font-family:Arial,sans-serif!important;font-size:10px!important;font-weight:400!important;
 }
 #fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .report-legend i{
-  display:inline-block!important;
-  flex:0 0 10px!important;
-  width:10px!important;
-  height:10px!important;
-  border-radius:50%!important;
-  background:#6941ee!important;
+  display:inline-block!important;flex:0 0 10px!important;width:10px!important;height:10px!important;
+  border-radius:50%!important;background:#6941ee!important;
 }
-#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .report-legend i.legend-b{
-  background:#20ae68!important;
-}
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .report-legend i.legend-b{background:#20ae68!important}
 </style>
