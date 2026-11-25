@@ -5649,7 +5649,13 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
   font-weight:700!important;
   fill:#09275c!important;
 }
-/* Match shared legend typography and alignment while retaining series colors. */
+
+/* Lower only the plotted Lead Days graphic; preserve the layout box and legend row. */
+#fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .fgts-line-wrap svg{
+  transform:translateY(5px)!important;
+}
+
+/* Keep legend on the same baseline as the Quantity legend. */
 #fgtsReportView:has(#fgtsReportMode option[value="SINGLE_YEAR"]:checked) .fgts-ref-lead .report-legend{
   display:flex!important;justify-content:center!important;align-items:center!important;
   flex-wrap:nowrap!important;gap:15px!important;margin:7px 0 0!important;padding:0!important;
