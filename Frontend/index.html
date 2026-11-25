@@ -4465,15 +4465,27 @@ function renderFgtsPeriodBuckets(data){
  const chartShell=(svg,label)=>'<div class="fgts-view-chart">'+svg+'</div>';
  const quantityChart=()=>{
   if(mode==='MONTH'){
-   const monthIndexes=[...new Set(buckets.map(x=>Number(x.periodIndex)))].sort((a,b)=>a-b);
+   const monthIndexes=Array.from({length:12},(_,i)=>i+1);
    const monthGroups=monthIndexes.map(month=>({month,values:years.map(year=>{const item=buckets.find(x=>Number(x.year)===year&&Number(x.periodIndex)===month);return item?Number(item.totalQty)||0:0;})}));
-   const max=Math.max(1,...monthGroups.flatMap(g=>g.values)),w=570,h=230,left=42,right=8,top=30,bottom=34,plotH=h-top-bottom,slot=(w-left-right)/Math.max(1,monthGroups.length),bw=Math.min(19,slot/(years.length+1));
-   const grid=[0,.25,.5,.75,1].map(t=>{const v=Math.round(max*t),yy=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#dce5f2"/><text x="'+(left-7)+'" y="'+(yy+4)+'" text-anchor="end" fill="#102b56" font-size="12" font-weight="700">'+fmt(v)+'</text>';}).join('');
-   const bars=monthGroups.map((g,i)=>{const groupW=bw*years.length+5*(years.length-1),start=left+i*slot+(slot-groupW)/2;const rects=g.values.map((v,j)=>{const bh=v/max*plotH,xx=start+j*(bw+5),yy=top+plotH-bh;return '<g class="fgts-qty-bar" tabindex="0" role="img" aria-label="'+escape(String(v))+'" title="'+fmt(v)+'"><rect x="'+xx+'" y="'+yy+'" width="'+bw+'" height="'+Math.max(1,bh)+'" rx="2" fill="'+yearColor(years[j])+'"><title>'+fmt(v)+'</title></rect></g>';}).join('');return rects+'<text x="'+(left+i*slot+slot/2)+'" y="'+(h-9)+'" text-anchor="middle" fill="#102b56" font-size="12" font-weight="700">'+escape(monthNames[g.month-1]||String(g.month))+'</text>';}).join('');
+   const w=570,h=230,left=42,right=8,top=30,bottom=34,plotH=h-top-bottom,slot=(w-left-right)/12,bw=Math.min(27,slot*.58);
+   const grid=[0,.25,.5,.75,1].map(t=>{const yy=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#dce5f2"/><text x="'+(left-7)+'" y="'+(yy+4)+'" text-anchor="end" fill="#102b56" font-size="12" font-weight="700">'+Math.round(t*100)+'%</text>';}).join('');
+   const bars=monthGroups.map((g,i)=>{
+    const total=g.values.reduce((sum,value)=>sum+value,0),xx=left+i*slot+(slot-bw)/2;
+    let cumulative=0;
+    const segments=g.values.map((value,j)=>{
+     if(value<=0||total<=0)return '';
+     const segmentHeight=value/total*plotH,yy=top+plotH-(cumulative+value)/total*plotH;
+     cumulative+=value;
+     const year=years[j],color=yearColor(year);
+     return '<rect class="fgts-qty-segment" tabindex="0" role="img" aria-label="'+escape(String(year)+' '+monthNames[g.month-1]+': '+fmt(value))+'" x="'+xx+'" y="'+yy+'" width="'+bw+'" height="'+Math.max(1,segmentHeight)+'" fill="'+color+'"><title>'+year+' · '+fmt(value)+' ('+(value/total*100).toFixed(1)+'%)</title></rect>';
+    }).join('');
+    return '<g class="fgts-qty-bar" aria-label="'+escape(monthNames[g.month-1])+'">'+segments+'<text x="'+(xx+bw/2)+'" y="'+(h-9)+'" text-anchor="middle" fill="#102b56" font-size="12" font-weight="700">'+escape(monthNames[g.month-1])+'</text></g>';
+   }).join('');
    const totals=years.map(year=>({year,total:buckets.filter(x=>Number(x.year)===year).reduce((n,x)=>n+(Number(x.totalQty)||0),0)}));
+   const combined=totals.reduce((sum,x)=>sum+x.total,0);
    const legend='<div class="fgts-monthly-ref-legend">'+years.map(year=>'<span><i style="background:'+yearColor(year)+'"></i>'+year+'</span>').join('')+'</div>';
-   const side='<aside class="fgts-monthly-ref-side"><b>Overall Qty</b>'+totals.map(x=>'<div><span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span><strong style="color:'+yearColor(x.year)+'">'+fmt(x.total)+'</strong></div>').join('')+'</aside>';
-   return '<div class="fgts-monthly-ref-layout"><div class="fgts-monthly-ref-plot">'+legend+'<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Monthly quantity comparison">'+grid+bars+'</svg></div>'+side+'</div>';
+   const side='<aside class="fgts-monthly-ref-side"><b>Overall Quantity</b>'+totals.map(x=>'<div><span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span><strong style="color:'+yearColor(x.year)+'">'+fmt(x.total)+'</strong></div>').join('')+'<div class="fgts-monthly-ref-combined"><span>Combined</span><strong>'+fmt(combined)+'</strong></div></aside>';
+   return '<div class="fgts-monthly-ref-layout"><div class="fgts-monthly-ref-plot">'+legend+'<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Monthly quantity comparison, 100 percent stacked by year">'+grid+bars+'</svg></div>'+side+'</div>';
   }
   const w=570,h=230,left=42,right=8,top=30,bottom=34,plotH=h-top-bottom;
   if(mode==='MONTH'){
@@ -4514,7 +4526,7 @@ function renderFgtsPeriodBuckets(data){
  };
  const leadLineChart=()=>{
   if(mode==='MONTH'){
-   const monthIndexes=[...new Set(buckets.map(x=>Number(x.periodIndex)))].sort((a,b)=>a-b),w=570,h=230,left=42,right=8,top=38,bottom=34,plotH=h-top-bottom;
+   const monthIndexes=Array.from({length:12},(_,i)=>i+1),w=570,h=230,left=42,right=8,top=38,bottom=34,plotH=h-top-bottom;
    const x=i=>left+(w-left-right)*(i+.5)/Math.max(1,monthIndexes.length),values=buckets.map(x=>x.averageLeadDays==null?null:Number(x.averageLeadDays)).filter(v=>v!=null&&Number.isFinite(v)),max=Math.max(1,Math.ceil(Math.max(...values,1)+1)),y=v=>top+plotH-(v/max)*plotH;
    const grid=[0,.25,.5,.75,1].map(t=>{const v=Math.round(max*t),yy=y(v);return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#dce5f2"/><text x="'+(left-7)+'" y="'+(yy+4)+'" text-anchor="end" fill="#102b56" font-size="12" font-weight="700">'+v+'</text>';}).join('');
    const lines=years.map((year,yi)=>{const pts=monthIndexes.map((p,i)=>{const item=buckets.find(b=>Number(b.year)===year&&Number(b.periodIndex)===p);return item&&item.averageLeadDays!=null?{x:x(i),y:y(Number(item.averageLeadDays)),v:Number(item.averageLeadDays)}:null;});const valid=pts.map((p,i)=>p?{...p,i}:null).filter(Boolean),color=yearColor(year),path=valid.map((p,i)=>(i?'L':'M')+p.x+','+p.y).join(' ');const marker=valid.map(p=>yi===0?'<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="'+color+'" stroke="#fff" stroke-width="1.5"/>':'<path d="M '+p.x+' '+(p.y-6)+' L '+(p.x-6)+' '+(p.y+5)+' L '+(p.x+6)+' '+(p.y+5)+' Z" fill="'+color+'" stroke="#fff" stroke-width="1"/>').join('');const labels=valid.map(p=>'<text x="'+p.x+'" y="'+(p.y+(yi===0?-12:19))+'" text-anchor="middle" fill="#102b56" font-size="12" font-weight="700">'+p.v.toFixed(1)+'</text>').join('');return '<polyline points="'+valid.map(p=>p.x+','+p.y).join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+marker+labels;}).join('');
