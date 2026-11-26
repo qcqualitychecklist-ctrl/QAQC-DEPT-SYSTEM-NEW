@@ -5837,56 +5837,35 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 @media(max-width:720px){#fgtsReportView .fgts-year-donut-grid{grid-template-columns:1fr!important}}
 </style>
 <style id="fgts-month-category-match-single-year-final">
-/* Month Category: copy the established Single Year row, track, and fill treatment.
-   For multiple years, keep one same-height fill bar per year within the same category track. */
+/* Use the exact Single Year Category row proportions and track dimensions. */
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category{
+  display:flex!important;flex-direction:column!important;gap:12px!important;
+  width:100%!important;max-width:100%!important;
+}
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-row{
   display:grid!important;
-  grid-template-columns:118px minmax(0,1fr) 70px!important;
-  align-items:center!important;
-  gap:9px!important;
-  width:100%!important;
+  grid-template-columns:minmax(65px,.8fr) minmax(120px,4fr) auto!important;
+  align-items:center!important;gap:8px!important;width:100%!important;
 }
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-row>span{
-  min-width:0!important;
-  color:#09275c!important;
-  font:700 10px/1.2 Arial,sans-serif!important;
-  white-space:normal!important;
-  overflow-wrap:break-word!important;
-  word-break:normal!important;
+  min-width:0!important;color:#09275c!important;font:700 10px/1.2 Arial,sans-serif!important;
+  white-space:normal!important;overflow-wrap:break-word!important;word-break:normal!important;
 }
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-row>b{
-  min-width:0!important;
-  color:#09275c!important;
-  font:700 10px Arial,sans-serif!important;
-  white-space:nowrap!important;
-  text-align:right!important;
+  min-width:0!important;color:#09275c!important;font:700 10px Arial,sans-serif!important;
+  white-space:nowrap!important;text-align:right!important;
 }
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track{
-  box-sizing:border-box!important;
-  display:flex!important;
-  flex-direction:column!important;
-  justify-content:center!important;
-  align-items:stretch!important;
-  gap:2px!important;
-  width:100%!important;
-  min-width:0!important;
-  height:auto!important;
-  min-height:23px!important;
-  padding:0!important;
-  border-left:1px solid #8fa9d0!important;
-  border-radius:0!important;
+  box-sizing:border-box!important;display:flex!important;flex-direction:column!important;
+  justify-content:center!important;align-items:stretch!important;gap:2px!important;
+  width:100%!important;min-width:120px!important;height:25px!important;min-height:25px!important;
+  padding:0!important;border-left:1px solid #8fa9d0!important;border-radius:0!important;
   background:repeating-linear-gradient(to right,#edf3fc 0,#edf3fc calc(25% - 1px),#d7e3f6 calc(25% - 1px),#d7e3f6 25%)!important;
   overflow:hidden!important;
 }
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track>i{
-  display:block!important;
-  flex:0 0 10px!important;
-  width:var(--category-year-width,auto);
-  height:10px!important;
-  min-height:10px!important;
-  max-height:10px!important;
-  border:0!important;
-  border-radius:0 4px 4px 0!important;
-  box-shadow:none!important;
+  display:block!important;flex:0 0 10px!important;width:var(--category-year-width,auto);
+  height:10px!important;min-height:10px!important;max-height:10px!important;
+  border:0!important;border-radius:0 4px 4px 0!important;box-shadow:none!important;
 }
 </style>
