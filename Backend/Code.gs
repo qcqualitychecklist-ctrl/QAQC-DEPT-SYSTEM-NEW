@@ -127,11 +127,11 @@ function doGet(e) {
 function readModuleCache_(key){
   try{const packed=CacheService.getScriptCache().get(key);if(!packed)return null;const bytes=Utilities.base64Decode(packed);const json=Utilities.ungzip(Utilities.newBlob(bytes)).getDataAsString('UTF-8');return JSON.parse(json);}catch(e){return null;}
 }
-function writeModuleCache_(key,value){
-  try{const packed=Utilities.base64Encode(Utilities.gzip(Utilities.newBlob(JSON.stringify(value),'application/json')).getBytes());if(packed.length<95000)CacheService.getScriptCache().put(key,packed,20);}catch(e){}
+function writeModuleCache_(key,value,ttlSeconds){
+  try{const packed=Utilities.base64Encode(Utilities.gzip(Utilities.newBlob(JSON.stringify(value),'application/json')).getBytes());if(packed.length<95000)CacheService.getScriptCache().put(key,packed,Math.max(1,Number(ttlSeconds)||20));}catch(e){}
 }
 function invalidateModuleCache_(){
-  try{const cache=CacheService.getScriptCache();const names=arguments.length?Array.from(arguments):['Transfer Monitoring','J.O Register','FGTS Monitoring'];names.forEach(name=>{const key=String(name).replace(/[^a-z0-9]/gi,'_');cache.remove('qaqc_module_v2_'+key);cache.remove('qaqc_module_v3_'+key);});}catch(e){}
+  try{const cache=CacheService.getScriptCache(),names=arguments.length?Array.from(arguments):['Transfer Monitoring','J.O Register','FGTS Monitoring'];names.forEach(name=>{const key=String(name).replace(/[^a-z0-9]/gi,'_');cache.remove('qaqc_module_v2_'+key);cache.remove('qaqc_module_v3_'+key);});if(!arguments.length||names.some(name=>['Transfer Monitoring','FGTS Monitoring'].includes(String(name))))cache.remove('qaqc_fgts_report_source_v1');}catch(e){}
 }
 
 function getSystemStatus() {
@@ -164,7 +164,12 @@ function setupDatabase() {
 
 function getFGTSReportData(selectedYear, comparisonYear, selectedPeriod, fromMonth, toMonth, comparisonPeriod, rangeStartYear, rangeEndYear) {
   // Reports only read FGTS data; allocation synchronization already runs on Transfer save/update.
-  const source=getFGTSMonitoringRecords_('',true);
+  const reportSourceCacheKey='qaqc_fgts_report_source_v1';
+  let source=readModuleCache_(reportSourceCacheKey);
+  if(!source||!source.ok){
+    source=getFGTSMonitoringRecords_('',true);
+    if(source&&source.ok)writeModuleCache_(reportSourceCacheKey,source,60);
+  }
   if(!source||!source.ok)throw new Error('Unable to load FGTS source records.');
   const all=source.records||[],months=Array.from({length:12},(_,i)=>i+1);
   const parseDate=value=>{
