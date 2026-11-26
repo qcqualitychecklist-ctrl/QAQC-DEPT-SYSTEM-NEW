@@ -4422,15 +4422,17 @@ function loadFgtsReport(){
  if(from>to){const old=from;from=to;to=old;}
  let qFrom=Number(el('fgtsQuarterFrom')?.value||1),qTo=Number(el('fgtsQuarterTo')?.value||4);if(qFrom>qTo){const old=qFrom;qFrom=qTo;qTo=old;}
  const half=el('fgtsHalfSelection')?.value||'BOTH',period=mode==='SINGLE_YEAR'?'CUSTOM':mode==='YEAR'?'FULL':'CUSTOM';
- const cacheKey=[mode,year,toYear,from,to,qFrom,qTo,half].join('|'),cache=window.__fgtsReportViewCache||(window.__fgtsReportViewCache=new Map()),cached=cache.get(cacheKey);
+ const cacheKey=[mode,year,toYear,mode==='MONTH'?'ALL':from,mode==='MONTH'?'ALL':to,qFrom,qTo,half].join('|'),cache=window.__fgtsReportViewCache||(window.__fgtsReportViewCache=new Map()),cached=cache.get(cacheKey);
  const token=++fgtsReportRequest,content=el('fgtsReportContent');if(!content)return;
- if(cached){activeFgtsReport=cached;updateFgtsReportModeVisibility();renderFgtsReport(cached);content.dataset.fgtsReportReady='1';return;}
+ const renderSelection=data=>{const viewData=mode==='MONTH'?Object.assign({},data,{periodBuckets:(data.periodBuckets||[]).filter(x=>Number(x.periodIndex)>=from&&Number(x.periodIndex)<=to)}):data;activeFgtsReport=viewData;updateFgtsReportModeVisibility();renderFgtsReport(viewData);content.dataset.fgtsReportReady='1';};
+ if(cached){renderSelection(cached);return;}
  if(content.dataset.fgtsReportReady!=='1')content.innerHTML='<div class="report-empty">Loading FGTS report…</div>';
  else if(!content.querySelector('.fgts-report-refresh-note'))content.insertAdjacentHTML('afterbegin','<div class="fgts-report-refresh-note" role="status">Updating report data…</div>');
- callServer('getFGTSReportData',[year,toYear,period,from,to,'SAME',year,toYear,mode,qFrom,qTo,half],data=>{
+ const requestFrom=mode==='MONTH'?1:from,requestTo=mode==='MONTH'?12:to;
+ callServer('getFGTSReportData',[year,toYear,period,requestFrom,requestTo,'SAME',year,toYear,mode,qFrom,qTo,half],data=>{
   if(token!==fgtsReportRequest)return;
   if(!data||!data.ok){const note=content.querySelector('.fgts-report-refresh-note');if(note)note.remove();if(content.dataset.fgtsReportReady!=='1')content.innerHTML='<div class="report-empty">Unable to load FGTS report data.</div>';return;}
-  activeFgtsReport=data;cache.set(cacheKey,data);if(cache.size>24)cache.delete(cache.keys().next().value);
+  cache.set(cacheKey,data);if(cache.size>24)cache.delete(cache.keys().next().value);
   const years=data.years||[],yearSelect=el('fgtsReportYear'),toSelect=el('fgtsCompareYear');
   const options=years.slice().sort((a,b)=>a-b).map(y=>'<option value="'+y+'">'+y+'</option>').join('');
   yearSelect.innerHTML=options;toSelect.innerHTML=options;
@@ -4440,7 +4442,7 @@ function loadFgtsReport(){
   const monthFrom=el('fgtsFromMonth'),monthTo=el('fgtsToMonth');
   if(monthFrom)monthFrom.value=String(from);if(monthTo)monthTo.value=String(to);
   const note=content.querySelector('.fgts-report-refresh-note');if(note)note.remove();
-  updateFgtsReportModeVisibility();renderFgtsReport(data);content.dataset.fgtsReportReady='1';
+  renderSelection(data);
  },err=>{if(token===fgtsReportRequest){const note=content.querySelector('.fgts-report-refresh-note');if(note)note.remove();if(content.dataset.fgtsReportReady!=='1')content.innerHTML='<div class="report-empty">'+reportEscape(err&&err.message||'Unable to load FGTS report data.')+'</div>';}}});
 }
 function updateFgtsReportModeVisibility(){updateFgtsReportModeFields();}
