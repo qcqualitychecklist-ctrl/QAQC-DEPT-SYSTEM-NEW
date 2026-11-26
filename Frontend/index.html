@@ -2387,6 +2387,33 @@ body.fgts-report-open .intro{display:none!important}
   font-weight:800!important;
 }
 </style>
+
+<style id="fgts-month-report-exact-distribution-reference-v1">
+/* Month Report View only: reproduce the supplied Category Distribution reference. */
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track{
+  height:23px!important;min-height:23px!important;
+  background:#edf2f7!important;background-image:none!important;
+  border:0!important;border-radius:7px!important;
+  overflow:hidden!important;box-shadow:none!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track>i.fgts-month-category-segment{
+  height:23px!important;min-height:23px!important;max-height:23px!important;
+  background:#1769ed!important;border:0!important;
+  border-radius:0!important;box-shadow:none!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track>i.fgts-month-category-segment:first-child{border-radius:7px 0 0 7px!important}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track>i.fgts-month-category-segment:last-child{border-radius:0 7px 7px 0!important}
+/* Match the reference donut scale and typography; Total Qty is bold Sentence case. */
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-year-donut-grid .fgts-ref-donut-body svg{
+  width:280px!important;max-width:38%!important;min-width:0!important;flex:0 0 38%!important;height:auto!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-year-donut-grid .fgts-ref-donut-body svg text:first-of-type{font-size:15px!important;font-weight:800!important}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-year-donut-grid .fgts-ref-donut-body svg text:nth-of-type(2){font-size:8px!important;font-weight:700!important}
+@media(max-width:720px){
+ #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-year-donut-grid .fgts-ref-donut-body svg{width:180px!important;max-width:42%!important;flex-basis:42%!important}
+}
+</style>
+
 </head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
@@ -4384,7 +4411,7 @@ function renderFgtsReportLegacy(data){
  const classNames=['Standard','Non-standard','Telcos','Others'],classColors=['#1769ed','#22b36b','#ff9e1b','#7848ed'];
  const donut=(rows,label)=>{const map=new Map((rows||[]).map(x=>[String(x.name).toLowerCase(),Number(x.total)||0])),vals=classNames.map(n=>map.get(n.toLowerCase())||0),sum=vals.reduce((x,y)=>x+y,0);let offset=0;
   const arcs=vals.map((v,i)=>{const p=sum?v/sum*100:0,arc='<circle cx="60" cy="60" r="43" fill="none" stroke="'+classColors[i]+'" stroke-width="17" stroke-dasharray="'+p+' '+(100-p)+'" pathLength="100" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 60 60)"/>';offset+=p;return arc;}).join('');
-  return '<div class="fgts-ref-donut-card"><b>'+label+'</b><div class="fgts-ref-donut-body"><svg viewBox="0 0 120 120" role="img" aria-label="'+label+' classification donut">'+arcs+'<text x="60" y="57" text-anchor="middle" font-size="13" font-weight="800" fill="#102d62">'+fmt(sum)+'</text><text x="60" y="70" text-anchor="middle" font-size="8" fill="#65758f">TOTAL QTY</text></svg><div class="fgts-ref-legend">'+classNames.map((n,i)=>'<div><i style="background:'+classColors[i]+'"></i><span>'+n+'</span><b>'+fmt(vals[i])+' ('+(sum?(vals[i]/sum*100).toFixed(1):'0.0')+'%)</b></div>').join('')+'</div></div></div>';
+  return '<div class="fgts-ref-donut-card"><b>'+label+'</b><div class="fgts-ref-donut-body"><svg viewBox="0 0 120 120" role="img" aria-label="'+label+' classification donut">'+arcs+'<text x="60" y="57" text-anchor="middle" font-size="13" font-weight="800" fill="#102d62">'+fmt(sum)+'</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="700" fill="#65758f">Total Qty</text></svg><div class="fgts-ref-legend">'+classNames.map((n,i)=>'<div><i style="background:'+classColors[i]+'"></i><span>'+n+'</span><b>'+fmt(vals[i])+' ('+(sum?(vals[i]/sum*100).toFixed(1):'0.0')+'%)</b></div>').join('')+'</div></div></div>';
  };
  const classificationHtml=donut(a.classification,compare?yearA+' · '+periodLabel:yearA+' · '+periodLabel)+(compare?donut(b.classification,yearB+' · '+periodLabelB):'');
  const insights=[];
