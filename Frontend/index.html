@@ -4609,6 +4609,7 @@ function renderFgtsPeriodBuckets(data){
   const sumDimension=key=>{const map=new Map();group.forEach(row=>(row[key]||[]).forEach(item=>map.set(String(item.name||'Unassigned'),(map.get(String(item.name||'Unassigned'))||0)+(Number(item.total)||0))));return [...map.entries()].map(([name,total])=>({name,total}));};
   return {year,label:String(year),category:sumDimension('category'),classification:sumDimension('classification')};
  });
+ const distributionBuckets=distributionByYear;
  const categoryMap=new Map();distributionByYear.forEach((bucket,i)=>(bucket.category||[]).forEach(c=>{const name=String(c.name||'Unassigned');if(!categoryMap.has(name))categoryMap.set(name,Array(distributionByYear.length).fill(0));categoryMap.get(name)[i]=Number(c.total)||0;}));
  const cats=[...categoryMap.entries()].filter(([,vals])=>vals.some(v=>v>0)).sort((a,b)=>b[1].reduce((sum,v)=>sum+v,0)-a[1].reduce((sum,v)=>sum+v,0));
  const catMax=Math.max(1,...cats.map(([,vals])=>Math.max(...vals)));
