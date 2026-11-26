@@ -5986,3 +5986,86 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-ref-cat-row>b{text-align:right!important;white-space:nowrap!important}
 #fgtsReportView .fgts-month-category .fgts-ref-cat-row>b{text-align:right!important;white-space:nowrap!important}
 </style>
+
+<style id="fgts-category-true-global-light-green-override">
+/* Final source-level override: one light-green palette and genuinely thin bars in every FGTS report mode. */
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-category .fgts-ref-cat-row,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-month-category .fgts-ref-cat-row,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-list .fgts-year-category-row{
+  align-items:center!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-cat-row>span,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-cat-row>b,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row>b{
+  font-family:Arial,sans-serif!important;
+  font-size:10px!important;
+  line-height:1.2!important;
+  font-weight:700!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-cat-row>span:before,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row>b:before{
+  content:""!important;
+  display:inline-block!important;
+  flex:0 0 6px!important;
+  width:6px!important;height:6px!important;
+  margin:0 6px 1px 0!important;
+  border-radius:50%!important;
+  background:#91d5a8!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-cat-row,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row{
+  --fgts-category-color:#91d5a8!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-cat-track,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-month-category .fgts-ref-cat-track,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-track{
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:0!important;
+  width:100%!important;
+  min-width:0!important;
+  height:8px!important;
+  min-height:8px!important;
+  max-height:8px!important;
+  padding:0!important;margin:0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:6px!important;
+  background:#e5f4e9!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-cat-track>i,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-month-category .fgts-ref-cat-track>i,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-track>i,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-month-category-segment{
+  display:block!important;
+  flex:0 0 auto!important;
+  height:8px!important;
+  min-height:8px!important;
+  max-height:8px!important;
+  margin:0!important;padding:0!important;
+  border:0!important;
+  border-radius:6px!important;
+  background:#91d5a8!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  opacity:1!important;
+  filter:none!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-track>i{
+  height:8px!important;min-height:8px!important;max-height:8px!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row>div{
+  min-width:0!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row>div>span{
+  display:none!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-cat-row>b{
+  font-size:10px!important;text-align:right!important;white-space:nowrap!important;
+}
+</style>
