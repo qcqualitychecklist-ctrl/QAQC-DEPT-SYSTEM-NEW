@@ -6003,3 +6003,73 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
   #fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row{grid-template-columns:minmax(0,96px) minmax(0,1fr)!important;gap:5px!important}
 }
 </style>
+\n
+<style id="fgts-category-global-final-typography-circle-v5">
+/* FINAL GLOBAL OVERRIDE: identical category typography, text color and true circular marker in every FGTS report period. */
+#fgtsReportView .fgts-ref-category .fgts-ref-cat-row>span,
+#fgtsReportView .fgts-ref-category .fgts-ref-cat-row>b,
+#fgtsReportView .fgts-month-category .fgts-ref-cat-row>span,
+#fgtsReportView .fgts-month-category .fgts-ref-cat-row>b,
+#fgtsReportView .fgts-year-category-row>b,
+#fgtsReportView .fgts-year-category-track span,
+#fgtsReportView .fgts-category-name,
+#fgtsReportView .fgts-category-bar-row>b{
+  font-family:Arial,sans-serif!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  line-height:1.2!important;
+  color:#102b56!important;
+}
+#fgtsReportView .fgts-ref-category .fgts-ref-cat-row>span,
+#fgtsReportView .fgts-month-category .fgts-ref-cat-row>span,
+#fgtsReportView .fgts-year-category-row>b,
+#fgtsReportView .fgts-category-name{
+  min-width:0!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+}
+#fgtsReportView .fgts-ref-category .fgts-ref-cat-row>span:before,
+#fgtsReportView .fgts-month-category .fgts-ref-cat-row>span:before,
+#fgtsReportView .fgts-year-category-row>b:before,
+#fgtsReportView .fgts-category-name:before{
+  content:""!important;
+  display:inline-block!important;
+  box-sizing:border-box!important;
+  width:6px!important;
+  min-width:6px!important;
+  max-width:6px!important;
+  height:6px!important;
+  min-height:6px!important;
+  max-height:6px!important;
+  aspect-ratio:1/1!important;
+  flex:0 0 6px!important;
+  padding:0!important;
+  margin:0 5px 1px 0!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:#43b56b!important;
+  vertical-align:middle!important;
+  transform:none!important;
+}
+#fgtsReportView .fgts-ref-category .fgts-ref-cat-row>b,
+#fgtsReportView .fgts-month-category .fgts-ref-cat-row>b,
+#fgtsReportView .fgts-year-category-track span,
+#fgtsReportView .fgts-category-bar-row>b{
+  text-align:right!important;
+  white-space:nowrap!important;
+  color:#102b56!important;
+}
+#fgtsReportView .fgts-ref-category .fgts-ref-cat-track,
+#fgtsReportView .fgts-month-category .fgts-ref-cat-track,
+#fgtsReportView .fgts-year-category-track{
+  background:#e3f1e6!important;
+}
+#fgtsReportView .fgts-ref-category .fgts-ref-cat-track>i,
+#fgtsReportView .fgts-month-category .fgts-ref-cat-track>i,
+#fgtsReportView .fgts-year-category-track>i{
+  background:#43b56b!important;
+}
+</style>
