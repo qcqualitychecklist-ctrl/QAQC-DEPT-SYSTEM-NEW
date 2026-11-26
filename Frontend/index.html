@@ -4443,7 +4443,7 @@ function loadFgtsReport(){
   if(monthFrom)monthFrom.value=String(from);if(monthTo)monthTo.value=String(to);
   const note=content.querySelector('.fgts-report-refresh-note');if(note)note.remove();
   renderSelection(data);
- },err=>{if(token===fgtsReportRequest){const note=content.querySelector('.fgts-report-refresh-note');if(note)note.remove();if(content.dataset.fgtsReportReady!=='1')content.innerHTML='<div class="report-empty">'+reportEscape(err&&err.message||'Unable to load FGTS report data.')+'</div>';}}});
+ },err=>{if(token===fgtsReportRequest){const note=content.querySelector('.fgts-report-refresh-note');if(note)note.remove();if(content.dataset.fgtsReportReady!=='1')content.innerHTML='<div class="report-empty">'+reportEscape(err&&err.message||'Unable to load FGTS report data.')+'</div>';}});
 }
 function updateFgtsReportModeVisibility(){updateFgtsReportModeFields();}
 function updateFgtsReportModeFields(){
