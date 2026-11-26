@@ -6086,3 +6086,43 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
   line-height:1.2!important;
 }
 </style>
+
+
+<style id="fgts-category-name-final-10px-single-line-v2">
+/* Final, high-specificity correction: category labels only, matching Single Year in every report mode. */
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-category .fgts-ref-cat-row>span,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-month-category .fgts-ref-cat-row>span,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-list .fgts-ref-cat-row>span,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row>b,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-category-chart .fgts-category-name{
+  display:block!important;
+  box-sizing:border-box!important;
+  min-width:0!important;
+  max-width:100%!important;
+  font-family:Arial,sans-serif!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-category .fgts-ref-cat-row>span:before,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-month-category .fgts-ref-cat-row>span:before,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-list .fgts-ref-cat-row>span:before,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row>b:before,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-category-name:before{
+  display:inline-block!important;
+  width:6px!important;
+  min-width:6px!important;
+  max-width:6px!important;
+  height:6px!important;
+  min-height:6px!important;
+  max-height:6px!important;
+  margin:0 5px 1px 0!important;
+  border-radius:50%!important;
+  vertical-align:middle!important;
+}
+</style>
