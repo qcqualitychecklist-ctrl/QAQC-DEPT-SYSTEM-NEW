@@ -6127,6 +6127,18 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 }
 </style>
 
+
+<style id="fgts-category-qty-near-bar-v1">
+/* Bring Category Distribution quantities toward the progress bars without changing label lanes or bar widths. */
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-category .fgts-ref-cat-row>b,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-month-category .fgts-ref-cat-row>b,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-list .fgts-ref-cat-row>b{
+  justify-self:start!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+</style>
+
 <style id="fgts-category-full-label-width-v3">
 /* Small label-lane increase only: keep Qty visible and preserve the previous bar width. */
 #fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-category .fgts-ref-cat-row,
