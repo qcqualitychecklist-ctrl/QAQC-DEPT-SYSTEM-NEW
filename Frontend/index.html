@@ -2414,38 +2414,7 @@ body.fgts-report-open .intro{display:none!important}
 }
 </style>
 
-<style id="fgts-period-shared-single-year-graph-format">
-/* Period-based reports reuse the original Single Year graph components and dimensions. */
-#fgtsReportView .fgts-month-chart{display:grid!important;grid-template-columns:39px minmax(0,1fr)!important;height:165px!important;gap:7px!important}
-#fgtsReportView .fgts-month-yaxis{display:flex!important;flex-direction:column!important;justify-content:space-between!important;padding:4px 0 20px!important;text-align:right!important;color:#09275c!important;font-size:11px!important}
-#fgtsReportView .fgts-month-plot{position:relative!important;min-width:0!important;border-bottom:1px solid #9db5db!important}
-#fgtsReportView .fgts-month-grid{position:absolute!important;inset:0 0 20px!important;background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(25% - 1px),#dce6f6 calc(25% - 1px),#dce6f6 25%)!important}
-#fgtsReportView .fgts-month-columns{position:absolute!important;inset:0!important;display:flex!important;justify-content:space-around!important;align-items:stretch!important;gap:5px!important}
-#fgtsReportView .fgts-month-col{position:relative!important;display:flex!important;flex:1!important;flex-direction:column!important;justify-content:flex-end!important;align-items:center!important;min-width:0!important;padding-top:13px!important}
-#fgtsReportView .fgts-month-value{height:15px!important;margin-bottom:2px!important;color:#09275c!important;font-size:11px!important;font-weight:800!important;white-space:nowrap!important}
-#fgtsReportView .fgts-month-bars{display:flex!important;align-items:flex-end!important;justify-content:center!important;gap:3px!important;width:100%!important;height:calc(100% - 35px)!important;border-bottom:0!important}
-#fgtsReportView .fgts-month-bars i{display:block!important;min-height:1px!important;max-width:38px!important;border-radius:4px 4px 0 0!important}
-#fgtsReportView .fgts-month-col>span{height:20px!important;padding-top:4px!important;color:#09275c!important;font-size:11px!important}
-#fgtsReportView .fgts-line-wrap svg{display:block!important;width:100%!important;height:auto!important;max-height:190px!important}
-#fgtsReportView .fgts-ref-category{display:flex!important;flex-direction:column!important;gap:12px!important;padding:10px 0 5px!important}
-#fgtsReportView .fgts-ref-cat-row{display:grid!important;grid-template-columns:minmax(75px,1fr) minmax(100px,3fr) auto!important;align-items:center!important;gap:10px!important}
-#fgtsReportView .fgts-ref-cat-row>span{color:#09275c!important;font-size:12px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-#fgtsReportView .fgts-ref-cat-track{height:23px!important;background:repeating-linear-gradient(to right,#edf3fc 0,#edf3fc calc(25% - 1px),#d7e3f6 calc(25% - 1px),#d7e3f6 25%)!important;border-left:1px solid #8fa9d0!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:2px!important;overflow:hidden!important}
-#fgtsReportView .fgts-ref-cat-track i{display:block!important;height:10px!important;min-height:10px!important;border-radius:0 4px 4px 0!important}
-#fgtsReportView .fgts-ref-cat-row>b{font-size:12px!important;color:#09275c!important;white-space:nowrap!important}
-#fgtsReportView .fgts-year-donut-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(330px,1fr))!important;gap:12px!important;align-items:start!important}
-#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-card{display:flex!important;flex-direction:column!important;min-width:0!important;padding:2px 4px!important}
-#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-card>b{color:#35598e!important;font-size:12px!important;text-align:center!important}
-#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-body{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important}
-#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-body svg{width:145px!important;max-width:43%!important;flex:0 0 43%!important;height:auto!important}
-#fgtsReportView .fgts-year-donut-grid .fgts-ref-legend{flex:1!important;min-width:0!important}
-#fgtsReportView .fgts-year-donut-grid .fgts-ref-legend>div{display:grid!important;grid-template-columns:9px minmax(0,1fr) auto!important;align-items:center!important;gap:6px!important;margin:9px 0!important;color:#09275c!important;font-size:11px!important}
-#fgtsReportView .fgts-year-donut-grid .fgts-ref-legend i{width:9px!important;height:9px!important;border-radius:50%!important}
-#fgtsReportView .fgts-year-donut-grid .fgts-ref-legend b{font-size:10px!important;white-space:nowrap!important}
-#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-body svg text:first-of-type{font-size:13px!important;font-weight:800!important}
-#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-body svg text:nth-of-type(2){font-size:8px!important;font-weight:700!important}
-@media(max-width:720px){#fgtsReportView .fgts-year-donut-grid{grid-template-columns:1fr!important}}
-</style>
+
 </head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
@@ -4613,7 +4582,7 @@ function renderFgtsPeriodBuckets(data){
  const categoryMap=new Map();distributionByYear.forEach((bucket,i)=>(bucket.category||[]).forEach(c=>{const name=String(c.name||'Unassigned');if(!categoryMap.has(name))categoryMap.set(name,Array(distributionByYear.length).fill(0));categoryMap.get(name)[i]=Number(c.total)||0;}));
  const cats=[...categoryMap.entries()].filter(([,vals])=>vals.some(v=>v>0)).sort((a,b)=>b[1].reduce((sum,v)=>sum+v,0)-a[1].reduce((sum,v)=>sum+v,0));
  const catMax=Math.max(1,...cats.map(([,vals])=>Math.max(...vals)));
- const categoryHtml=cats.length?'<div class="fgts-ref-category">'+cats.map(([name,vals])=>{const total=vals.reduce((sum,v)=>sum+v,0),share=totalQty?(total/totalQty*100).toFixed(1):'0.0';return '<div class="fgts-ref-cat-row"><span title="'+escape(name)+'">'+escape(name)+'</span><div class="fgts-ref-cat-track">'+vals.map((v,i)=>v>0?'<i style="width:'+(v/catMax*100)+'%;background:'+yearColor(distributionByYear[i].year)+'" title="'+escape(String(distributionByYear[i].year)+': '+fmt(v))+'"></i>':'').join('')+'</div><b>'+fmt(total)+' ('+share+'%)</b></div>';}).join('')+'</div><div class="report-legend">'+distributionByYear.map(x=>'<span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span>').join('')+'</div>':'<div class="report-empty">No category data available.</div>';
+ const categoryHtml=cats.length?'<div class="fgts-ref-category">'+cats.map(([name,vals])=>{const total=vals.reduce((sum,v)=>sum+v,0),share=totalQty?(total/totalQty*100).toFixed(1):'0.0';return '<div class="fgts-ref-cat-row"><span title="'+escape(name)+'">'+escape(name)+'</span><div class="fgts-ref-cat-track" style="height:'+Math.max(23,vals.filter(v=>v>0).length*10+Math.max(0,vals.filter(v=>v>0).length-1)*2)+'px;min-height:'+Math.max(23,vals.filter(v=>v>0).length*10+Math.max(0,vals.filter(v=>v>0).length-1)*2)+'px">'+vals.map((v,i)=>v>0?'<i style="width:'+(v/catMax*100)+'%;background:'+yearColor(distributionByYear[i].year)+'" title="'+escape(String(distributionByYear[i].year)+': '+fmt(v))+'"></i>':'').join('')+'</div><b>'+fmt(total)+' ('+share+'%)</b></div>';}).join('')+'</div><div class="report-legend">'+distributionByYear.map(x=>'<span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span>').join('')+'</div>':'<div class="report-empty">No category data available.</div>';
  const classNames=['Standard','Non-standard','Telcos','Others'],classColors=['#1769ed','#22b36b','#ff9e1b','#7848ed'];
  const donuts=distributionByYear.map(bucket=>{
   const map=new Map((bucket.classification||[]).map(x=>[String(x.name).toLowerCase(),Number(x.total)||0])),values=classNames.map(n=>map.get(n.toLowerCase())||0),sum=values.reduce((a,b)=>a+b,0);let offset=0;
@@ -5142,6 +5111,38 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-row>b{text-align:right!important}
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track{background:none!important;background-image:none!important;border-left:0!important}
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track>i{cursor:pointer!important}
+</style>
+<style id="fgts-period-shared-single-year-graph-format">
+/* Period-based reports reuse the original Single Year graph components and dimensions. */
+#fgtsReportView .fgts-month-chart{display:grid!important;grid-template-columns:39px minmax(0,1fr)!important;height:165px!important;gap:7px!important}
+#fgtsReportView .fgts-month-yaxis{display:flex!important;flex-direction:column!important;justify-content:space-between!important;padding:4px 0 20px!important;text-align:right!important;color:#09275c!important;font-size:11px!important}
+#fgtsReportView .fgts-month-plot{position:relative!important;min-width:0!important;border-bottom:1px solid #9db5db!important}
+#fgtsReportView .fgts-month-grid{position:absolute!important;inset:0 0 20px!important;background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(25% - 1px),#dce6f6 calc(25% - 1px),#dce6f6 25%)!important}
+#fgtsReportView .fgts-month-columns{position:absolute!important;inset:0!important;display:flex!important;justify-content:space-around!important;align-items:stretch!important;gap:5px!important}
+#fgtsReportView .fgts-month-col{position:relative!important;display:flex!important;flex:1!important;flex-direction:column!important;justify-content:flex-end!important;align-items:center!important;min-width:0!important;padding-top:13px!important}
+#fgtsReportView .fgts-month-value{height:15px!important;margin-bottom:2px!important;color:#09275c!important;font-size:11px!important;font-weight:800!important;white-space:nowrap!important}
+#fgtsReportView .fgts-month-bars{display:flex!important;align-items:flex-end!important;justify-content:center!important;gap:3px!important;width:100%!important;height:calc(100% - 35px)!important;border-bottom:0!important}
+#fgtsReportView .fgts-month-bars i{display:block!important;min-height:1px!important;max-width:38px!important;border-radius:4px 4px 0 0!important}
+#fgtsReportView .fgts-month-col>span{height:20px!important;padding-top:4px!important;color:#09275c!important;font-size:11px!important}
+#fgtsReportView .fgts-line-wrap svg{display:block!important;width:100%!important;height:auto!important;max-height:190px!important}
+#fgtsReportView .fgts-ref-category{display:flex!important;flex-direction:column!important;gap:12px!important;padding:10px 0 5px!important}
+#fgtsReportView .fgts-ref-cat-row{display:grid!important;grid-template-columns:minmax(75px,1fr) minmax(100px,3fr) auto!important;align-items:center!important;gap:10px!important}
+#fgtsReportView .fgts-ref-cat-row>span{color:#09275c!important;font-size:12px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#fgtsReportView .fgts-ref-cat-track{height:23px!important;background:repeating-linear-gradient(to right,#edf3fc 0,#edf3fc calc(25% - 1px),#d7e3f6 calc(25% - 1px),#d7e3f6 25%)!important;border-left:1px solid #8fa9d0!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:2px!important;overflow:hidden!important}
+#fgtsReportView .fgts-ref-cat-track i{display:block!important;height:10px!important;min-height:10px!important;border-radius:0 4px 4px 0!important}
+#fgtsReportView .fgts-ref-cat-row>b{font-size:12px!important;color:#09275c!important;white-space:nowrap!important}
+#fgtsReportView .fgts-year-donut-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(330px,1fr))!important;gap:12px!important;align-items:start!important}
+#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-card{display:flex!important;flex-direction:column!important;min-width:0!important;padding:2px 4px!important}
+#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-card>b{color:#35598e!important;font-size:12px!important;text-align:center!important}
+#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-body{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important}
+#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-body svg{width:145px!important;max-width:43%!important;flex:0 0 43%!important;height:auto!important}
+#fgtsReportView .fgts-year-donut-grid .fgts-ref-legend{flex:1!important;min-width:0!important}
+#fgtsReportView .fgts-year-donut-grid .fgts-ref-legend>div{display:grid!important;grid-template-columns:9px minmax(0,1fr) auto!important;align-items:center!important;gap:6px!important;margin:9px 0!important;color:#09275c!important;font-size:11px!important}
+#fgtsReportView .fgts-year-donut-grid .fgts-ref-legend i{width:9px!important;height:9px!important;border-radius:50%!important}
+#fgtsReportView .fgts-year-donut-grid .fgts-ref-legend b{font-size:10px!important;white-space:nowrap!important}
+#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-body svg text:first-of-type{font-size:13px!important;font-weight:800!important}
+#fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-body svg text:nth-of-type(2){font-size:8px!important;font-weight:700!important}
+@media(max-width:720px){#fgtsReportView .fgts-year-donut-grid{grid-template-columns:1fr!important}}
 </style>
 </body></html>
 <!-- Trigger syntax validation for restored #242 source -->
