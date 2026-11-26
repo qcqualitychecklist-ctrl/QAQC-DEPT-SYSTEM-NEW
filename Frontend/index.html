@@ -5891,13 +5891,15 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 </style>
 
 <style id="fgts-period-category-final-unified-bars">
-/* Year, Month, Quarter and Half-Year: match Single Year bar dimensions with a clean solid track. */
+/* Period Category Distribution: mirror the Single Year track and fill geometry.
+   The muted patterned track remains visible behind the solid year segments. */
 #fgtsReportView .fgts-month-category{display:flex!important;flex-direction:column!important;gap:12px!important;padding:10px 0 5px!important}
 #fgtsReportView .fgts-month-category .fgts-ref-cat-row{display:grid!important;grid-template-columns:minmax(65px,.8fr) minmax(120px,4fr) auto!important;align-items:center!important;gap:8px!important;width:100%!important}
 #fgtsReportView .fgts-month-category .fgts-ref-cat-row>span{min-width:0!important;font:700 10px/1.2 Arial,sans-serif!important;color:#102b56!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 #fgtsReportView .fgts-month-category .fgts-ref-cat-row>b{font:700 10px/1.2 Arial,sans-serif!important;color:#102b56!important;white-space:nowrap!important;text-align:right!important}
-#fgtsReportView .fgts-month-category .fgts-ref-cat-track{box-sizing:border-box!important;display:flex!important;flex-direction:row!important;align-items:stretch!important;justify-content:flex-start!important;gap:0!important;width:100%!important;min-width:0!important;height:25px!important;min-height:25px!important;padding:0!important;margin:0!important;overflow:hidden!important;background:#edf2f7!important;background-image:none!important;border:0!important;border-radius:7px!important;box-shadow:none!important}
-#fgtsReportView .fgts-month-category .fgts-ref-cat-track>i.fgts-month-category-segment{display:block!important;flex:0 0 auto!important;height:25px!important;min-height:25px!important;max-height:25px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;opacity:1!important;filter:none!important}
-#fgtsReportView .fgts-month-category .fgts-ref-cat-track>i.fgts-month-category-segment:first-child{border-radius:7px 0 0 7px!important}
-#fgtsReportView .fgts-month-category .fgts-ref-cat-track>i.fgts-month-category-segment:last-child{border-radius:0 7px 7px 0!important}
+/* Same 25px track and pale quarter markers as Single Year. */
+#fgtsReportView .fgts-month-category .fgts-ref-cat-track{box-sizing:border-box!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:0!important;width:100%!important;min-width:0!important;height:25px!important;min-height:25px!important;padding:0!important;margin:0!important;overflow:hidden!important;background:repeating-linear-gradient(to right,#edf3fc 0,#edf3fc calc(25% - 1px),#d7e3f6 calc(25% - 1px),#d7e3f6 25%)!important;background-image:repeating-linear-gradient(to right,#edf3fc 0,#edf3fc calc(25% - 1px),#d7e3f6 calc(25% - 1px),#d7e3f6 25%)!important;border:0!important;border-left:1px solid #8fa9d0!important;border-radius:0!important;box-shadow:none!important}
+/* Same 10px-high solid fill, vertically centered inside the track. */
+#fgtsReportView .fgts-month-category .fgts-ref-cat-track>i.fgts-month-category-segment{display:block!important;flex:0 0 auto!important;height:10px!important;min-height:10px!important;max-height:10px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;opacity:1!important;filter:none!important}
+#fgtsReportView .fgts-month-category .fgts-ref-cat-track>i.fgts-month-category-segment:last-child{border-radius:0 4px 4px 0!important}
 </style>
