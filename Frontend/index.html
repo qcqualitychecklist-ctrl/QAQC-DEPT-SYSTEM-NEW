@@ -6126,3 +6126,18 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
   vertical-align:middle!important;
 }
 </style>
+
+<style id="fgts-category-full-label-width-v1">
+/* Give category labels enough room to show Components/breaker in every report period.
+   Keep the existing 10px typography and progress-bar height/style unchanged. */
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-category .fgts-ref-cat-row,
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-list .fgts-ref-cat-row{
+  grid-template-columns:minmax(0,150px) minmax(0,1fr) 88px!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-month-category .fgts-ref-cat-row{
+  grid-template-columns:minmax(0,150px) minmax(0,1fr) 62px!important;
+}
+#fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row{
+  grid-template-columns:minmax(0,150px) minmax(0,1fr)!important;
+}
+</style>
