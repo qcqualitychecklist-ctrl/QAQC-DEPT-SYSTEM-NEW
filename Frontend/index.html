@@ -4573,22 +4573,13 @@ function renderFgtsPeriodBuckets(data){
   return '<div class="fgts-line-wrap"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by selected period">'+grid+paths.join('')+points.join('')+axisLabels+'</svg></div>'+legend;
  };
  const distributionBuckets=mode==='MONTH'?[...new Map(buckets.map(x=>[x.year,x.year])).keys()].map(year=>{const group=buckets.filter(x=>Number(x.year)===Number(year)),sumDimension=key=>{const map=new Map();group.forEach(row=>(row[key]||[]).forEach(item=>map.set(item.name,(map.get(item.name)||0)+(Number(item.total)||0))));return [...map.entries()].map(([name,total])=>({name,total}));};return {year,label:String(year),category:sumDimension('category'),classification:sumDimension('classification')};}):buckets;
- const distributionByYear=years.map(year=>{
-  const group=buckets.filter(x=>Number(x.year)===Number(year));
-  const sumDimension=key=>{const map=new Map();group.forEach(row=>(row[key]||[]).forEach(item=>map.set(String(item.name||'Unassigned'),(map.get(String(item.name||'Unassigned'))||0)+(Number(item.total)||0))));return [...map.entries()].map(([name,total])=>({name,total}));};
-  return {year,label:String(year),category:sumDimension('category'),classification:sumDimension('classification')};
- });
- const distributionBuckets=distributionByYear;
- const categoryMap=new Map();distributionByYear.forEach((bucket,i)=>(bucket.category||[]).forEach(c=>{const name=String(c.name||'Unassigned');if(!categoryMap.has(name))categoryMap.set(name,Array(distributionByYear.length).fill(0));categoryMap.get(name)[i]=Number(c.total)||0;}));
- const cats=[...categoryMap.entries()].filter(([,vals])=>vals.some(v=>v>0)).sort((a,b)=>b[1].reduce((sum,v)=>sum+v,0)-a[1].reduce((sum,v)=>sum+v,0));
- const catMax=Math.max(1,...cats.map(([,vals])=>Math.max(...vals)));
- const categoryHtml=cats.length?'<div class="fgts-ref-category">'+cats.map(([name,vals])=>{const total=vals.reduce((sum,v)=>sum+v,0),share=totalQty?(total/totalQty*100).toFixed(1):'0.0';return '<div class="fgts-ref-cat-row"><span title="'+escape(name)+'">'+escape(name)+'</span><div class="fgts-ref-cat-track" style="height:'+Math.max(23,vals.filter(v=>v>0).length*10+Math.max(0,vals.filter(v=>v>0).length-1)*2)+'px;min-height:'+Math.max(23,vals.filter(v=>v>0).length*10+Math.max(0,vals.filter(v=>v>0).length-1)*2)+'px">'+vals.map((v,i)=>v>0?'<i style="width:'+(v/catMax*100)+'%;background:'+yearColor(distributionByYear[i].year)+'" title="'+escape(String(distributionByYear[i].year)+': '+fmt(v))+'"></i>':'').join('')+'</div><b>'+fmt(total)+' ('+share+'%)</b></div>';}).join('')+'</div><div class="report-legend">'+distributionByYear.map(x=>'<span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span>').join('')+'</div>':'<div class="report-empty">No category data available.</div>';
+ const distributionBuckets=mode==='MONTH'?[...new Map(buckets.map(x=>[x.year,x.year])).keys()].map(year=>{const group=buckets.filter(x=>Number(x.year)===Number(year)),sumDimension=key=>{const map=new Map();group.forEach(row=>(row[key]||[]).forEach(item=>map.set(item.name,(map.get(item.name)||0)+(Number(item.total)||0))));return [...map.entries()].map(([name,total])=>({name,total}));};return {year,label:String(year),category:sumDimension('category'),classification:sumDimension('classification')};}):buckets;
+ const categoryMap=new Map();distributionBuckets.forEach((bucket,i)=>(bucket.category||[]).forEach(c=>{const name=String(c.name||'Unassigned');if(!categoryMap.has(name))categoryMap.set(name,Array(distributionBuckets.length).fill(0));categoryMap.get(name)[i]=Number(c.total)||0;}));
+ const cats=[...categoryMap.entries()].filter(([name,vals])=>vals.some(v=>v>0)).sort((a,b)=>b[1].reduce((s,v)=>s+v,0)-a[1].reduce((s,v)=>s+v,0));
+ const catMax=Math.max(1,...cats.map(([,v])=>v.reduce((s,n)=>s+n,0)));
+ const categoryHtml=cats.length?'<div class="fgts-ref-category fgts-month-category">'+cats.map(([name,vals])=>{const total=vals.reduce((s,v)=>s+v,0);return '<div class="fgts-ref-cat-row"><span title="'+escape(name)+'">'+escape(name)+'</span><div class="fgts-ref-cat-track" style="height:'+Math.max(23,vals.filter(v=>v>0).length*10+Math.max(0,vals.filter(v=>v>0).length-1)*2)+'px;min-height:'+Math.max(23,vals.filter(v=>v>0).length*10+Math.max(0,vals.filter(v=>v>0).length-1)*2)+'px">'+vals.map((v,i)=>v>0?'<i class="fgts-month-category-segment" tabindex="0" role="button" data-fgts-click-value="'+escape(fmt(v))+'" data-fgts-click-label="'+escape(String(distributionBuckets[i].year||distributionBuckets[i].label))+'" aria-label="'+escape(String(distributionBuckets[i].year||distributionBuckets[i].label)+' : '+fmt(v))+'" style="width:'+(v/catMax*100)+'%;background:'+yearColor(distributionBuckets[i].year)+'" title="'+escape(String(distributionBuckets[i].year||distributionBuckets[i].label)+' : '+fmt(v))+'"><span class="fgts-segment-tooltip">'+fmt(v)+'</span></i>':'').join('')+'</div><b>'+fmt(total)+'</b></div>';}).join('')+'</div><div class="fgts-year-legend">'+distributionBuckets.map(x=>'<span><i style="background:'+yearColor(x.year)+'"></i>'+escape(String(x.year||x.label))+'</span>').join('')+'</div>':'<div class="report-empty">No category data available.</div>';
  const classNames=['Standard','Non-standard','Telcos','Others'],classColors=['#1769ed','#22b36b','#ff9e1b','#7848ed'];
- const donuts=distributionByYear.map(bucket=>{
-  const map=new Map((bucket.classification||[]).map(x=>[String(x.name).toLowerCase(),Number(x.total)||0])),values=classNames.map(n=>map.get(n.toLowerCase())||0),sum=values.reduce((a,b)=>a+b,0);let offset=0;
-  const arcs=values.map((v,j)=>{const pct=sum?v/sum*100:0,arc='<circle cx="60" cy="60" r="43" fill="none" stroke="'+classColors[j]+'" stroke-width="17" stroke-dasharray="'+pct+' '+(100-pct)+'" pathLength="100" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 60 60)"/>';offset+=pct;return arc;}).join('');
-  return '<div class="fgts-ref-donut-card"><b>'+escape(String(bucket.year))+'</b><div class="fgts-ref-donut-body"><svg viewBox="0 0 120 120" role="img" aria-label="'+escape(String(bucket.year))+' classification distribution">'+(sum?arcs:'<circle cx="60" cy="60" r="43" fill="none" stroke="#e5ebf3" stroke-width="17"/>')+'<text x="60" y="57" text-anchor="middle" font-size="13" font-weight="800" fill="#102d62">'+fmt(sum)+'</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="700" fill="#65758f">Total Qty</text></svg><div class="fgts-ref-legend">'+classNames.map((n,j)=>'<div><i style="background:'+classColors[j]+'"></i><span>'+n+'</span><b>'+fmt(values[j])+' ('+(sum?(values[j]/sum*100).toFixed(1):'0.0')+'%)</b></div>').join('')+'</div></div></div>';
- }).join('');
+ const donuts=distributionBuckets.map((bucket,i)=>{const map=new Map((bucket.classification||[]).map(x=>[String(x.name).toLowerCase(),Number(x.total)||0])),values=classNames.map(n=>map.get(n.toLowerCase())||0),sum=values.reduce((a,b)=>a+b,0);let offset=0;const arcs=values.map((v,j)=>{const pct=sum?v/sum*100:0,arc='<circle cx="60" cy="60" r="43" fill="none" stroke="'+classColors[j]+'" stroke-width="17" stroke-dasharray="'+pct+' '+(100-pct)+'" pathLength="100" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 60 60)"/>';offset+=pct;return arc;}).join('');return '<div class="fgts-ref-donut-card"><b>'+escape(String(bucket.year||bucket.label))+'</b><div class="fgts-ref-donut-body"><svg viewBox="0 0 120 120" role="img" aria-label="'+escape(String(bucket.year||bucket.label))+' classification distribution">'+(sum?arcs:'<circle cx="60" cy="60" r="43" fill="none" stroke="#e5ebf3" stroke-width="17"/>')+'<text x="60" y="57" text-anchor="middle" font-size="13" font-weight="800" fill="#102d62">'+fmt(sum)+'</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="400" fill="#65758f">Total Qty</text></svg><div class="fgts-ref-legend">'+classNames.map((n,j)=>'<div><i style="background:'+classColors[j]+'"></i><span>'+n+'</span><b>'+fmt(values[j])+' ('+(sum?(values[j]/sum*100).toFixed(1):'0.0')+'%)</b></div>').join('')+'</div></div></div>';}).join('');
  const fullMonthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
  const summaryRows=buckets.map((x,i)=>{const p=buckets[i-1],q=Number(x.totalQty)||0,l=x.averageLeadDays==null?null:Number(x.averageLeadDays),pq=p?Number(p.totalQty)||0:null,pl=p&&p.averageLeadDays!=null?Number(p.averageLeadDays):null,qPct=p&&pq?((q-pq)/Math.abs(pq)*100):null,lPct=p&&pl!=null&&pl!==0&&l!=null?((l-pl)/Math.abs(pl)*100):null;const qClass=qPct==null?'':qPct>=0?'positive':'negative',lClass=lPct==null?'':lPct<=0?'positive':'negative',rowLabel=mode==='MONTH'?((fullMonthNames[(Number(x.periodIndex)||1)-1]||String(x.periodIndex))+' '+x.year):x.label;return '<tr><td>'+escape(rowLabel)+'</td><td>'+fmt(q)+'</td><td>'+(l==null?'—':fmt(l))+'</td><td>'+fmt(x.recordCount)+'</td><td class="'+qClass+'">'+(!p?'—':qPct==null?(q?'New':'0.0%'):(qPct>=0?'+':'')+qPct.toFixed(1)+'%')+'</td><td class="'+lClass+'">'+(!p||lPct==null?'—':(lPct>0?'+':'')+lPct.toFixed(1)+'%')+'</td></tr>';}).join('');
  const summary='<div class="fgts-ref-table-wrap"><table class="fgts-ref-table"><thead><tr><th>Period</th><th>Overall Quantity</th><th>Average Lead Days</th><th>Records</th><th>Qty Change vs Previous</th><th>Lead Days Change vs Previous</th></tr></thead><tbody>'+summaryRows+'</tbody></table></div>';
@@ -5845,4 +5836,58 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-body svg text:first-of-type{font-size:13px!important;font-weight:800!important}
 #fgtsReportView .fgts-year-donut-grid .fgts-ref-donut-body svg text:nth-of-type(2){font-size:8px!important;font-weight:700!important}
 @media(max-width:720px){#fgtsReportView .fgts-year-donut-grid{grid-template-columns:1fr!important}}
+</style>
+<style id="fgts-month-category-match-single-year-final">
+/* Month Category: copy the established Single Year row, track, and fill treatment.
+   For multiple years, keep one same-height fill bar per year within the same category track. */
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-row{
+  display:grid!important;
+  grid-template-columns:118px minmax(0,1fr) 70px!important;
+  align-items:center!important;
+  gap:9px!important;
+  width:100%!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-row>span{
+  min-width:0!important;
+  color:#09275c!important;
+  font:700 10px/1.2 Arial,sans-serif!important;
+  white-space:normal!important;
+  overflow-wrap:break-word!important;
+  word-break:normal!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-row>b{
+  min-width:0!important;
+  color:#09275c!important;
+  font:700 10px Arial,sans-serif!important;
+  white-space:nowrap!important;
+  text-align:right!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track{
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:stretch!important;
+  gap:2px!important;
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:23px!important;
+  padding:0!important;
+  border-left:1px solid #8fa9d0!important;
+  border-radius:0!important;
+  background:repeating-linear-gradient(to right,#edf3fc 0,#edf3fc calc(25% - 1px),#d7e3f6 calc(25% - 1px),#d7e3f6 25%)!important;
+  overflow:hidden!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track>i{
+  display:block!important;
+  flex:0 0 10px!important;
+  width:var(--category-year-width,auto);
+  height:10px!important;
+  min-height:10px!important;
+  max-height:10px!important;
+  border:0!important;
+  border-radius:0 4px 4px 0!important;
+  box-shadow:none!important;
+}
 </style>
