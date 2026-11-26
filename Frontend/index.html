@@ -2346,6 +2346,47 @@ body.fgts-report-open .intro{display:none!important}
 }
 </style>
 
+
+<style id="fgts-month-report-single-year-style-match-v2">
+/* Month Report View: use the same track and fill treatment as Single Year Category Distribution. */
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track{
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:row!important;
+  justify-content:flex-start!important;
+  align-items:center!important;
+  gap:0!important;
+  width:100%!important;
+  height:23px!important;
+  min-height:23px!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  background:repeating-linear-gradient(to right,#edf3fc 0,#edf3fc calc(25% - 1px),#d7e3f6 calc(25% - 1px),#d7e3f6 25%)!important;
+  border:0!important;
+  border-left:1px solid #8fa9d0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track>i.fgts-month-category-segment{
+  display:block!important;
+  flex:0 0 auto!important;
+  height:10px!important;
+  min-height:10px!important;
+  max-height:10px!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track>i.fgts-month-category-segment:last-child{
+  border-radius:0 4px 4px 0!important;
+}
+/* Enlarge the center total to match the visual weight of the Single Year classification donut. */
+#fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-year-donut-grid .fgts-ref-donut-body svg text:first-of-type{
+  font-size:18px!important;
+  font-weight:800!important;
+}
+</style>
 </head><body>
 
 <section id="publicPdiPage" class="pdi-request-page" style="display:none">
