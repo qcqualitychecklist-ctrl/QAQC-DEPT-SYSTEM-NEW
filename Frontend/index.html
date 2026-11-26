@@ -4431,10 +4431,10 @@ function setFgtsReportMode(mode){
  updateFgtsReportMode();
 }
 
-function fgtsRenderCategoryVerticalProportional(categoryRows, years, yearColor, fmt, escape) {
+function fgtsRenderCategoryVerticalProportional(categoryRows, years, yearColor, fmt, escape, overallTotals) {
  const cleanYears=(years||[]).map(Number).filter(Number.isFinite);
  const entries=(categoryRows||[]).map(item=>({name:String(item.name||'Unassigned'),values:cleanYears.map((year,i)=>Math.max(0,Number(item.values?.[i])||0))})).filter(item=>item.values.some(v=>v>0)).sort((a,b)=>b.values.reduce((sum,v)=>sum+v,0)-a.values.reduce((sum,v)=>sum+v,0));
- const yearlyTotals=cleanYears.map((year,i)=>({year,total:entries.reduce((sum,item)=>sum+(Number(item.values[i])||0),0)}));
+ const yearlyTotals=cleanYears.map((year,i)=>({year,total:Array.isArray(overallTotals)?(Number(overallTotals[i])||0):entries.reduce((sum,item)=>sum+(Number(item.values[i])||0),0)}));
  const combined=yearlyTotals.reduce((sum,item)=>sum+item.total,0);
  if(!entries.length)return '<div class="report-empty">No category data available.</div>';
  if(!document.getElementById('fgts-category-vertical-proportional-style')){
@@ -4481,7 +4481,7 @@ function renderFgtsReportLegacy(data){
  const categoryRows=[...categoryMap.values()].map(x=>({name:x.name,values:compare?[x.a,x.b]:[x.a]}));
  const categoryColors=['#2463bd','#20a85a'];
  const categoryYearColor=year=>categoryColors[Math.max(0,categoryYears.indexOf(Number(year)))%categoryColors.length];
- const categoryHtml=fgtsRenderCategoryVerticalProportional(categoryRows,categoryYears,categoryYearColor,fmt,reportEscape);
+ const categoryHtml=fgtsRenderCategoryVerticalProportional(categoryRows,categoryYears,categoryYearColor,fmt,reportEscape,compare?[a.totalQty,b.totalQty]:[a.totalQty]);
  const classNames=['Standard','Non-standard','Telcos','Others'],classColors=['#1769ed','#22b36b','#ff9e1b','#7848ed'];
  const donut=(rows,label)=>{const map=new Map((rows||[]).map(x=>[String(x.name).toLowerCase(),Number(x.total)||0])),vals=classNames.map(n=>map.get(n.toLowerCase())||0),sum=vals.reduce((x,y)=>x+y,0);let offset=0;
   const arcs=vals.map((v,i)=>{const p=sum?v/sum*100:0,arc='<circle cx="60" cy="60" r="43" fill="none" stroke="'+classColors[i]+'" stroke-width="17" stroke-dasharray="'+p+' '+(100-p)+'" pathLength="100" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 60 60)"/>';offset+=p;return arc;}).join('');
@@ -4523,7 +4523,7 @@ function renderFgtsYearRangeReport(data){
  const catItems=[...categoryMap.entries()].filter(([name,values])=>Math.max(0,...values.map(v=>Number(v)||0))>0).sort((a,b)=>Math.max(...b[1].map(v=>v||0))-Math.max(...a[1].map(v=>v||0)));
  const categoryRows=catItems.map(([name,values])=>({name,values:rows.map((yr,i)=>Number(values[i])||0)}));
  const categoryYearColor=year=>palette[Math.max(0,years.indexOf(Number(year)))%palette.length];
- const categoryHtml=fgtsRenderCategoryVerticalProportional(categoryRows,years,categoryYearColor,fmt,reportEscape);
+ const categoryHtml=fgtsRenderCategoryVerticalProportional(categoryRows,years,categoryYearColor,fmt,reportEscape,rows.map(row=>Number(row.totalQty)||0));
  const donut=(yr)=>{const map=new Map((yr.classification||[]).map(x=>[String(x.name).toLowerCase(),Number(x.total)||0])),vals=classNames.map(n=>map.get(n.toLowerCase())||0),sum=vals.reduce((a,b)=>a+b,0);let offset=0;const arcs=vals.map((v,i)=>{const p=sum?v/sum*100:0,arc='<circle cx="60" cy="60" r="43" fill="none" stroke="'+classColors[i]+'" stroke-width="16" stroke-dasharray="'+p+' '+(100-p)+'" pathLength="100" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 60 60)"/>';offset+=p;return arc;}).join('');return '<div class="fgts-year-donut-card"><b>'+yr.year+'</b><div class="fgts-year-donut-content"><svg viewBox="0 0 120 120" role="img" aria-label="'+yr.year+' classification distribution">'+(sum?arcs:'<circle cx="60" cy="60" r="43" fill="none" stroke="#e5ebf3" stroke-width="16"/>')+'<text x="60" y="57" text-anchor="middle" font-size="13" font-weight="800" fill="#102d62">'+fmt(sum)+'</text><text x="60" y="70" text-anchor="middle" font-size="8" fill="#65758f">TOTAL QTY</text></svg><div class="fgts-year-donut-legend">'+classNames.map((n,i)=>'<div><i style="background:'+classColors[i]+'"></i><span>'+n+'</span><b>'+fmt(vals[i])+' <small>('+(sum?(vals[i]/sum*100).toFixed(1):'0.0')+'%)</small></b></div>').join('')+'</div></div></div>';};
  const classificationHtml='<div class="fgts-year-donut-grid">'+rows.map(donut).join('')+'</div>';
  const summaryRows=rows.map((x,i)=>{const prev=rows[i-1],q=Number(x.totalQty)||0,l=x.averageLeadDays==null?null:Number(x.averageLeadDays),pq=prev?Number(prev.totalQty)||0:null,pl=prev&&prev.averageLeadDays!=null?Number(prev.averageLeadDays):null;const qPct=prev&&pq?((q-pq)/Math.abs(pq)*100):null,lPct=prev&&pl!=null&&pl!==0&&l!=null?((l-pl)/Math.abs(pl)*100):null;const qChange=!prev?'—':qPct==null?(q?'New':'0.0%'):qPct.toFixed(1)+'%',lChange=!prev||lPct==null?'—':lPct.toFixed(1)+'%';return '<tr><td>'+x.year+'</td><td>'+fmt(q)+'</td><td>'+(l==null?'—':fmt(l))+'</td><td>'+fmt(x.recordCount)+'</td><td class="'+(qPct==null?'':qPct>=0?'positive':'negative')+'">'+qChange+'</td><td class="'+(lPct==null?'':lPct>=0?'positive':'negative')+'">'+lChange+'</td></tr>';}).join('');
@@ -4719,7 +4719,7 @@ function renderFgtsPeriodBuckets(data){
  });
  const categoryNames=[...new Set(categoryYearBuckets.flatMap(bucket=>(bucket.category||[]).map(item=>String(item.name||'Unassigned'))))];
  const categoryRows=categoryNames.map(name=>({name,values:categoryYearBuckets.map(bucket=>Number((bucket.category||[]).find(item=>String(item.name||'Unassigned')===name)?.total)||0)}));
- const categoryHtml=fgtsRenderCategoryVerticalProportional(categoryRows,years,yearColor,fmt,escape);
+ const categoryHtml=fgtsRenderCategoryVerticalProportional(categoryRows,years,yearColor,fmt,escape,years.map(year=>buckets.filter(bucket=>Number(bucket.year)===Number(year)).reduce((sum,bucket)=>sum+(Number(bucket.totalQty)||0),0)));
  const classNames=['Standard','Non-standard','Telcos','Others'],classColors=['#1769ed','#22b36b','#ff9e1b','#7848ed'];
  const donuts=distributionBuckets.map((bucket,i)=>{const map=new Map((bucket.classification||[]).map(x=>[String(x.name).toLowerCase(),Number(x.total)||0])),values=classNames.map(n=>map.get(n.toLowerCase())||0),sum=values.reduce((a,b)=>a+b,0);let offset=0;const arcs=values.map((v,j)=>{const pct=sum?v/sum*100:0,arc='<circle cx="60" cy="60" r="43" fill="none" stroke="'+classColors[j]+'" stroke-width="17" stroke-dasharray="'+pct+' '+(100-pct)+'" pathLength="100" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 60 60)"/>';offset+=pct;return arc;}).join('');return '<div class="fgts-ref-donut-card"><b>'+escape(String(bucket.year||bucket.label))+'</b><div class="fgts-ref-donut-body"><svg viewBox="0 0 120 120" role="img" aria-label="'+escape(String(bucket.year||bucket.label))+' classification distribution">'+(sum?arcs:'<circle cx="60" cy="60" r="43" fill="none" stroke="#e5ebf3" stroke-width="17"/>')+'<text x="60" y="57" text-anchor="middle" font-size="13" font-weight="800" fill="#102d62">'+fmt(sum)+'</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="400" fill="#65758f">Total Qty</text></svg><div class="fgts-ref-legend">'+classNames.map((n,j)=>'<div><i style="background:'+classColors[j]+'"></i><span>'+n+'</span><b>'+fmt(values[j])+' ('+(sum?(values[j]/sum*100).toFixed(1):'0.0')+'%)</b></div>').join('')+'</div></div></div>';}).join('');
  const fullMonthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
