@@ -6127,17 +6127,32 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 }
 </style>
 
-<style id="fgts-category-full-label-width-v1">
-/* Give category labels enough room to show Components/breaker in every report period.
-   Keep the existing 10px typography and progress-bar height/style unchanged. */
+<style id="fgts-category-full-label-width-v2">
+/* Widen only the label lane and shift the track start right; compensate row width
+   so the progress track retains its previous full width. Keep bar styling untouched. */
 #fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-category .fgts-ref-cat-row,
 #fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-list .fgts-ref-cat-row{
-  grid-template-columns:minmax(0,150px) minmax(0,1fr) 88px!important;
+  grid-template-columns:minmax(0,150px) minmax(0,1fr) 56px!important;
+  width:calc(100% + 38px)!important;
 }
 #fgtsReportView:has(#fgtsReportMode option:checked) .fgts-month-category .fgts-ref-cat-row{
   grid-template-columns:minmax(0,150px) minmax(0,1fr) 62px!important;
+  width:calc(100% + 38px)!important;
 }
 #fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row{
   grid-template-columns:minmax(0,150px) minmax(0,1fr)!important;
+  width:calc(100% + 38px)!important;
+}
+@media(max-width:720px){
+  #fgtsReportView:has(#fgtsReportMode option:checked) .fgts-ref-category .fgts-ref-cat-row,
+  #fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-list .fgts-ref-cat-row{
+    width:calc(100% + 54px)!important;
+  }
+  #fgtsReportView:has(#fgtsReportMode option:checked) .fgts-month-category .fgts-ref-cat-row{
+    width:calc(100% + 54px)!important;
+  }
+  #fgtsReportView:has(#fgtsReportMode option:checked) .fgts-year-category-row{
+    width:calc(100% + 54px)!important;
+  }
 }
 </style>
