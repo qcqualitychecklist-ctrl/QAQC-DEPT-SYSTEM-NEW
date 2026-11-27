@@ -4614,7 +4614,7 @@ function renderFgtsPeriodBuckets(data){
  const quantityChart=()=>{
   const values=[];
   periods.forEach(p=>years.forEach(y=>{const b=findBucket(y,p.key);if(b)values.push(Number(b.totalQty)||0);}));
-  const max=maxNice(Math.max(1,...values)),ticks=4,w=640,h=252,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,slot=(w-left-right)/Math.max(1,periods.length),groupWidth=Math.min(slot*.82,years.length*20),barWidth=Math.min(18,groupWidth/Math.max(1,years.length)*.72);
+  const max=maxNice(Math.max(1,...values)),ticks=4,w=640,h=270,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,slot=(w-left-right)/Math.max(1,periods.length),groupWidth=Math.min(slot*.82,years.length*20),barWidth=Math.min(18,groupWidth/Math.max(1,years.length)*.72);
   const grid=Array.from({length:ticks+1},(_,i)=>{const v=max*i/ticks,y=top+plotH-i*plotH/ticks;return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="#d7e2f2"/><text x="'+(left-8)+'" y="'+(y+4)+'" text-anchor="end" fill="#09275c" font-size="12" font-weight="700">'+fmt(v)+'</text>';}).join('');
   const bars=periods.map((p,i)=>{
    const center=left+i*slot+slot/2;
@@ -4625,7 +4625,7 @@ function renderFgtsPeriodBuckets(data){
  };
  const leadChart=()=>{
   const allValues=[];periods.forEach(p=>years.forEach(y=>{const b=findBucket(y,p.key);if(b&&b.averageLeadDays!=null)allValues.push(Number(b.averageLeadDays));}));
-  const max=maxNice(Math.max(1,...allValues)),w=640,h=252,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,ticks=4,slot=(w-left-right)/Math.max(1,periods.length),x=i=>left+i*slot+slot/2,y=v=>top+plotH-(v/max)*plotH;
+  const max=maxNice(Math.max(1,...allValues)),w=640,h=270,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,ticks=4,slot=(w-left-right)/Math.max(1,periods.length),x=i=>left+i*slot+slot/2,y=v=>top+plotH-(v/max)*plotH;
   const grid=Array.from({length:ticks+1},(_,i)=>{const v=max*i/ticks,yy=top+plotH-i*plotH/ticks;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#d7e2f2"/><text x="'+(left-8)+'" y="'+(yy+4)+'" text-anchor="end" fill="#09275c" font-size="12" font-weight="700">'+(Number.isInteger(max/ticks)?v.toFixed(0):v.toFixed(1))+'</text>';}).join('');
   if(mode==='YEAR'){
    const coords=periods.map((p,i)=>{const b=findBucket(p.key,p.key);return b&&b.averageLeadDays!=null?{x:x(i),y:y(Number(b.averageLeadDays)),value:Number(b.averageLeadDays),year:Number(b.year),label:p.label}:null;});
@@ -5288,6 +5288,13 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row b{white-space:nowrap}
 #fgtsReportView .fgts-ov-table thead th{background:#09275c!important;color:#fff!important;border-color:#09275c!important}
 #fgtsReportView .fgts-ov-insights small{line-height:1.45}
+</style><style id="fgts-plot-area-and-sidebar-singleline-v2">
+/* Increase the actual SVG plotting height; do not add artificial empty chart-panel height. */
+#fgtsReportView .fgts-ov-chart-main svg{height:auto!important;min-height:0!important;max-height:255px!important}
+#fgtsReportView .fgts-ov-distribution-layout{grid-template-columns:minmax(0,1fr) 180px!important;column-gap:10px!important}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row{min-width:0!important}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row span{display:flex!important;flex:1 1 auto!important;min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;overflow-wrap:normal!important;line-height:1.2}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row b{flex:0 0 auto!important;white-space:nowrap!important}
 </style><!-- Trigger syntax validation for restored #242 source -->
 
 <!-- Re-run frontend syntax validation -->
