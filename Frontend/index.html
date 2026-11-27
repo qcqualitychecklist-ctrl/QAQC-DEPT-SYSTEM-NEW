@@ -4693,7 +4693,7 @@ function renderFgtsPeriodBuckets(data,renderMode){
  '<div class="fgts-ov-middle-grid">'+panel('Category Distribution','category',categoryContent,'fgts-ov-category-panel')+panel('Classification','classification',classificationContent,'fgts-ov-classification-panel')+'</div>'+
  '<div class="fgts-ov-bottom-grid">'+panel('Comparison Summary','chart',comparisonSummary,'fgts-ov-summary-panel')+panel('Key Insights','bulb',insights,'fgts-ov-insights-panel')+'</div>';
  content.innerHTML=html;
- document.querySelectorAll('.fgts-overview-mode-tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===(mode==='SINGLE_YEAR'?'MONTH':mode)));
+ document.querySelectorAll('.fgts-overview-mode-tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===fgtsViewMode()));
  const updated=el('fgtsReportUpdated');if(updated)updated.textContent=new Date().toLocaleString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 function exportFgtsReportPdf(){
