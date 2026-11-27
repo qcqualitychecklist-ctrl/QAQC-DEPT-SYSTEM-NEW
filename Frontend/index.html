@@ -3275,45 +3275,7 @@ function openPdiDecisionModal(rec){
   if(decision==='Rescheduled'){updated['Date of PDI']=date.value;updated.Time=time.value;}
   const logo=document.querySelector('.system-topbar-logo');
   const requestHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pre-Delivery Inspection Request</title>'+pdiRequestPrintStyles()+'</head><body>'+buildPdiRequestMarkup(updated,logo?logo.src:'',decision)+'\n
-<style id="fgts-report-color-header-reference-v1">
-/* FGTS Report only: match the supplied reference's navy panel headers and vivid year colors. */
-#fgtsReportView .report-panel>.fgts-panel-head,
-#fgtsReportView .report-panel .fgts-panel-head,
-#fgtsReportView .fgts-ov-panel>.fgts-panel-head{
-  background:linear-gradient(105deg,#082b66 0%,#06316d 100%)!important;
-  background-color:#082b66!important;
-  color:#fff!important;
-  border:0!important;
-  box-shadow:none!important;
-}
-#fgtsReportView .report-panel>.fgts-panel-head span,
-#fgtsReportView .report-panel .fgts-panel-head span,
-#fgtsReportView .fgts-ov-panel>.fgts-panel-head span,
-#fgtsReportView .report-panel>.fgts-panel-head svg,
-#fgtsReportView .report-panel .fgts-panel-head svg,
-#fgtsReportView .fgts-ov-panel>.fgts-panel-head svg{
-  color:#fff!important;
-  stroke:#fff!important;
-}
-#fgtsReportView .fgts-ov-table th,
-#fgtsReportView .fgts-ref-table th{
-  background:#082b66!important;
-  color:#fff!important;
-}
-#fgtsReportView .fgts-ov-table .fgts-ov-total-row td{
-  background:#082b66!important;
-  color:#fff!important;
-}
-#fgtsReportView .fgts-ov-side-title,
-#fgtsReportView .fgts-ov-total{
-  background:#082b66!important;
-  color:#fff!important;
-}
-#fgtsReportView .fgts-overview-mode-tabs button.active{
-  background:#18ad62!important;
-  color:#fff!important;
-}
-</style>
+
 
 </body></html>';
   const payload={status:decision,qcInCharge:qc.value.trim(),reason:reason.value.trim(),newDate:date.value,newTime:time.value};
@@ -6323,3 +6285,44 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
   }
 }
 </style>
+
+<style id="fgts-report-color-header-reference-v1">
+/* FGTS Report only: match the supplied reference's navy panel headers and vivid year colors. */
+#fgtsReportView .report-panel>.fgts-panel-head,
+#fgtsReportView .report-panel .fgts-panel-head,
+#fgtsReportView .fgts-ov-panel>.fgts-panel-head{
+  background:linear-gradient(105deg,#082b66 0%,#06316d 100%)!important;
+  background-color:#082b66!important;
+  color:#fff!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+#fgtsReportView .report-panel>.fgts-panel-head span,
+#fgtsReportView .report-panel .fgts-panel-head span,
+#fgtsReportView .fgts-ov-panel>.fgts-panel-head span,
+#fgtsReportView .report-panel>.fgts-panel-head svg,
+#fgtsReportView .report-panel .fgts-panel-head svg,
+#fgtsReportView .fgts-ov-panel>.fgts-panel-head svg{
+  color:#fff!important;
+  stroke:#fff!important;
+}
+#fgtsReportView .fgts-ov-table th,
+#fgtsReportView .fgts-ref-table th{
+  background:#082b66!important;
+  color:#fff!important;
+}
+#fgtsReportView .fgts-ov-table .fgts-ov-total-row td{
+  background:#082b66!important;
+  color:#fff!important;
+}
+#fgtsReportView .fgts-ov-side-title,
+#fgtsReportView .fgts-ov-total{
+  background:#082b66!important;
+  color:#fff!important;
+}
+#fgtsReportView .fgts-overview-mode-tabs button.active{
+  background:#18ad62!important;
+  color:#fff!important;
+}
+</style>
+
