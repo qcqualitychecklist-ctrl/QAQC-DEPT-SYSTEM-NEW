@@ -4650,7 +4650,7 @@ function renderFgtsPeriodBuckets(data,renderMode){
    const dots=coords.map(pt=>pt?'<circle cx="'+pt.x+'" cy="'+pt.y+'" r="5" fill="'+colorByYear(year)+'" stroke="#fff" stroke-width="1.5"><title>'+year+' · '+escape(pt.label)+': '+fmt(pt.value)+' days</title></circle>':'').join('');
    return paths+dots;
   }).join('');
-  return '<div class="fgts-ov-chart-layout"><div class="fgts-ov-chart-main"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by reporting period and year">'+grid+series+periods.map((p,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#09275c" font-size="12" font-weight="700">'+escape(p.label)+'</text>').join('')+'</svg>'+legend+'</div>' +leadSideMetrics()+'</div>';
+  return '<div class="fgts-ov-chart-layout"><div class="fgts-ov-chart-main"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by reporting period and year">'+grid+series+periods.map((p,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#09275c" font-size="12" font-weight="700">'+escape(p.label)+'</text>').join('')+'</svg>'+legend+'</div>' +sideMetrics(true)+'</div>';
  };
  const aggregateDimension=key=>{
   const result=new Map();
