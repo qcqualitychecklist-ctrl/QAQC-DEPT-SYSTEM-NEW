@@ -2598,7 +2598,7 @@ body.fgts-report-open .intro{display:none!important}
 <div id="fgtsReportView" style="display:none"><button type="button" class="report-back" onclick="backToReportCatalog()">← Back to Reports</button>
 <div class="fgts-report-banner"><div class="fgts-report-brand"><span class="fgts-brand-icon"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="5" y="40" width="12" height="19" rx="4"/><rect x="23" y="25" width="12" height="34" rx="4"/><rect x="41" y="8" width="12" height="51" rx="4"/></svg></span><div><h3 class="fgts-report-title">FGTS Report</h3><p>Final Goods Test Summary</p></div></div><div class="fgts-report-banner-meta"><div class="fgts-overview-mode-tabs"><button type="button" data-mode="MONTH" onclick="setFgtsReportMode('MONTH')">Per Month</button><button type="button" data-mode="QUARTER" onclick="setFgtsReportMode('QUARTER')">Per Quarter</button><button type="button" data-mode="HALF" onclick="setFgtsReportMode('HALF')">Per Half-Year</button><button type="button" data-mode="YEAR" onclick="setFgtsReportMode('YEAR')">Per Year</button></div><button type="button" class="fgts-export-btn" onclick="exportFgtsReportPdf()">↓ &nbsp;Export Report</button></div></div>
 <div class="fgts-period-panel"><div class="fgts-period-heading"><span class="fgts-filter-icon">▼</span> REPORT PERIOD SELECTION</div><div class="fgts-period-controls fgts-view-controls">
-<div class="report-year-field"><label for="fgtsReportMode">Report View</label><select id="fgtsReportMode" onchange="updateFgtsReportMode()"><option value="SINGLE_YEAR">Single Year</option><option value="YEAR">Year</option><option value="MONTH">Month</option><option value="QUARTER">Quarter</option><option value="HALF">Half Year</option></select></div>
+<div class="report-year-field"><label for="fgtsReportMode">Report View</label><select id="fgtsReportMode" onchange="updateFgtsReportMode()"><option value="SINGLE_YEAR">Single Year</option><option value="YEAR" selected>Year</option><option value="MONTH">Month</option><option value="QUARTER">Quarter</option><option value="HALF">Half Year</option></select></div>
 <div class="report-year-field fgts-view-year-a"><label id="fgtsYearALabel" for="fgtsReportYear">Year</label><select id="fgtsReportYear" onchange="loadFgtsReport()"></select></div>
 <div class="report-year-field fgts-view-year-b"><label for="fgtsCompareYear">To Year</label><select id="fgtsCompareYear" onchange="loadFgtsReport()"></select></div>
 <div class="report-year-field fgts-view-month-from"><label for="fgtsFromMonth">From Month</label><select id="fgtsFromMonth" onchange="loadFgtsReport()"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
@@ -4561,6 +4561,7 @@ function loadFgtsReport(){
   if(!years.length){yearSelect.innerHTML='<option value="'+data.year+'">'+data.year+'</option>';toSelect.innerHTML='<option value="'+data.year+'">'+data.year+'</option>';}
   yearSelect.value=years.includes(Number(year))?String(year):String((years.length?(mode==='SINGLE_YEAR'?Math.max(...years):Math.min(...years)):data.year));
   toSelect.value=years.includes(Number(toYear))?String(toYear):String((years.length?Math.max(...years):data.year));
+  if(mode==='YEAR'&&!year&&!toYear&&years.length>1){yearSelect.value=String(Math.min(...years));toSelect.value=String(Math.max(...years));loadFgtsReport();return;}
   const monthFrom=el('fgtsFromMonth'),monthTo=el('fgtsToMonth');
   if(monthFrom)monthFrom.value=String(from);if(monthTo)monthTo.value=String(to);
   const note=content.querySelector('.fgts-report-refresh-note');if(note)note.remove();
@@ -4587,11 +4588,20 @@ function renderFgtsReport(data){
   renderFgtsPeriodBuckets(Object.assign({},data,{periodBuckets:monthlyBuckets}));
   return;
  }
+ if(mode==='YEAR'){
+  const source=(data.yearRangeData||[]).slice(),months=Array.from({length:12},(_,i)=>i+1),monthlyBuckets=[];
+  source.forEach(yr=>months.forEach((month,index)=>{
+   const lead=(yr.monthlyLead||[])[index]||{},qty=(yr.monthlyQty||[])[index]||{};
+   const dimensionAt=items=>(items||[]).map(item=>({name:String(item.name||'Unassigned'),total:Number(item.monthly&&item.monthly[index]||0)})).filter(item=>item.total>0);
+   monthlyBuckets.push({year:Number(yr.year),periodIndex:month,label:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][index]+' '+yr.year,totalQty:Number(qty.qty)||0,averageLeadDays:lead.average==null?null:Number(lead.average),leadCount:Number(lead.count)||0,totalLeadDays:Number(lead.total)||0,recordCount:Number(yr.recordCount)||0,category:dimensionAt(yr.category),classification:dimensionAt(yr.classification)});
+  }));
+  if(monthlyBuckets.length){renderFgtsPeriodBuckets(Object.assign({},data,{periodBuckets:monthlyBuckets}),'MONTH');return;}
+ }
  renderFgtsPeriodBuckets(data);
 }
-function renderFgtsPeriodBuckets(data){
+function renderFgtsPeriodBuckets(data,renderMode){
  const content=el('fgtsReportContent');if(!content)return;
- const buckets=(data.periodBuckets||[]).slice(),mode=fgtsViewMode();
+ const buckets=(data.periodBuckets||[]).slice(),mode=renderMode||fgtsViewMode();
  if(!buckets.length){content.innerHTML='<div class="report-empty">No FGTS records are available for the selected reporting range.</div>';return;}
  const palette=['#1769ed','#17ad68','#ff9514','#8955d4','#11a2b4','#dc5a7a','#66758a','#9cad28','#d65c31','#477fba','#a06bb7','#679a44'];
  const fmt=v=>reportNumber(v??0),escape=reportEscape;
@@ -4631,7 +4641,7 @@ function renderFgtsPeriodBuckets(data){
    const coords=periods.map((p,i)=>{const b=findBucket(p.key,p.key);return b&&b.averageLeadDays!=null?{x:x(i),y:y(Number(b.averageLeadDays)),value:Number(b.averageLeadDays),year:Number(b.year),label:p.label}:null;});
    const valid=coords.filter(Boolean),line=valid.length>1?'<polyline points="'+valid.map(pt=>pt.x+','+pt.y).join(' ')+'" fill="none" stroke="#1769ed" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>':'';
    const dots=valid.map(pt=>'<circle cx="'+pt.x+'" cy="'+pt.y+'" r="5" fill="'+colorByYear(pt.year)+'" stroke="#fff" stroke-width="1.5"><title>'+pt.year+': '+fmt(pt.value)+' days</title></circle>').join('');
-   return '<div class="fgts-ov-chart-layout"><div class="fgts-ov-chart-main"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by year">'+grid+line+dots+periods.map((p,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#09275c" font-size="12" font-weight="700">'+escape(p.label)+'</text>').join('')+'</svg>'+legend+'</div>'+leadSideMetrics()+'</div>';
+   return '<div class="fgts-ov-chart-layout"><div class="fgts-ov-chart-main"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by year">'+grid+line+dots+periods.map((p,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#09275c" font-size="12" font-weight="700">'+escape(p.label)+'</text>').join('')+'</svg>'+legend+'</div>'+sideMetrics(true)+'</div>';
   }
   const series=years.map(year=>{
    const coords=periods.map((p,i)=>{const b=findBucket(year,p.key);return b&&b.averageLeadDays!=null?{x:x(i),y:y(Number(b.averageLeadDays)),value:Number(b.averageLeadDays),label:p.label}:null;});
@@ -4655,7 +4665,7 @@ function renderFgtsPeriodBuckets(data){
  const stackedRows=(rows)=>{
   if(!rows.length)return '<div class="report-empty">No distribution data available.</div>';
   return '<div class="fgts-ov-stacked-rows">'+rows.map(row=>{
-   const parts=row.values.map((v,i)=>{const pct=row.total?v/row.total*100:0;return v?'<span class="fgts-ov-segment" style="width:'+pct.toFixed(3)+'%;background:'+colorByYear(years[i])+'"><b>'+pct.toFixed(1)+'%</b><i>'+years[i]+'</i></span>':'';}).join('');
+   const parts=row.values.map((v,i)=>{const pct=row.total?v/row.total*100:0;return v?'<span class="fgts-ov-segment" style="width:'+pct.toFixed(3)+'%;background:'+colorByYear(years[i])+'"><b>'+pct.toFixed(1)+'%</b></span>':'';}).join('');
    return '<div class="fgts-ov-stacked-row"><span class="fgts-ov-row-label" title="'+escape(row.name)+'">'+escape(row.name)+'</span><div class="fgts-ov-track">'+parts+'</div></div>';
   }).join('')+'</div>';
  };
@@ -5241,7 +5251,83 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 @media(max-width:1050px){#fgtsReportView .fgts-report-banner{align-items:flex-start;flex-direction:column}#fgtsReportView .fgts-report-banner-meta{width:100%;justify-content:space-between}#fgtsReportView .fgts-ov-top-grid,#fgtsReportView .fgts-ov-middle-grid{grid-template-columns:1fr}#fgtsReportView .fgts-ov-bottom-grid{grid-template-columns:1fr}#fgtsReportView .fgts-ov-chart-layout,#fgtsReportView .fgts-ov-distribution-layout{grid-template-columns:minmax(0,1fr) 135px}}
 @media(max-width:700px){#fgtsReportView{padding:8px!important}#fgtsReportView .fgts-report-banner-meta{align-items:stretch;flex-direction:column}#fgtsReportView .fgts-overview-mode-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#fgtsReportView .fgts-overview-mode-tabs button{padding:0 5px}#fgtsReportView .fgts-ov-chart-layout,#fgtsReportView .fgts-ov-distribution-layout{grid-template-columns:1fr}#fgtsReportView .fgts-ov-side{border-left:0;border-top:1px solid #e2e9f3}#fgtsReportView .fgts-ov-percent-axis,#fgtsReportView .fgts-ov-distribution-layout .fgts-ov-legend{margin-left:0}#fgtsReportView .fgts-ov-stacked-row{grid-template-columns:minmax(78px,100px) minmax(0,1fr)}}
 </style>
-</body></html>
+
+<style id="fgts-report-dashboard-reference-fidelity-v2">
+#fgtsReportView .fgts-period-panel{display:none!important}
+#fgtsReportView .fgts-report-banner{min-height:94px!important;padding:12px 27px!important}
+#fgtsReportView .fgts-report-brand{gap:16px!important;min-width:260px!important}
+#fgtsReportView .fgts-brand-icon{width:65px!important;height:65px!important;background:transparent!important}
+#fgtsReportView .fgts-brand-icon svg{width:64px!important;height:64px!important;fill:#fff!important}
+#fgtsReportView .fgts-report-title{font-size:36px!important;line-height:1.02!important}
+#fgtsReportView .fgts-report-brand p{font-size:19px!important;font-weight:700!important;color:#fff!important}
+#fgtsReportView .fgts-overview-mode-tabs{gap:10px!important;padding:0!important;background:transparent!important;border:0!important}
+#fgtsReportView .fgts-overview-mode-tabs button{height:52px!important;padding:0 21px!important;border:0!important;border-radius:12px!important;background:#fff!important;color:#09275c!important;font-size:16px!important;font-weight:850!important}
+#fgtsReportView .fgts-overview-mode-tabs button.active{background:#14ad58!important;color:#fff!important}
+#fgtsReportView .fgts-export-btn{display:none!important}
+#fgtsReportView .fgts-reference-kpis{display:none!important}
+#fgtsReportView .fgts-ov-top-grid,#fgtsReportView .fgts-ov-middle-grid{gap:12px!important;margin:0 0 13px!important}
+#fgtsReportView .fgts-ov-bottom-grid{gap:13px!important;margin:0!important}
+#fgtsReportView .fgts-ov-top-grid>.fgts-ov-panel{min-height:294px!important}
+#fgtsReportView .fgts-ov-middle-grid>.fgts-ov-panel{min-height:272px!important}
+#fgtsReportView .fgts-ov-bottom-grid>.fgts-ov-panel{min-height:275px!important}
+#fgtsReportView .fgts-ov-panel{border:1px solid #d9e5f6!important;border-radius:12px!important;box-shadow:0 2px 7px #183d7110!important}
+#fgtsReportView .fgts-ov-panel .fgts-panel-head{min-height:41px!important;padding:8px 15px!important;background:#09275c!important;color:#fff!important;border-bottom:0!important;font-size:18px!important;font-weight:850!important}
+#fgtsReportView .fgts-ov-panel .fgts-panel-head span{color:#fff!important}
+#fgtsReportView .fgts-ov-panel .fgts-panel-icon{width:25px!important;height:25px!important;flex:0 0 25px!important;color:#fff!important}
+#fgtsReportView .fgts-ov-panel .fgts-panel-body{padding:10px 13px 12px!important}
+#fgtsReportView .fgts-ov-chart-layout{grid-template-columns:minmax(0,1fr) 151px!important;gap:9px!important;min-height:220px}
+#fgtsReportView .fgts-ov-chart-main svg{max-height:225px!important}
+#fgtsReportView .fgts-ov-legend{gap:15px!important;margin-top:5px!important;font-size:13px!important;font-weight:800!important}
+#fgtsReportView .fgts-ov-legend i{width:15px!important;height:15px!important;flex-basis:15px!important}
+#fgtsReportView .fgts-ov-side{justify-content:flex-start!important;gap:10px!important;padding:0 0 0 8px!important;border:0!important;background:transparent!important}
+#fgtsReportView .fgts-ov-side-title{display:flex!important;align-items:center!important;justify-content:center!important;min-height:51px!important;margin:0 0 3px!important;padding:5px 8px!important;border-radius:8px!important;background:#09275c!important;color:#fff!important;text-align:center!important;font-size:14px!important;font-weight:850!important;line-height:1.15!important}
+#fgtsReportView .fgts-ov-side-row{gap:5px!important;color:#09275c!important;font-size:14px!important;font-weight:800!important}
+#fgtsReportView .fgts-ov-side-row span{gap:9px!important;white-space:nowrap!important}
+#fgtsReportView .fgts-ov-side-row i{width:16px!important;height:16px!important;flex-basis:16px!important}
+#fgtsReportView .fgts-ov-side-row b{color:#09275c!important;font-size:15px!important;font-weight:850!important}
+#fgtsReportView .fgts-ov-total{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:1px!important;min-height:60px!important;margin-top:auto!important;padding:5px 8px!important;border:0!important;border-radius:8px!important;background:#09275c!important;color:#fff!important;font-size:14px!important;font-weight:850!important}
+#fgtsReportView .fgts-ov-total b{color:#fff!important;font-size:23px!important;line-height:1.1!important}
+#fgtsReportView .fgts-ov-side-rule{display:none!important}
+#fgtsReportView .fgts-ov-distribution-layout{grid-template-columns:minmax(0,1fr) 151px!important;gap:10px!important}
+#fgtsReportView .fgts-ov-stacked-rows{gap:13px!important}
+#fgtsReportView .fgts-ov-stacked-row{grid-template-columns:minmax(94px,125px) minmax(0,1fr)!important;gap:9px!important}
+#fgtsReportView .fgts-ov-row-label{font-size:14px!important;font-weight:800!important;color:#09275c!important}
+#fgtsReportView .fgts-ov-track{height:29px!important;border-radius:4px!important;background:#eef3fa!important;box-shadow:none!important}
+#fgtsReportView .fgts-ov-segment{font-size:12px!important;text-shadow:none!important}
+#fgtsReportView .fgts-ov-segment b{font-size:14px!important;font-weight:850!important}
+#fgtsReportView .fgts-ov-percent-axis{margin:5px 0 0 134px!important;color:#09275c!important;font-size:13px!important;font-weight:800!important}
+#fgtsReportView .fgts-ov-distribution-layout .fgts-ov-legend{justify-content:center!important;margin:10px 0 0!important;font-size:13px!important}
+#fgtsReportView .fgts-ov-table{font-size:13px!important}
+#fgtsReportView .fgts-ov-table th{padding:7px 5px!important;background:#09275c!important;color:#fff!important;border:1px solid #a9bfdc!important;font-size:13px!important;font-weight:850!important}
+#fgtsReportView .fgts-ov-table td{padding:6px 6px!important;border:1px solid #b9cce5!important;color:#09275c!important;font-size:12px!important}
+#fgtsReportView .fgts-ov-table td:first-child{font-weight:750!important}
+#fgtsReportView .fgts-ov-table .fgts-ov-total-row td{background:#09275c!important;color:#fff!important;font-weight:850!important}
+#fgtsReportView .fgts-ov-insights-panel .fgts-panel-body{padding:12px 15px!important}
+#fgtsReportView .fgts-ov-insights{gap:11px!important;margin:0!important}
+#fgtsReportView .fgts-ov-insights li{gap:12px!important;align-items:center!important}
+#fgtsReportView .fgts-ov-insights li>i{width:47px!important;height:47px!important;flex:0 0 47px!important;border-radius:50%!important;background:#1769ed!important;color:#fff!important;font-size:24px!important;box-shadow:0 2px 5px #12345b24}
+#fgtsReportView .fgts-ov-insights li>i.fgts-ov-insight-green{background:#12a65b!important;color:#fff!important}
+#fgtsReportView .fgts-ov-insights li>i.fgts-ov-insight-orange{background:#f28b16!important;color:#fff!important}
+#fgtsReportView .fgts-ov-insights li>i.fgts-ov-insight-purple{background:#7943c5!important;color:#fff!important}
+#fgtsReportView .fgts-ov-insights li b{font-size:14px!important;color:#09275c!important}
+#fgtsReportView .fgts-ov-insights li small{font-size:13px!important;line-height:1.2!important;color:#09275c!important}
+@media(max-width:1050px){
+ #fgtsReportView .fgts-report-banner{min-height:auto!important;padding:16px!important}
+ #fgtsReportView .fgts-report-title{font-size:29px!important}
+ #fgtsReportView .fgts-report-brand p{font-size:15px!important}
+ #fgtsReportView .fgts-report-banner-meta{justify-content:flex-start!important}
+ #fgtsReportView .fgts-overview-mode-tabs{flex-wrap:wrap!important}
+ #fgtsReportView .fgts-overview-mode-tabs button{height:42px!important;padding:0 13px!important;font-size:13px!important}
+ #fgtsReportView .fgts-ov-top-grid,#fgtsReportView .fgts-ov-middle-grid,#fgtsReportView .fgts-ov-bottom-grid{grid-template-columns:1fr!important}
+}
+@media(max-width:700px){
+ #fgtsReportView .fgts-ov-chart-layout,#fgtsReportView .fgts-ov-distribution-layout{grid-template-columns:1fr!important}
+ #fgtsReportView .fgts-ov-side{border-top:1px solid #e2e9f3!important;padding:8px 0 0!important}
+ #fgtsReportView .fgts-ov-percent-axis{margin-left:0!important}
+ #fgtsReportView .fgts-ov-distribution-layout .fgts-ov-legend{margin-left:0!important}
+ #fgtsReportView .fgts-ov-stacked-row{grid-template-columns:95px minmax(0,1fr)!important}
+}
+</style></body></html>
 <!-- Trigger syntax validation for restored #242 source -->
 
 <!-- Re-run frontend syntax validation -->
