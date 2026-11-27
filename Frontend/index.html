@@ -4579,10 +4579,11 @@ function renderFgtsReport(data){
  if(mode==='SINGLE_YEAR'){
   const year=Number(data.year)||new Date().getFullYear(),months=Array.from({length:12},(_,i)=>i+1);
   const dimensionAt=(items,index)=>(items||[]).map(item=>({name:String(item.name||'Unassigned'),total:Number(item.monthly&&item.monthly[index]||0)})).filter(item=>item.total>0);
+  const from=Math.min(Number(el('fgtsFromMonth')?.value||1),Number(el('fgtsToMonth')?.value||12)),to=Math.max(Number(el('fgtsFromMonth')?.value||1),Number(el('fgtsToMonth')?.value||12));
   const monthlyBuckets=months.map((month,index)=>{
    const lead=(data.monthlyLead||[])[index]||{},qty=(data.monthlyQty||[])[index]||{};
    return {year,periodIndex:month,label:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][index]+' '+year,totalQty:Number(qty.qty)||0,averageLeadDays:lead.average==null?null:Number(lead.average),leadCount:Number(lead.count)||0,totalLeadDays:Number(lead.total)||0,recordCount:Number(lead.count)||0,category:dimensionAt(data.category,index),classification:dimensionAt(data.classification,index)};
-  });
+  }).filter(bucket=>bucket.periodIndex>=from&&bucket.periodIndex<=to);
   renderFgtsPeriodBuckets(Object.assign({},data,{periodBuckets:monthlyBuckets}));
   return;
  }
@@ -4675,7 +4676,7 @@ function renderFgtsPeriodBuckets(data){
  '<div class="fgts-ov-middle-grid">'+panel('Category Distribution','category',categoryContent,'fgts-ov-category-panel')+panel('Classification','classification',classificationContent,'fgts-ov-classification-panel')+'</div>'+
  '<div class="fgts-ov-bottom-grid">'+panel('Comparison Summary','chart',comparisonSummary,'fgts-ov-summary-panel')+panel('Key Insights','bulb',insights,'fgts-ov-insights-panel')+'</div>';
  content.innerHTML=html;
- document.querySelectorAll('.fgts-overview-mode-tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===mode));
+ document.querySelectorAll('.fgts-overview-mode-tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===(mode==='SINGLE_YEAR'?'MONTH':mode)));
  const updated=el('fgtsReportUpdated');if(updated)updated.textContent=new Date().toLocaleString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 function exportFgtsReportPdf(){
