@@ -4603,7 +4603,7 @@ function renderFgtsPeriodBuckets(data,renderMode){
  const content=el('fgtsReportContent');if(!content)return;
  const buckets=(data.periodBuckets||[]).slice(),mode=renderMode||fgtsViewMode();
  if(!buckets.length){content.innerHTML='<div class="report-empty">No FGTS records are available for the selected reporting range.</div>';return;}
- const palette=['#1768eb','#18ad62','#ff9912','#8955d4','#11a2b4','#dc5a7a','#66758a','#9cad28','#d65c31','#477fba','#a06bb7','#679a44'];
+ const palette=['#1769ed','#17ad68','#ff9514','#8955d4','#11a2b4','#dc5a7a','#66758a','#9cad28','#d65c31','#477fba','#a06bb7','#679a44'];
  const fmt=v=>reportNumber(v??0),escape=reportEscape;
  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
  const years=[...new Set(buckets.map(x=>Number(x.year)).filter(Number.isFinite))].sort((a,b)=>a-b);
@@ -6283,43 +6283,37 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 }
 </style>
 
-<style id="fgts-report-color-header-reference-v1">
-/* FGTS Report only: match the supplied reference's navy panel headers and vivid year colors. */
+<style id="fgts-report-plain-colored-headers-v2">
+/* FGTS Report only: preserve plain header surfaces; color the title and icon and reduce header text size. */
 #fgtsReportView .report-panel>.fgts-panel-head,
 #fgtsReportView .report-panel .fgts-panel-head,
-#fgtsReportView .fgts-ov-panel>.fgts-panel-head{
-  background:linear-gradient(105deg,#082b66 0%,#06316d 100%)!important;
-  background-color:#082b66!important;
-  color:#fff!important;
+#fgtsReportView .fgts-ov-panel>.fgts-panel-head,
+#fgtsReportView .fgts-ov-panel .fgts-panel-head{
+  min-height:40px!important;
+  padding:8px 13px!important;
+  background:#fff!important;
+  background-image:none!important;
+  color:#09275c!important;
   border:0!important;
+  border-bottom:1px solid #edf1f7!important;
   box-shadow:none!important;
+  font-size:14px!important;
+  font-weight:800!important;
 }
 #fgtsReportView .report-panel>.fgts-panel-head span,
 #fgtsReportView .report-panel .fgts-panel-head span,
 #fgtsReportView .fgts-ov-panel>.fgts-panel-head span,
+#fgtsReportView .fgts-ov-panel .fgts-panel-head span{
+  color:#09275c!important;
+  font-size:14px!important;
+  font-weight:800!important;
+}
 #fgtsReportView .report-panel>.fgts-panel-head svg,
 #fgtsReportView .report-panel .fgts-panel-head svg,
-#fgtsReportView .fgts-ov-panel>.fgts-panel-head svg{
-  color:#fff!important;
-  stroke:#fff!important;
-}
-#fgtsReportView .fgts-ov-table th,
-#fgtsReportView .fgts-ref-table th{
-  background:#082b66!important;
-  color:#fff!important;
-}
-#fgtsReportView .fgts-ov-table .fgts-ov-total-row td{
-  background:#082b66!important;
-  color:#fff!important;
-}
-#fgtsReportView .fgts-ov-side-title,
-#fgtsReportView .fgts-ov-total{
-  background:#082b66!important;
-  color:#fff!important;
-}
-#fgtsReportView .fgts-overview-mode-tabs button.active{
-  background:#18ad62!important;
-  color:#fff!important;
+#fgtsReportView .fgts-ov-panel>.fgts-panel-head svg,
+#fgtsReportView .fgts-ov-panel .fgts-panel-head svg{
+  color:#1769ed!important;
+  stroke:#1769ed!important;
 }
 </style>
 
