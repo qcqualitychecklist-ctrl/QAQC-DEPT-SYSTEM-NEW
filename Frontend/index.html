@@ -6198,18 +6198,28 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 </style>
 
 
-<style id="fgts-header-color-icon-only-v1">
-/* FGTS Report only: color existing panel headers and icons. Deliberately do not alter dimensions, padding, spacing, or chart sizing. */
-#fgtsReportView .fgts-panel-head{
+<style id="fgts-header-color-icon-only-v2">
+/* FGTS Report only: override the more-specific white .fgts-ov-panel header rule.
+   Color-only change: preserve existing header dimensions, padding, spacing and chart sizing. */
+#fgtsReportView .fgts-ov-panel .fgts-panel-head,
+#fgtsReportView .fgts-monthly-ref-panel .fgts-panel-head,
+#fgtsReportView .report-panel>.fgts-panel-head{
   background:#09275c!important;
+  background-color:#09275c!important;
   background-image:none!important;
   color:#fff!important;
 }
-#fgtsReportView .fgts-panel-head span{
+#fgtsReportView .fgts-ov-panel .fgts-panel-head span,
+#fgtsReportView .fgts-monthly-ref-panel .fgts-panel-head span,
+#fgtsReportView .report-panel>.fgts-panel-head span{
   color:#fff!important;
 }
-#fgtsReportView .fgts-panel-head .fgts-panel-icon,
-#fgtsReportView .fgts-panel-head svg{
+#fgtsReportView .fgts-ov-panel .fgts-panel-head .fgts-panel-icon,
+#fgtsReportView .fgts-ov-panel .fgts-panel-head svg,
+#fgtsReportView .fgts-monthly-ref-panel .fgts-panel-head .fgts-panel-icon,
+#fgtsReportView .fgts-monthly-ref-panel .fgts-panel-head svg,
+#fgtsReportView .report-panel>.fgts-panel-head .fgts-panel-icon,
+#fgtsReportView .report-panel>.fgts-panel-head svg{
   color:#fff!important;
   stroke:#fff!important;
 }
