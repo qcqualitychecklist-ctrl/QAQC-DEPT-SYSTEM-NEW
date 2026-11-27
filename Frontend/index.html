@@ -4588,7 +4588,7 @@ function renderFgtsPeriodBuckets(data){
  const years=[...new Set(buckets.map(x=>Number(x.year)).filter(Number.isFinite))].sort((a,b)=>a-b);
  const colorByYear=year=>palette[Math.max(0,years.indexOf(Number(year)))%palette.length];
  const keyOf=x=>mode==='YEAR'?Number(x.year):Number(x.periodIndex);
- const periods=mode==='YEAR'?years.map(y=>({key:y,label:String(y)}):[...new Set(buckets.map(keyOf).filter(Number.isFinite))].sort((a,b)=>a-b).map(p=>({key:p,label:mode==='MONTH'?(monthNames[p-1]||String(p)):mode==='QUARTER'?'Q'+p:(p===1?'H1':'H2')}));
+ const periods=mode==='YEAR'?years.map(y=>({key:y,label:String(y)})):[...new Set(buckets.map(keyOf).filter(Number.isFinite))].sort((a,b)=>a-b).map(p=>({key:p,label:mode==='MONTH'?(monthNames[p-1]||String(p)):mode==='QUARTER'?'Q'+p:(p===1?'H1':'H2')}));
  const findBucket=(year,period)=>buckets.find(x=>Number(x.year)===Number(year)&&(mode==='YEAR'?Number(x.year)===Number(period):Number(x.periodIndex)===Number(period)));
  const yearRows=years.map(year=>{
   const group=buckets.filter(x=>Number(x.year)===year),totalQty=group.reduce((n,x)=>n+(Number(x.totalQty)||0),0),leadCount=group.reduce((n,x)=>n+(Number(x.leadCount)||0),0),leadTotal=group.reduce((n,x)=>n+(Number(x.totalLeadDays)||0),0);
@@ -4643,8 +4643,8 @@ function renderFgtsPeriodBuckets(data){
  };
  const yearlyCategoryQty=yearRows.map(x=>x.totalQty);
  const sideTotal=sideMetrics(false);
- const categoryContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+stackedRows(categoryRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div>'+legend+'</div>'+sideTotal+'</div>';
- const classificationContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+stackedRows(classRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div>'+legend+'</div>'+sideTotal+'</div>';
+ const categoryContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+stackedRows(categoryRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div>'+legend+'</div>'+sideMetrics(true)+'</div>';
+ const classificationContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+stackedRows(classRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div>'+legend+'</div>'+sideMetrics(true)+'</div>';
  const fmtPct=(v,total)=>total?(v/total*100).toFixed(1)+'%':'0.0%';
  const fmtVariance=(current,previous)=>{const d=current-previous,p=previous?d/Math.abs(previous)*100:null;return (d>0?'+':'')+fmt(d)+' ('+(p==null?(current?'New':'0.0%'):(p>0?'+':'')+p.toFixed(1)+'%')+')';};
  const tableHead='<thead><tr><th rowspan="2">Category</th>'+years.map(y=>'<th colspan="2">'+y+'</th>').join('')+years.slice(1).map((y,i)=>'<th rowspan="2">Variance<br>('+y+' vs '+years[i]+')</th>').join('')+'</tr><tr>'+years.map(()=>'<th>Qty</th><th>%</th>').join('')+'</tr></thead>';
