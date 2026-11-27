@@ -4614,7 +4614,7 @@ function renderFgtsPeriodBuckets(data){
  const quantityChart=()=>{
   const values=[];
   periods.forEach(p=>years.forEach(y=>{const b=findBucket(y,p.key);if(b)values.push(Number(b.totalQty)||0);}));
-  const max=maxNice(Math.max(1,...values)),ticks=4,w=610,h=235,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,slot=(w-left-right)/Math.max(1,periods.length),groupWidth=Math.min(slot*.82,years.length*20),barWidth=Math.min(18,groupWidth/Math.max(1,years.length)*.72);
+  const max=maxNice(Math.max(1,...values)),ticks=4,w=640,h=252,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,slot=(w-left-right)/Math.max(1,periods.length),groupWidth=Math.min(slot*.82,years.length*20),barWidth=Math.min(18,groupWidth/Math.max(1,years.length)*.72);
   const grid=Array.from({length:ticks+1},(_,i)=>{const v=max*i/ticks,y=top+plotH-i*plotH/ticks;return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="#d7e2f2"/><text x="'+(left-8)+'" y="'+(y+4)+'" text-anchor="end" fill="#09275c" font-size="12" font-weight="700">'+fmt(v)+'</text>';}).join('');
   const bars=periods.map((p,i)=>{
    const center=left+i*slot+slot/2;
@@ -4625,7 +4625,7 @@ function renderFgtsPeriodBuckets(data){
  };
  const leadChart=()=>{
   const allValues=[];periods.forEach(p=>years.forEach(y=>{const b=findBucket(y,p.key);if(b&&b.averageLeadDays!=null)allValues.push(Number(b.averageLeadDays));}));
-  const max=maxNice(Math.max(1,...allValues)),w=610,h=235,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,ticks=4,slot=(w-left-right)/Math.max(1,periods.length),x=i=>left+i*slot+slot/2,y=v=>top+plotH-(v/max)*plotH;
+  const max=maxNice(Math.max(1,...allValues)),w=640,h=252,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,ticks=4,slot=(w-left-right)/Math.max(1,periods.length),x=i=>left+i*slot+slot/2,y=v=>top+plotH-(v/max)*plotH;
   const grid=Array.from({length:ticks+1},(_,i)=>{const v=max*i/ticks,yy=top+plotH-i*plotH/ticks;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#d7e2f2"/><text x="'+(left-8)+'" y="'+(yy+4)+'" text-anchor="end" fill="#09275c" font-size="12" font-weight="700">'+(Number.isInteger(max/ticks)?v.toFixed(0):v.toFixed(1))+'</text>';}).join('');
   if(mode==='YEAR'){
    const coords=periods.map((p,i)=>{const b=findBucket(p.key,p.key);return b&&b.averageLeadDays!=null?{x:x(i),y:y(Number(b.averageLeadDays)),value:Number(b.averageLeadDays),year:Number(b.year),label:p.label}:null;});
@@ -4640,7 +4640,7 @@ function renderFgtsPeriodBuckets(data){
    const dots=coords.map(pt=>pt?'<circle cx="'+pt.x+'" cy="'+pt.y+'" r="5" fill="'+colorByYear(year)+'" stroke="#fff" stroke-width="1.5"><title>'+year+' · '+escape(pt.label)+': '+fmt(pt.value)+' days</title></circle>':'').join('');
    return paths+dots;
   }).join('');
-  return '<div class="fgts-ov-chart-layout"><div class="fgts-ov-chart-main"><div class="fgts-ov-legend-top">'+legend+'</div><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by reporting period and year">'+grid+'<path d="M '+left+' '+top+' V '+(top+plotH)+' H '+(w-right)+'" fill="none" stroke="#233f68" stroke-width="1.8"/>'+series+periods.map((p,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#09275c" font-size="12" font-weight="700">'+escape(p.label)+'</text>').join('')+'</svg>'+legend+'</div>' +leadSideMetrics()+'</div>';
+  return '<div class="fgts-ov-chart-layout"><div class="fgts-ov-chart-main"><div class="fgts-ov-legend-top">'+legend+'</div><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by reporting period and year">'+grid+'<path d="M '+left+' '+top+' V '+(top+plotH)+' H '+(w-right)+'" fill="none" stroke="#233f68" stroke-width="1.8"/>'+series+periods.map((p,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#09275c" font-size="12" font-weight="700">'+escape(p.label)+'</text>').join('')+'</svg></div>' +leadSideMetrics()+'</div>';
  };
  const aggregateDimension=key=>{
   const result=new Map();
@@ -4655,7 +4655,7 @@ function renderFgtsPeriodBuckets(data){
  const stackedRows=(rows)=>{
   if(!rows.length)return '<div class="report-empty">No distribution data available.</div>';
   return '<div class="fgts-ov-stacked-rows">'+rows.map(row=>{
-   const parts=row.values.map((v,i)=>{const pct=row.total?v/row.total*100:0;return v?'<span class="fgts-ov-segment" style="width:'+pct.toFixed(3)+'%;background:'+colorByYear(years[i])+'"><b>'+pct.toFixed(1)+'%</b><i>'+years[i]+'</i></span>':'';}).join('');
+   const parts=row.values.map((v,i)=>{const pct=row.total?v/row.total*100:0;return v?'<span class="fgts-ov-segment" style="width:'+pct.toFixed(3)+'%;background:'+colorByYear(years[i])+'"><b>'+pct.toFixed(1)+'%</b></span>':'';}).join('');
    return '<div class="fgts-ov-stacked-row"><span class="fgts-ov-row-label" title="'+escape(row.name)+'">'+escape(row.name)+'</span><div class="fgts-ov-track">'+parts+'</div></div>';
   }).join('')+'</div>';
  };
@@ -4666,18 +4666,19 @@ function renderFgtsPeriodBuckets(data){
  const classificationContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+'<div class="fgts-ov-legend-top">'+legend+'</div>'+stackedRows(classRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div></div>'+distributionSideMetrics(classRows)+'</div>';
  const fmtPct=(v,total)=>total?(v/total*100).toFixed(1)+'%':'0.0%';
  const fmtVariance=(current,previous)=>{const d=current-previous,p=previous?d/Math.abs(previous)*100:null;return (d>0?'+':'')+fmt(d)+' ('+(p==null?(current?'New':'0.0%'):(p>0?'+':'')+p.toFixed(1)+'%')+')';};
- const tableHead='<thead><tr><th rowspan="2">Category</th>'+years.map(y=>'<th colspan="2">'+y+'</th>').join('')+years.slice(1).map((y,i)=>'<th rowspan="2">Variance<br>('+y+' vs '+years[i]+')</th>').join('')+'</tr><tr>'+years.map(()=>'<th>Qty</th><th>%</th>').join('')+'</tr></thead>';
- const tableBody=categoryRows.map(row=>'<tr><td class="fgts-ov-table-category">'+escape(row.name)+'</td>'+years.map((y,i)=>'<td>'+fmt(row.values[i])+'</td><td>'+fmtPct(row.values[i],yearRows[i].totalQty)+'</td>').join('')+years.slice(1).map((y,i)=>'<td>'+fmtVariance(row.values[i+1],row.values[i])+'</td>').join('')+'</tr>').join('');
- const totalRow='<tr class="fgts-ov-total-row"><td>Total</td>'+yearRows.map(x=>'<td>'+fmt(x.totalQty)+'</td><td>100.0%</td>').join('')+yearRows.slice(1).map((x,i)=>'<td>'+fmtVariance(x.totalQty,yearRows[i].totalQty)+'</td>').join('')+'</tr>';
- const comparisonSummary='<div class="fgts-ov-table-wrap"><table class="fgts-ov-table">'+tableHead+'<tbody>'+tableBody+totalRow+'</tbody></table></div>';
- const leadFirst=yearRows.find(x=>x.averageLeadDays!=null),leadLast=[...yearRows].reverse().find(x=>x.averageLeadDays!=null);
- const qtyFirst=yearRows[0],qtyLast=yearRows[yearRows.length-1];
- const topCategory=categoryRows[0],classTop=classRows[0];
- const leadInsight=leadFirst&&leadLast&&leadFirst.year!==leadLast.year?'Average lead days '+(leadLast.averageLeadDays<=leadFirst.averageLeadDays?'decreased':'increased')+' to <b>'+fmt(leadLast.averageLeadDays)+' days</b> in '+leadLast.year+' (from '+fmt(leadFirst.averageLeadDays)+' days in '+leadFirst.year+').':'Average lead days are '+(leadLast?'<b>'+fmt(leadLast.averageLeadDays)+' days</b>.':'not available for this period.');
- const qtyInsight=qtyFirst&&qtyLast?(qtyFirst.totalQty===qtyLast.totalQty?'Total quantity remained at <b>'+fmt(qtyLast.totalQty)+'</b> in '+qtyLast.year+', with no variance between the first and last selected year.':'Total quantity '+(qtyLast.totalQty>qtyFirst.totalQty?'increased':'decreased')+' by <b>'+fmt(Math.abs(qtyLast.totalQty-qtyFirst.totalQty))+'</b> from '+qtyFirst.year+' to '+qtyLast.year+'.'):'No quantity comparison is available.';
- const categoryInsight=topCategory?'<b>'+escape(topCategory.name)+'</b> is the leading category across the selected years, representing '+fmtPct(topCategory.total,totalQty)+' of the combined quantity.':'Category distribution is not available.';
- const classInsight=classTop?'<b>'+escape(classTop.name)+'</b> is the largest classification by combined quantity across the selected years.':'Classification trend is not available.';
- const insights='<ul class="fgts-ov-insights"><li><i class="fgts-ov-insight-blue">▥</i><span><b>Stable Growth</b><small>'+qtyInsight+'</small></span></li><li><i class="fgts-ov-insight-green">◔</i><span><b>Lead Time Improvement</b><small>'+leadInsight+'</small></span></li><li><i class="fgts-ov-insight-orange">★</i><span><b>Top Category</b><small>'+categoryInsight+'</small></span></li><li><i class="fgts-ov-insight-purple">✓</i><span><b>Classification Trend</b><small>'+classInsight+'</small></span></li></ul>';
+ const tableHead='<thead><tr><th>Report Metric</th>'+years.map(y=>'<th>'+y+'</th>').join('')+'</tr></thead>';
+ const metricRows=[{label:'Total Quantity',values:yearRows.map(x=>fmt(x.totalQty))},{label:'Average Lead Days',values:yearRows.map(x=>x.averageLeadDays==null?'—':fmt(x.averageLeadDays)+' days')},{label:'Total Lead Days',values:yearRows.map(x=>fmt(x.totalLeadDays||0))}];
+ const tableBody=metricRows.map(row=>'<tr><td class="fgts-ov-table-category">'+row.label+'</td>'+row.values.map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('');
+ const comparisonSummary='<div class="fgts-ov-table-wrap"><table class="fgts-ov-table">'+tableHead+'<tbody>'+tableBody+'</tbody></table></div>';
+ const periodExtremes=key=>{const pts=[];years.forEach(year=>periods.forEach(p=>{const b=findBucket(year,p.key),value=b&&b[key]!=null?Number(b[key]):null;if(value!=null&&Number.isFinite(value))pts.push({year,label:p.label,value});}));return {high:pts.length?pts.reduce((a,b)=>b.value>a.value?b:a):null,low:pts.length?pts.reduce((a,b)=>b.value<a.value?b:a):null};};
+ const qtyExt=periodExtremes('totalQty'),leadExt=periodExtremes('averageLeadDays');
+ const topCategory=categoryRows[0],lowCategory=[...categoryRows].sort((a,b)=>a.total-b.total)[0],classTop=classRows[0],classLow=[...classRows].sort((a,b)=>a.total-b.total)[0];
+ const extremeText=(x,unit)=>x?'<b>'+escape(x.label)+' '+x.year+'</b> · '+fmt(x.value)+(unit?' '+unit:''):'No data available.';
+ const qtyInsight='Highest: '+extremeText(qtyExt.high,'qty')+' | Lowest: '+extremeText(qtyExt.low,'qty');
+ const leadInsight='Highest: '+extremeText(leadExt.high,'days')+' | Lowest: '+extremeText(leadExt.low,'days');
+ const categoryInsight=topCategory?'Highest: <b>'+escape(topCategory.name)+'</b> ('+fmt(topCategory.total)+') · Lowest: <b>'+escape(lowCategory.name)+'</b> ('+fmt(lowCategory.total)+').':'No category data available.';
+ const classInsight=classTop?'Highest: <b>'+escape(classTop.name)+'</b> ('+fmt(classTop.total)+') · Lowest: <b>'+escape(classLow.name)+'</b> ('+fmt(classLow.total)+').':'No classification data available.';
+ const insights='<ul class="fgts-ov-insights"><li><i class="fgts-ov-insight-blue">▥</i><span><b>Quantity Peaks</b><small>'+qtyInsight+'</small></span></li><li><i class="fgts-ov-insight-green">◔</i><span><b>Lead Days Peaks</b><small>'+leadInsight+'</small></span></li><li><i class="fgts-ov-insight-orange">★</i><span><b>Category Peaks</b><small>'+categoryInsight+'</small></span></li><li><i class="fgts-ov-insight-purple">✓</i><span><b>Classification Peaks</b><small>'+classInsight+'</small></span></li></ul>';
  const qtyTitle=(mode==='MONTH'||mode==='SINGLE_YEAR')?'Monthly Quantity':mode==='QUARTER'?'Quarterly Quantity':mode==='HALF'?'Half-Year Quantity':'Overall Quantity per Year';
  const leadTitle=(mode==='MONTH'||mode==='SINGLE_YEAR')?'Monthly Average Lead Days':mode==='QUARTER'?'Quarterly Average Lead Days':mode==='HALF'?'Half-Year Average Lead Days':'Average Lead Days per Year';
  const html='<div class="fgts-ov-top-grid">'+panel(qtyTitle,'chart',quantityChart(),'fgts-ov-quantity-panel')+panel(leadTitle,'clock',leadChart(),'fgts-ov-lead-panel')+'</div>'+
@@ -5280,7 +5281,14 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView .fgts-ov-legend-top{margin-bottom:7px!important}
 #fgtsReportView .fgts-ov-distribution-main .fgts-ov-percent-axis{margin-bottom:0!important}
 </style>
-<!-- Trigger syntax validation for restored #242 source -->
+<style id="fgts-summary-peaks-layout-refine-v1">
+#fgtsReportView .fgts-ov-chart-main svg{width:100%;height:auto;min-height:250px}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row{align-items:flex-start!important}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;line-height:1.25}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row b{white-space:nowrap}
+#fgtsReportView .fgts-ov-table thead th{background:#09275c!important;color:#fff!important;border-color:#09275c!important}
+#fgtsReportView .fgts-ov-insights small{line-height:1.45}
+</style><!-- Trigger syntax validation for restored #242 source -->
 
 <!-- Re-run frontend syntax validation -->
 <style>
