@@ -4626,12 +4626,12 @@ function renderFgtsPeriodBuckets(data){
  const leadChart=()=>{
   const allValues=[];periods.forEach(p=>years.forEach(y=>{const b=findBucket(y,p.key);if(b&&b.averageLeadDays!=null)allValues.push(Number(b.averageLeadDays));}));
   const max=maxNice(Math.max(1,...allValues)),w=610,h=235,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,ticks=4,slot=(w-left-right)/Math.max(1,periods.length),x=i=>left+i*slot+slot/2,y=v=>top+plotH-(v/max)*plotH;
-  const grid=Array.from({length:ticks+1},(_,i)=>{const v=max*i/ticks,yy=top+plotH-i*plotH/ticks;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#d7e2f2"/><text x="'+(left-8)+'" y="'+(yy+4)+'" text-anchor="end" fill="#09275c" font-size="12" font-weight="700">'+v.toFixed(0)+'</text>';}).join('');
+  const grid=Array.from({length:ticks+1},(_,i)=>{const v=max*i/ticks,yy=top+plotH-i*plotH/ticks;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#d7e2f2"/><text x="'+(left-8)+'" y="'+(yy+4)+'" text-anchor="end" fill="#09275c" font-size="12" font-weight="700">'+(Number.isInteger(max/ticks)?v.toFixed(0):v.toFixed(1))+'</text>';}).join('');
   if(mode==='YEAR'){
    const coords=periods.map((p,i)=>{const b=findBucket(p.key,p.key);return b&&b.averageLeadDays!=null?{x:x(i),y:y(Number(b.averageLeadDays)),value:Number(b.averageLeadDays),year:Number(b.year),label:p.label}:null;});
    const valid=coords.filter(Boolean),line=valid.length>1?'<polyline points="'+valid.map(pt=>pt.x+','+pt.y).join(' ')+'" fill="none" stroke="#1769ed" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>':'';
    const dots=valid.map(pt=>'<circle cx="'+pt.x+'" cy="'+pt.y+'" r="5" fill="'+colorByYear(pt.year)+'" stroke="#fff" stroke-width="1.5"><title>'+pt.year+': '+fmt(pt.value)+' days</title></circle>').join('');
-   return '<div class="fgts-ov-chart-layout"><div class="fgts-ov-chart-main"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by year">'+grid+line+dots+periods.map((p,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#09275c" font-size="12" font-weight="700">'+escape(p.label)+'</text>').join('')+'</svg>'+legend+'</div>'+leadSideMetrics()+'</div>';
+   return '<div class="fgts-ov-chart-layout"><div class="fgts-ov-chart-main"><div class="fgts-ov-legend-top">'+legend+'</div><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by year">'+grid+'<path d="M '+left+' '+top+' V '+(top+plotH)+' H '+(w-right)+'" fill="none" stroke="#233f68" stroke-width="1.8"/>'+line+dots+periods.map((p,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#09275c" font-size="12" font-weight="700">'+escape(p.label)+'</text>').join('')+'</svg></div>'+leadSideMetrics()+'</div>';
   }
   const series=years.map(year=>{
    const coords=periods.map((p,i)=>{const b=findBucket(year,p.key);return b&&b.averageLeadDays!=null?{x:x(i),y:y(Number(b.averageLeadDays)),value:Number(b.averageLeadDays),label:p.label}:null;});
@@ -4659,10 +4659,11 @@ function renderFgtsPeriodBuckets(data){
    return '<div class="fgts-ov-stacked-row"><span class="fgts-ov-row-label" title="'+escape(row.name)+'">'+escape(row.name)+'</span><div class="fgts-ov-track">'+parts+'</div></div>';
   }).join('')+'</div>';
  };
+ const distributionSideMetrics=(rows)=>'<aside class="fgts-ov-side fgts-ov-distribution-side"><div class="fgts-ov-side-title">Overall Quantity</div>'+rows.map(row=>'<div class="fgts-ov-side-row"><span title="'+escape(row.name)+'"><i></i>'+escape(row.name)+'</span><b>'+fmt(row.total)+'</b></div>').join('')+'<div class="fgts-ov-total"><span>Total</span><b>'+fmt(totalQty)+'</b></div></aside>';
  const yearlyCategoryQty=yearRows.map(x=>x.totalQty);
  const sideTotal=sideMetrics(false);
- const categoryContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+'<div class="fgts-ov-legend-top">'+legend+'</div>'+stackedRows(categoryRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div>'+legend+'</div>'+sideMetrics(true)+'</div>';
- const classificationContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+'<div class="fgts-ov-legend-top">'+legend+'</div>'+stackedRows(classRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div>'+legend+'</div>'+sideMetrics(true)+'</div>';
+ const categoryContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+'<div class="fgts-ov-legend-top">'+legend+'</div>'+stackedRows(categoryRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div></div>'+distributionSideMetrics(categoryRows)+'</div>';
+ const classificationContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+'<div class="fgts-ov-legend-top">'+legend+'</div>'+stackedRows(classRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div></div>'+distributionSideMetrics(classRows)+'</div>';
  const fmtPct=(v,total)=>total?(v/total*100).toFixed(1)+'%':'0.0%';
  const fmtVariance=(current,previous)=>{const d=current-previous,p=previous?d/Math.abs(previous)*100:null;return (d>0?'+':'')+fmt(d)+' ('+(p==null?(current?'New':'0.0%'):(p>0?'+':'')+p.toFixed(1)+'%')+')';};
  const tableHead='<thead><tr><th rowspan="2">Category</th>'+years.map(y=>'<th colspan="2">'+y+'</th>').join('')+years.slice(1).map((y,i)=>'<th rowspan="2">Variance<br>('+y+' vs '+years[i]+')</th>').join('')+'</tr><tr>'+years.map(()=>'<th>Qty</th><th>%</th>').join('')+'</tr></thead>';
@@ -5263,6 +5264,21 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 @media(max-width:720px){
  #fgtsReportView .fgts-ov-side{border-left:0!important;border-top:2px solid #b8c8dc!important;margin-left:0;padding:10px!important}
 }
+</style>
+<style id="fgts-sidebar-qty-axis-legend-refine-v1">
+/* FGTS Report refinements requested from live screenshot. */
+#fgtsReportView .fgts-ov-side{border-left:0!important;background:#f3f7fd!important;border:1px solid #d7e3f2!important;border-radius:8px!important;padding:9px!important;box-shadow:0 1px 3px rgba(9,39,92,.07)}
+#fgtsReportView .fgts-ov-side-title{background:#09275c!important;color:#fff!important}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row{padding:2px 3px;gap:6px;font-size:10px}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;gap:6px}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row i{width:7px;height:7px;flex:0 0 7px;background:#1769ed!important}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-side-row b{flex:0 0 auto;font-size:10px}
+#fgtsReportView .fgts-ov-distribution-side .fgts-ov-total{margin-top:8px}
+#fgtsReportView .fgts-ov-segment b{font-size:8px!important}
+#fgtsReportView .fgts-ov-segment i{font-size:7px!important}
+#fgtsReportView .fgts-ov-distribution-layout{column-gap:12px!important}
+#fgtsReportView .fgts-ov-legend-top{margin-bottom:7px!important}
+#fgtsReportView .fgts-ov-distribution-main .fgts-ov-percent-axis{margin-bottom:0!important}
 </style>
 <!-- Trigger syntax validation for restored #242 source -->
 
