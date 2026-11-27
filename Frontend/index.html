@@ -2596,7 +2596,7 @@ body.fgts-report-open .intro{display:none!important}
 <button class="report-choice" type="button" disabled><strong>PDI Monitoring Report</strong><small>Coming soon</small></button>
 </div></div>
 <div id="fgtsReportView" style="display:none"><button type="button" class="report-back" onclick="backToReportCatalog()">← Back to Reports</button>
-<div class="fgts-report-banner"><div class="fgts-report-brand"><span class="fgts-brand-icon"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="5" y="40" width="12" height="19" rx="4"/><rect x="23" y="25" width="12" height="34" rx="4"/><rect x="41" y="8" width="12" height="51" rx="4"/></svg></span><div><h3 class="fgts-report-title">FGTS REPORT</h3><p>Quality Assurance &amp; Quality Control Analytics</p></div></div><div class="fgts-report-banner-meta"><span class="fgts-live-pill"><i></i> LIVE DATA</span><span class="fgts-updated-label"><b>◷</b> Last Updated: <span id="fgtsReportUpdated">Live FGTS records</span></span><button type="button" class="fgts-export-btn" onclick="exportFgtsReportPdf()">↓ &nbsp;Export Report PDF</button></div></div>
+<div class="fgts-report-banner"><div class="fgts-report-brand"><span class="fgts-brand-icon"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="5" y="40" width="12" height="19" rx="4"/><rect x="23" y="25" width="12" height="34" rx="4"/><rect x="41" y="8" width="12" height="51" rx="4"/></svg></span><div><h3 class="fgts-report-title">FGTS Report</h3><p>Final Goods Test Summary</p></div></div><div class="fgts-report-banner-meta"><div class="fgts-overview-mode-tabs"><button type="button" data-mode="MONTH" onclick="setFgtsReportMode('MONTH')">Per Month</button><button type="button" data-mode="QUARTER" onclick="setFgtsReportMode('QUARTER')">Per Quarter</button><button type="button" data-mode="HALF" onclick="setFgtsReportMode('HALF')">Per Half-Year</button><button type="button" data-mode="YEAR" onclick="setFgtsReportMode('YEAR')">Per Year</button></div><button type="button" class="fgts-export-btn" onclick="exportFgtsReportPdf()">↓ &nbsp;Export Report</button></div></div>
 <div class="fgts-period-panel"><div class="fgts-period-heading"><span class="fgts-filter-icon">▼</span> REPORT PERIOD SELECTION</div><div class="fgts-period-controls fgts-view-controls">
 <div class="report-year-field"><label for="fgtsReportMode">Report View</label><select id="fgtsReportMode" onchange="updateFgtsReportMode()"><option value="SINGLE_YEAR">Single Year</option><option value="YEAR">Year</option><option value="MONTH">Month</option><option value="QUARTER">Quarter</option><option value="HALF">Half Year</option></select></div>
 <div class="report-year-field fgts-view-year-a"><label id="fgtsYearALabel" for="fgtsReportYear">Year</label><select id="fgtsReportYear" onchange="loadFgtsReport()"></select></div>
@@ -4575,168 +4575,110 @@ function updateFgtsReportModeFields(){
 }
 function setFgtsReportMode(mode){const select=el('fgtsReportMode');if(select)select.value=mode;updateFgtsReportMode();}
 function renderFgtsReport(data){
- if(fgtsViewMode()==='SINGLE_YEAR'){renderFgtsReportLegacy(data);return;}
+ const mode=fgtsViewMode();
+ if(mode==='SINGLE_YEAR'){
+  const year=Number(data.year)||new Date().getFullYear(),months=Array.from({length:12},(_,i)=>i+1);
+  const dimensionAt=(items,index)=>(items||[]).map(item=>({name:String(item.name||'Unassigned'),total:Number(item.monthly&&item.monthly[index]||0)})).filter(item=>item.total>0);
+  const from=Math.min(Number(el('fgtsFromMonth')?.value||1),Number(el('fgtsToMonth')?.value||12)),to=Math.max(Number(el('fgtsFromMonth')?.value||1),Number(el('fgtsToMonth')?.value||12));
+  const monthlyBuckets=months.map((month,index)=>{
+   const lead=(data.monthlyLead||[])[index]||{},qty=(data.monthlyQty||[])[index]||{};
+   return {year,periodIndex:month,label:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][index]+' '+year,totalQty:Number(qty.qty)||0,averageLeadDays:lead.average==null?null:Number(lead.average),leadCount:Number(lead.count)||0,totalLeadDays:Number(lead.total)||0,recordCount:Number(lead.count)||0,category:dimensionAt(data.category,index),classification:dimensionAt(data.classification,index)};
+  }).filter(bucket=>bucket.periodIndex>=from&&bucket.periodIndex<=to);
+  renderFgtsPeriodBuckets(Object.assign({},data,{periodBuckets:monthlyBuckets}));
+  return;
+ }
  renderFgtsPeriodBuckets(data);
 }
 function renderFgtsPeriodBuckets(data){
  const content=el('fgtsReportContent');if(!content)return;
- const buckets=data.periodBuckets||[],mode=fgtsViewMode();
+ const buckets=(data.periodBuckets||[]).slice(),mode=fgtsViewMode();
  if(!buckets.length){content.innerHTML='<div class="report-empty">No FGTS records are available for the selected reporting range.</div>';return;}
- const palette=['#2463bd','#20a85a','#f39a24','#8654c7','#159eaa','#d65c78','#66758a','#9aab28','#d65a31','#477fba','#a06bb7','#679a44'];
+ const palette=['#1769ed','#17ad68','#ff9514','#8955d4','#11a2b4','#dc5a7a','#66758a','#9cad28','#d65c31','#477fba','#a06bb7','#679a44'];
  const fmt=v=>reportNumber(v??0),escape=reportEscape;
- const totalQty=buckets.reduce((s,x)=>s+(Number(x.totalQty)||0),0),leadCount=buckets.reduce((s,x)=>s+(Number(x.leadCount)||0),0),leadTotal=buckets.reduce((s,x)=>s+(Number(x.totalLeadDays)||0),0),avgLead=leadCount?leadTotal/leadCount:null;
- const panel=(title,icon,subtitle,body,cls='')=>'<section class="report-panel fgts-monthly-ref-panel '+cls+'"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body"><p class="report-subtitle">'+subtitle+'</p>'+body+'</div></section>';
  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
  const years=[...new Set(buckets.map(x=>Number(x.year)).filter(Number.isFinite))].sort((a,b)=>a-b);
- const yearColor=year=>palette[Math.max(0,years.indexOf(Number(year)))%palette.length];
- const periodColor=i=>palette[i%palette.length];
- const periodLabel=x=>mode==='MONTH'?monthNames[(Number(x.periodIndex)||1)-1]||String(x.periodIndex):mode==='QUARTER'?'Q'+(Number(x.periodIndex)||''):mode==='HALF'?(Number(x.periodIndex)===1?'H1':'H2'):String(x.year??x.label??'');
- const chartShell=(svg,label)=>'<div class="fgts-view-chart">'+svg+'</div>';
+ const colorByYear=year=>palette[Math.max(0,years.indexOf(Number(year)))%palette.length];
+ const keyOf=x=>mode==='YEAR'?Number(x.year):Number(x.periodIndex);
+ const periods=mode==='YEAR'?years.map(y=>({key:y,label:String(y)})):[...new Set(buckets.map(keyOf).filter(Number.isFinite))].sort((a,b)=>a-b).map(p=>({key:p,label:(mode==='MONTH'||mode==='SINGLE_YEAR')?(monthNames[p-1]||String(p)):mode==='QUARTER'?'Q'+p:(p===1?'H1':'H2')}));
+ const findBucket=(year,period)=>buckets.find(x=>Number(x.year)===Number(year)&&(mode==='YEAR'?Number(x.year)===Number(period):Number(x.periodIndex)===Number(period)));
+ const yearRows=years.map(year=>{
+  const group=buckets.filter(x=>Number(x.year)===year),totalQty=group.reduce((n,x)=>n+(Number(x.totalQty)||0),0),leadCount=group.reduce((n,x)=>n+(Number(x.leadCount)||0),0),leadTotal=group.reduce((n,x)=>n+(Number(x.totalLeadDays)||0),0);
+  return {year,totalQty,averageLeadDays:leadCount?leadTotal/leadCount:null,recordCount:group.reduce((n,x)=>n+(Number(x.recordCount)||0),0)};
+ });
+ const totalQty=yearRows.reduce((n,x)=>n+x.totalQty,0);
+ const sideMetrics=includeTotal=>'<aside class="fgts-ov-side"><div class="fgts-ov-side-title">Overall Quantity<br>per Year</div>'+yearRows.map(x=>'<div class="fgts-ov-side-row"><span><i style="background:'+colorByYear(x.year)+'"></i>'+x.year+'</span><b style="color:'+colorByYear(x.year)+'">'+fmt(x.totalQty)+'</b></div>').join('')+(includeTotal?'<div class="fgts-ov-total"><span>Total</span><b>'+fmt(totalQty)+'</b></div>':'<div class="fgts-ov-side-rule"></div>')+'</aside>';
+ const legend='<div class="fgts-ov-legend">'+years.map(y=>'<span><i style="background:'+colorByYear(y)+'"></i>'+y+'</span>').join('')+'</div>';
+ const panel=(title,icon,body,cls)=>'<section class="report-panel fgts-ov-panel '+(cls||'')+'"><header class="fgts-panel-head">'+fgtsReportHeaderIcon(icon)+'<span>'+title+'</span></header><div class="fgts-panel-body">'+body+'</div></section>';
+ const maxNice=value=>{const raw=Math.max(1,value)/4,pow=Math.pow(10,Math.floor(Math.log10(raw))),unit=raw/pow,mult=unit<=1?1:unit<=2?2:unit<=5?5:10,step=mult*pow;return Math.max(step,Math.ceil(Math.max(1,value)/step)*step);};
  const quantityChart=()=>{
-  if(mode==='MONTH'){
-   const monthIndexes=Array.from({length:12},(_,i)=>i+1);
-   const monthGroups=monthIndexes.map(month=>({month,values:years.map(year=>{const item=buckets.find(x=>Number(x.year)===year&&Number(x.periodIndex)===month);return item?Number(item.totalQty)||0:0;})}));
-   const w=570,h=230,left=42,right=8,top=16,bottom=34,plotH=h-top-bottom,slot=(w-left-right)/12,bw=Math.min(27,slot*.58);
-   const grid=[0,.25,.5,.75,1].map(t=>{const yy=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#dce5f2"/><text x="'+(left-7)+'" y="'+(yy+4)+'" text-anchor="end" fill="#102b56" font-size="12" font-weight="700">'+Math.round(t*100)+'%</text>';}).join('');
-   const bars=monthGroups.map((g,i)=>{
-    const total=g.values.reduce((sum,value)=>sum+value,0),xx=left+i*slot+(slot-bw)/2;
-    let cumulative=0;
-    const segments=g.values.map((value,j)=>{
-     if(value<=0||total<=0)return '';
-     const segmentHeight=value/total*plotH,yy=top+plotH-(cumulative+value)/total*plotH;
-     cumulative+=value;
-     const year=years[j],color=yearColor(year);
-     return '<rect class="fgts-qty-segment" tabindex="0" role="button" data-fgts-click-value="'+escape(fmt(value))+'" data-fgts-click-label="'+escape(String(year)+' · '+monthNames[g.month-1])+'" aria-label="'+escape(String(year)+' '+monthNames[g.month-1]+': '+fmt(value))+'" x="'+xx+'" y="'+yy+'" width="'+bw+'" height="'+Math.max(1,segmentHeight)+'" fill="'+color+'"><title>'+year+' · '+fmt(value)+' ('+(value/total*100).toFixed(1)+'%)</title></rect>';
-    }).join('');
-    return '<g class="fgts-qty-bar" aria-label="'+escape(monthNames[g.month-1])+'">'+segments+'<text x="'+(xx+bw/2)+'" y="'+(h-9)+'" text-anchor="middle" fill="#102b56" font-size="12" font-weight="700">'+escape(monthNames[g.month-1])+'</text></g>';
-   }).join('');
-   const totals=years.map(year=>({year,total:buckets.filter(x=>Number(x.year)===year).reduce((n,x)=>n+(Number(x.totalQty)||0),0)}));
-   const combined=totals.reduce((sum,x)=>sum+x.total,0);
-   const legend='<div class="fgts-monthly-ref-legend">'+years.map(year=>'<span><i style="background:'+yearColor(year)+'"></i>'+year+'</span>').join('')+'</div>';
-   const side='<aside class="fgts-monthly-ref-side"><b>Overall Quantity</b>'+totals.map(x=>'<div><span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span><strong style="color:'+yearColor(x.year)+'">'+fmt(x.total)+'</strong></div>').join('')+'<div class="fgts-monthly-ref-combined"><span>Combined</span><strong>'+fmt(combined)+'</strong></div></aside>';
-   return '<div class="fgts-monthly-ref-layout"><div class="fgts-monthly-ref-plot">'+legend+'<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Monthly quantity comparison, 100 percent stacked by year">'+grid+bars+'</svg></div>'+side+'</div>';
-  }
-  const w=570,h=230,left=42,right=8,top=30,bottom=34,plotH=h-top-bottom;
-  if(mode==='MONTH'){
-   const years=[...new Set(buckets.map(x=>Number(x.year)))].sort((a,b)=>a-b);
-   const monthIndexes=[...new Set(buckets.map(x=>Number(x.periodIndex)))].sort((a,b)=>a-b);
-   const monthGroups=monthIndexes.map(month=>({
-    month,
-    label:(buckets.find(x=>Number(x.periodIndex)===month)||{}).label||String(month),
-    values:years.map(year=>{const item=buckets.find(x=>Number(x.year)===year&&Number(x.periodIndex)===month);return item?Number(item.totalQty)||0:0;})
-   }));
-   const totals=monthGroups.map(group=>group.values.reduce((sum,value)=>sum+value,0));
-   const max=Math.max(1,...totals),slot=(w-left-right)/Math.max(1,monthGroups.length),bw=Math.min(38,slot*.58);
-   const grid=[0,.25,.5,.75,1].map(t=>{const value=max*t,y=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="#e7edf5"/><text x="'+(left-8)+'" y="'+(y+3)+'" text-anchor="end" fill="#8491a3" font-size="10">'+fmt(Math.round(value))+'</text>';}).join('');
-   const bars=monthGroups.map((group,i)=>{
-    const xx=left+i*slot+(slot-bw)/2;
-    let cumulative=0;
-    const segments=group.values.map((value,yearIndex)=>{
-     if(value<=0)return '';
-     const segmentHeight=value/max*plotH,yy=top+plotH-(cumulative+value)/max*plotH;
-     cumulative+=value;
-     const year=years[yearIndex],color=yearColor(year);
-     return '<rect class="fgts-qty-segment" tabindex="0" role="img" aria-label="'+escape(String(value))+'" x="'+xx+'" y="'+yy+'" width="'+bw+'" height="'+Math.max(1,segmentHeight)+'" fill="'+color+'"><title>'+fmt(value)+'</title></rect>';
-    }).join('');
-    const monthLabel=monthNames[group.month-1]||String(group.month);
-    return '<g class="fgts-qty-bar" aria-label="'+escape(monthLabel)+'">'+segments+'<text x="'+(xx+bw/2)+'" y="'+(h-30)+'" text-anchor="middle" fill="#68778c" font-size="9">'+escape(monthLabel)+'</text></g>';
-   }).join('');
-   const legend='<div class="fgts-year-legend">'+years.map(year=>'<span><i style="background:'+yearColor(year)+'"></i>'+year+'</span>').join('')+'</div>';
-   return chartShell('<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Monthly quantity stacked by year">'+grid+bars+'</svg>'+legend,'Quantity');
-  }
-  const vals=buckets.map(x=>Number(x.totalQty)||0),max=Math.max(1,...vals),slot=(w-left-right)/buckets.length,bw=Math.min(38,slot*.58);
-  const grid=[0,.25,.5,.75,1].map(t=>{const y=top+plotH-t*plotH;return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="#e7edf5"/><text x="'+(left-8)+'" y="'+(y+3)+'" text-anchor="end" fill="#8491a3" font-size="10">'+fmt(Math.round(max*t))+'</text>';}).join('');
-  const bars=buckets.map((x,i)=>{const v=vals[i],bh=v?Math.max(2,v/max*plotH):0,xx=left+i*slot+(slot-bw)/2,yy=top+plotH-bh;return '<g class="fgts-qty-bar" tabindex="0" role="img" aria-label="'+escape(periodLabel(x))+': '+fmt(v)+'"><title>'+fmt(v)+'</title><rect x="'+xx+'" y="'+yy+'" width="'+bw+'" height="'+bh+'" rx="3" fill="'+yearColor(x.year)+'"><title>'+fmt(v)+'</title></rect><text x="'+(xx+bw/2)+'" y="'+(h-30)+'" text-anchor="middle" fill="#68778c" font-size="9">'+escape(periodLabel(x))+'</text></g>';}).join('');
-  const legend=(mode==='YEAR'||mode==='QUARTER'||mode==='HALF')?'<div class="fgts-year-legend">'+years.map(year=>'<span><i style="background:'+yearColor(year)+'"></i>'+year+'</span>').join('')+'</div>':'';
-  const totals=years.map(year=>({year,total:buckets.filter(x=>Number(x.year)===year).reduce((n,x)=>n+(Number(x.totalQty)||0),0)}));
-  const side='<aside class="fgts-monthly-ref-side"><b>Overall Qty</b>'+totals.map(x=>'<div><span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span><strong style="color:'+yearColor(x.year)+'">'+fmt(x.total)+'</strong></div>').join('')+'</aside>';
-  const legendHtml=legend?'<div class="fgts-monthly-ref-legend">'+years.map(year=>'<span><i style="background:'+yearColor(year)+'"></i>'+year+'</span>').join('')+'</div>':'';
-  return '<div class="fgts-monthly-ref-layout"><div class="fgts-monthly-ref-plot">'+legendHtml+'<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Quantity by selected period">'+grid+bars+'</svg></div>'+side+'</div>';
+  const values=[];
+  periods.forEach(p=>years.forEach(y=>{const b=findBucket(y,p.key);if(b)values.push(Number(b.totalQty)||0);}));
+  const max=maxNice(Math.max(1,...values)),ticks=4,w=610,h=235,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,slot=(w-left-right)/Math.max(1,periods.length),groupWidth=Math.min(slot*.82,years.length*20),barWidth=Math.min(18,groupWidth/Math.max(1,years.length)*.72);
+  const grid=Array.from({length:ticks+1},(_,i)=>{const v=max*i/ticks,y=top+plotH-i*plotH/ticks;return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="#d7e2f2"/><text x="'+(left-8)+'" y="'+(y+4)+'" text-anchor="end" fill="#09275c" font-size="12" font-weight="700">'+fmt(v)+'</text>';}).join('');
+  const bars=periods.map((p,i)=>{
+   const center=left+i*slot+slot/2;
+   const rects=years.map((year,j)=>{const b=findBucket(year,p.key),v=b?Number(b.totalQty)||0:0,height=v/max*plotH,x=center-groupWidth/2+j*(groupWidth/Math.max(1,years.length))+(groupWidth/Math.max(1,years.length)-barWidth)/2,y=top+plotH-height;return v?'<rect x="'+x+'" y="'+y+'" width="'+barWidth+'" height="'+Math.max(1,height)+'" rx="3" fill="'+colorByYear(year)+'"><title>'+year+' · '+escape(p.label)+': '+fmt(v)+'</title></rect>':'';}).join('');
+   return rects+'<text x="'+center+'" y="'+(h-9)+'" text-anchor="middle" fill="#09275c" font-size="12" font-weight="700">'+escape(p.label)+'</text>';
+  }).join('');
+  return '<div class="fgts-ov-chart-layout"><div class="fgts-ov-chart-main"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Quantity by '+(mode==='MONTH'?'month':mode==='QUARTER'?'quarter':mode==='HALF'?'half-year':'year')+' and year">'+grid+bars+'</svg>'+legend+'</div>'+sideMetrics(true)+'</div>';
  };
- const leadLineChart=()=>{
-  if(mode==='MONTH'){
-   const monthIndexes=Array.from({length:12},(_,i)=>i+1),w=570,h=230,left=42,right=8,top=18,bottom=34,plotH=h-top-bottom;
-   const x=i=>left+(w-left-right)*(i+.5)/Math.max(1,monthIndexes.length),values=buckets.map(x=>x.averageLeadDays==null?null:Number(x.averageLeadDays)).filter(v=>v!=null&&Number.isFinite(v)),max=Math.max(1,Math.ceil(Math.max(...values,1)+1)),y=v=>top+plotH-(v/max)*plotH;
-   const grid=[0,.25,.5,.75,1].map(t=>{const v=Math.round(max*t),yy=y(v);return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#dce5f2"/><text x="'+(left-7)+'" y="'+(yy+4)+'" text-anchor="end" fill="#102b56" font-size="12" font-weight="700">'+v+'</text>';}).join('');
-   const lines=years.map((year,yi)=>{const pts=monthIndexes.map((p,i)=>{const item=buckets.find(b=>Number(b.year)===year&&Number(b.periodIndex)===p);return item&&item.averageLeadDays!=null?{x:x(i),y:y(Number(item.averageLeadDays)),v:Number(item.averageLeadDays)}:null;});const valid=pts.map((p,i)=>p?{...p,i}:null).filter(Boolean),color=yearColor(year);const smoothPath=valid.length>1?valid.reduce((d,p,i)=>{if(!i)return 'M'+p.x+','+p.y;const prev=valid[i-1],before=valid[i-2]||prev,next=valid[i+1]||p,c1x=prev.x+(p.x-before.x)/6,c1y=prev.y+(p.y-before.y)/6,c2x=p.x-(next.x-prev.x)/6,c2y=p.y-(next.y-prev.y)/6;return d+' C'+c1x+','+c1y+' '+c2x+','+c2y+' '+p.x+','+p.y;},''):'';const marker=valid.map(p=>'<circle class="fgts-month-lead-dot" tabindex="0" role="button" data-fgts-click-value="'+escape(p.v.toFixed(1))+'" data-fgts-click-label="'+escape(String(year)+' · '+monthNames[p.i])+'" aria-label="'+escape(String(year)+' '+monthNames[p.i]+': '+p.v.toFixed(1)+' days')+'" cx="'+p.x+'" cy="'+p.y+'" r="5" fill="'+color+'" stroke="#fff" stroke-width="1.5"/>').join('');return (smoothPath?'<path d="'+smoothPath+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>':'')+marker;}).join('');
-   const monthLabels=monthIndexes.map((p,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#102b56" font-size="12" font-weight="700">'+escape(monthNames[p-1]||String(p))+'</text>').join('');
-   const averages=years.map(year=>{const group=buckets.filter(b=>Number(b.year)===year&&b.averageLeadDays!=null),count=group.reduce((n,b)=>n+(Number(b.leadCount)||0),0),days=group.reduce((n,b)=>n+(Number(b.totalLeadDays)||0),0),avg=count?days/count:(group.length?group.reduce((n,b)=>n+Number(b.averageLeadDays),0)/group.length:0);return {year,avg};});
-   const legend='<div class="fgts-monthly-ref-legend">'+years.map((year,i)=>'<span><i class="'+(i?'triangle':'')+'" style="background:'+yearColor(year)+';border-bottom-color:'+yearColor(year)+'"></i>'+year+'</span>').join('')+'</div>';
-   const side='<aside class="fgts-monthly-ref-side"><b>Overall Avg.<br>Lead Days</b>'+averages.map(x=>'<div><span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span><strong style="color:'+yearColor(x.year)+'">'+x.avg.toFixed(1)+'</strong></div>').join('')+'</aside>';
-   return '<div class="fgts-monthly-ref-layout"><div class="fgts-monthly-ref-plot">'+legend+'<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Monthly average lead days comparison">'+grid+lines+monthLabels+'</svg></div>'+side+'</div>';
-  }
-  const w=570,h=230,left=42,right=8,top=30,bottom=34,plotH=h-top-bottom;
-  const multiYear=['MONTH','QUARTER','HALF'].includes(mode);
-  const periodIndexes=multiYear?[...new Set(buckets.map(x=>Number(x.periodIndex)))].sort((a,b)=>a-b):buckets.map((x,i)=>i);
-  const labels=multiYear?periodIndexes.map(p=>mode==='MONTH'?monthNames[p-1]||String(p):mode==='QUARTER'?'Q'+p:(p===1?'H1':'H2')):buckets.map(x=>String(x.year??x.label??''));
-  const x=i=>left+(w-left-right)*(i+.5)/Math.max(1,labels.length);
-  const allValues=buckets.map(x=>x.averageLeadDays==null?null:Number(x.averageLeadDays)).filter(v=>v!=null&&Number.isFinite(v));
-  const max=Math.max(1,...allValues),min=Math.min(0,...allValues),range=Math.max(1,max-min),y=v=>top+plotH-(v-min)/range*plotH;
-  const grid=[0,.25,.5,.75,1].map(t=>{const value=min+range*t,yy=y(value);return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#e7edf5"/><text x="'+(left-8)+'" y="'+(yy+3)+'" text-anchor="end" fill="#8491a3" font-size="10">'+value.toFixed(1)+'</text>';}).join('');
-  const series=multiYear?years.map(year=>({year,items:periodIndexes.map(p=>buckets.find(b=>Number(b.year)===year&&Number(b.periodIndex)===p))})): [{year:null,items:buckets}];
-  const paths=[],points=[],legend=[];
-  series.forEach(line=>{
-   const coords=line.items.map((item,i)=>item&&item.averageLeadDays!=null?[x(i),y(Number(item.averageLeadDays)),Number(item.averageLeadDays),item]:null);
-   const segments=[];let current=[];
-   coords.forEach(c=>{if(c)current.push(c);else{if(current.length)segments.push(current);current=[];}});
-   if(current.length)segments.push(current);
-   const color=multiYear?yearColor(line.year):palette[0];
-   segments.forEach(arr=>paths.push('<polyline points="'+arr.map(c=>c[0]+','+c[1]).join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'));
-   coords.forEach(c=>{if(!c)return;points.push('<g class="fgts-lead-point" tabindex="0" role="img" aria-label="'+escape(c[3].label)+': '+fmt(c[2])+' days"><title>'+fmt(c[2])+' days</title><circle cx="'+c[0]+'" cy="'+c[1]+'" r="4.5" fill="'+color+'" stroke="#fff" stroke-width="2"><title>'+fmt(c[2])+' days</title></circle></g>');});
-   if(multiYear)legend.push('<span><i style="background:'+color+'"></i>'+line.year+'</span>');
-  });
-  const averages=years.map(year=>{const group=buckets.filter(b=>Number(b.year)===year&&b.averageLeadDays!=null),count=group.reduce((n,b)=>n+(Number(b.leadCount)||0),0),days=group.reduce((n,b)=>n+(Number(b.totalLeadDays)||0),0),avg=count?days/count:(group.length?group.reduce((n,b)=>n+Number(b.averageLeadDays),0)/group.length:0);return {year,avg};});
-  const side='<aside class="fgts-monthly-ref-side"><b>Overall Avg.<br>Lead Days</b>'+averages.map(x=>'<div><span><i style="background:'+yearColor(x.year)+'"></i>'+x.year+'</span><strong style="color:'+yearColor(x.year)+'">'+x.avg.toFixed(1)+'</strong></div>').join('')+'</aside>';
-  const legendHtml=legend.length?'<div class="fgts-monthly-ref-legend">'+legend.map((item,i)=>'<span><i style="background:'+yearColor(years[i])+'"></i>'+years[i]+'</span>').join('')+'</div>':'';
-  return '<div class="fgts-monthly-ref-layout"><div class="fgts-monthly-ref-plot">'+legendHtml+'<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by selected period">'+grid+paths.join('')+points.join('')+labels.map((label,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#68778c" font-size="9">'+escape(label)+'</text>').join('')+'</svg></div>'+side+'</div>';
+ const leadChart=()=>{
+  const allValues=[];periods.forEach(p=>years.forEach(y=>{const b=findBucket(y,p.key);if(b&&b.averageLeadDays!=null)allValues.push(Number(b.averageLeadDays));}));
+  const max=maxNice(Math.max(1,...allValues)),w=610,h=235,left=48,right=8,top=13,bottom=34,plotH=h-top-bottom,ticks=4,slot=(w-left-right)/Math.max(1,periods.length),x=i=>left+i*slot+slot/2,y=v=>top+plotH-(v/max)*plotH;
+  const grid=Array.from({length:ticks+1},(_,i)=>{const v=max*i/ticks,yy=top+plotH-i*plotH/ticks;return '<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#d7e2f2"/><text x="'+(left-8)+'" y="'+(yy+4)+'" text-anchor="end" fill="#09275c" font-size="12" font-weight="700">'+v.toFixed(0)+'</text>';}).join('');
+  const series=years.map(year=>{
+   const coords=periods.map((p,i)=>{const b=findBucket(year,p.key);return b&&b.averageLeadDays!=null?{x:x(i),y:y(Number(b.averageLeadDays)),value:Number(b.averageLeadDays),label:p.label}:null;});
+   const segments=[];let segment=[];coords.forEach(pt=>{if(pt)segment.push(pt);else if(segment.length){segments.push(segment);segment=[];}});if(segment.length)segments.push(segment);
+   const paths=segments.filter(a=>a.length>1).map(a=>'<polyline points="'+a.map(pt=>pt.x+','+pt.y).join(' ')+'" fill="none" stroke="'+colorByYear(year)+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>').join('');
+   const dots=coords.map(pt=>pt?'<circle cx="'+pt.x+'" cy="'+pt.y+'" r="5" fill="'+colorByYear(year)+'" stroke="#fff" stroke-width="1.5"><title>'+year+' · '+escape(pt.label)+': '+fmt(pt.value)+' days</title></circle>':'').join('');
+   return paths+dots;
+  }).join('');
+  return '<div class="fgts-ov-chart-layout"><div class="fgts-ov-chart-main"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Average lead days by reporting period and year">'+grid+series+periods.map((p,i)=>'<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" fill="#09275c" font-size="12" font-weight="700">'+escape(p.label)+'</text>').join('')+'</svg>'+legend+'</div>'+sideMetrics(true)+'</div>';
  };
- const distributionBuckets=mode==='MONTH'?[...new Map(buckets.map(x=>[x.year,x.year])).keys()].map(year=>{const group=buckets.filter(x=>Number(x.year)===Number(year)),sumDimension=key=>{const map=new Map();group.forEach(row=>(row[key]||[]).forEach(item=>map.set(item.name,(map.get(item.name)||0)+(Number(item.total)||0))));return [...map.entries()].map(([name,total])=>({name,total}));};return {year,label:String(year),category:sumDimension('category'),classification:sumDimension('classification')};}):buckets;
- const categoryYearRows=years.map(year=>{const group=distributionBuckets.filter(x=>Number(x.year)===year),map=new Map();group.forEach(bucket=>(bucket.category||[]).forEach(item=>map.set(String(item.name||'Unassigned'),(map.get(String(item.name||'Unassigned'))||0)+(Number(item.total)||0))));return {year,totalQty:group.reduce((n,x)=>n+(Number(x.totalQty)||0),0),category:[...map.entries()].map(([name,total])=>({name,total}))};});
- const categoryHtml=fgtsBuildYearProportionalCategory(categoryYearRows,fmt,escape);
- const classNames=['Standard','Non-standard','Telcos','Others'],classColors=['#1769ed','#22b36b','#ff9e1b','#7848ed'];
- const donuts=distributionBuckets.map((bucket,i)=>{const map=new Map((bucket.classification||[]).map(x=>[String(x.name).toLowerCase(),Number(x.total)||0])),values=classNames.map(n=>map.get(n.toLowerCase())||0),sum=values.reduce((a,b)=>a+b,0);let offset=0;const arcs=values.map((v,j)=>{const pct=sum?v/sum*100:0,arc='<circle cx="60" cy="60" r="43" fill="none" stroke="'+classColors[j]+'" stroke-width="17" stroke-dasharray="'+pct+' '+(100-pct)+'" pathLength="100" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 60 60)"/>';offset+=pct;return arc;}).join('');return '<div class="fgts-ref-donut-card"><b>'+escape(String(bucket.year||bucket.label))+'</b><div class="fgts-ref-donut-body"><svg viewBox="0 0 120 120" role="img" aria-label="'+escape(String(bucket.year||bucket.label))+' classification distribution">'+(sum?arcs:'<circle cx="60" cy="60" r="43" fill="none" stroke="#e5ebf3" stroke-width="17"/>')+'<text x="60" y="57" text-anchor="middle" font-size="13" font-weight="800" fill="#102d62">'+fmt(sum)+'</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="400" fill="#65758f">Total Qty</text></svg><div class="fgts-ref-legend">'+classNames.map((n,j)=>'<div><i style="background:'+classColors[j]+'"></i><span>'+n+'</span><b>'+fmt(values[j])+' ('+(sum?(values[j]/sum*100).toFixed(1):'0.0')+'%)</b></div>').join('')+'</div></div></div>';}).join('');
- const classAnnual=classNames.map(name=>({name,total:distributionBuckets.reduce((sum,bucket)=>sum+((bucket.classification||[]).filter(x=>String(x.name).toLowerCase()===name.toLowerCase()).reduce((n,x)=>n+(Number(x.total)||0),0)),0)}));
- const classificationHtml='<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,210px);gap:16px;align-items:start"><div class="fgts-year-donut-grid">'+donuts+'</div><aside style="padding:14px;border:1px solid #dce5f1;border-radius:10px;background:#f7f9fc"><b style="display:block;color:#142e59;font-size:12px;margin-bottom:10px">Overall Classification Quantity</b>'+classAnnual.map(x=>'<div style="display:flex;justify-content:space-between;gap:8px;margin:9px 0;font-size:12px"><span>'+x.name+'</span><strong>'+fmt(x.total)+'</strong></div>').join('')+'</aside></div>';
- const fullMonthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
- const summaryRows=buckets.map((x,i)=>{const p=buckets[i-1],q=Number(x.totalQty)||0,l=x.averageLeadDays==null?null:Number(x.averageLeadDays),pq=p?Number(p.totalQty)||0:null,pl=p&&p.averageLeadDays!=null?Number(p.averageLeadDays):null,qPct=p&&pq?((q-pq)/Math.abs(pq)*100):null,lPct=p&&pl!=null&&pl!==0&&l!=null?((l-pl)/Math.abs(pl)*100):null;const qClass=qPct==null?'':qPct>=0?'positive':'negative',lClass=lPct==null?'':lPct<=0?'positive':'negative',rowLabel=mode==='MONTH'?((fullMonthNames[(Number(x.periodIndex)||1)-1]||String(x.periodIndex))+' '+x.year):x.label;return '<tr><td>'+escape(rowLabel)+'</td><td>'+fmt(q)+'</td><td>'+(l==null?'—':fmt(l))+'</td><td>'+fmt(x.recordCount)+'</td><td class="'+(!p?'':q>=pq?'positive':'negative')+'">'+(!p?'—':(q-pq>=0?'+':'')+fmt(q-pq))+'</td><td class="'+qClass+'">'+(!p?'—':qPct==null?(q?'New':'0.0%'):(qPct>=0?'+':'')+qPct.toFixed(1)+'%')+'</td><td class="'+lClass+'">'+(!p||lPct==null?'—':(lPct>0?'+':'')+lPct.toFixed(1)+'%')+'</td></tr>';}).join('');
- const summary='<div class="fgts-ref-table-wrap"><table class="fgts-ref-table"><thead><tr><th>Period</th><th>Overall Quantity</th><th>Average Lead Days</th><th>Records</th><th>Variance</th><th>Qty Change vs Previous</th><th>Lead Days Change vs Previous</th></tr></thead><tbody>'+summaryRows+'</tbody></table></div>';
- const insights=[];
- if(mode==='MONTH'){
-  years.forEach(year=>{
-   const group=buckets.filter(x=>Number(x.year)===year),qtyRows=group.filter(x=>Number(x.totalQty)>0),leadRows=group.filter(x=>x.averageLeadDays!=null&&Number.isFinite(Number(x.averageLeadDays))),dist=distributionBuckets.find(x=>Number(x.year)===year);
-   const highQty=qtyRows.reduce((best,x)=>!best||Number(x.totalQty)>Number(best.totalQty)?x:best,null),lowQty=qtyRows.reduce((best,x)=>!best||Number(x.totalQty)<Number(best.totalQty)?x:best,null);
-   const highLead=leadRows.reduce((best,x)=>!best||Number(x.averageLeadDays)>Number(best.averageLeadDays)?x:best,null),lowLead=leadRows.reduce((best,x)=>!best||Number(x.averageLeadDays)<Number(best.averageLeadDays)?x:best,null);
-   const highCategory=(dist?.category||[]).filter(x=>Number(x.total)>0).reduce((best,x)=>!best||Number(x.total)>Number(best.total)?x:best,null),lowCategory=(dist?.category||[]).filter(x=>Number(x.total)>0).reduce((best,x)=>!best||Number(x.total)<Number(best.total)?x:best,null);
-   const highClass=(dist?.classification||[]).filter(x=>Number(x.total)>0).reduce((best,x)=>!best||Number(x.total)>Number(best.total)?x:best,null),lowClass=(dist?.classification||[]).filter(x=>Number(x.total)>0).reduce((best,x)=>!best||Number(x.total)<Number(best.total)?x:best,null);
-   const monthLabel=x=>fullMonthNames[(Number(x.periodIndex)||1)-1]||String(x.periodIndex);
-   if(highQty&&lowQty)insights.push('<b>'+year+' quantity:</b> Highest in <b>'+monthLabel(highQty)+'</b> ('+fmt(highQty.totalQty)+'); lowest in <b>'+monthLabel(lowQty)+'</b> ('+fmt(lowQty.totalQty)+').');
-   if(highLead&&lowLead)insights.push('<b>'+year+' lead days:</b> Highest in <b>'+monthLabel(highLead)+'</b> ('+fmt(highLead.averageLeadDays)+' days); lowest in <b>'+monthLabel(lowLead)+'</b> ('+fmt(lowLead.averageLeadDays)+' days).');
-   if(highCategory&&lowCategory)insights.push('<b>'+year+' category:</b> Highest <b>'+escape(highCategory.name)+'</b> ('+fmt(highCategory.total)+'); lowest <b>'+escape(lowCategory.name)+'</b> ('+fmt(lowCategory.total)+').');
-   if(highClass&&lowClass)insights.push('<b>'+year+' classification:</b> Highest <b>'+escape(highClass.name)+'</b> ('+fmt(highClass.total)+'); lowest <b>'+escape(lowClass.name)+'</b> ('+fmt(lowClass.total)+').');
-  });
-  const annual=years.map(year=>{const group=buckets.filter(x=>Number(x.year)===year),qty=group.reduce((n,x)=>n+(Number(x.totalQty)||0),0),count=group.reduce((n,x)=>n+(Number(x.leadCount)||0),0),days=group.reduce((n,x)=>n+(Number(x.totalLeadDays)||0),0),records=group.reduce((n,x)=>n+(Number(x.recordCount)||0),0),dist=distributionBuckets.find(x=>Number(x.year)===year);return {year,qty,lead:count?days/count:null,records,category:(dist?.category||[]).filter(x=>Number(x.total)>0).sort((a,b)=>Number(b.total)-Number(a.total))[0]||null};});
-  const changePct=(next,prev)=>prev?Math.abs((next-prev)/prev*100):null;
-  for(let i=1;i<annual.length;i++){
-   const prev=annual[i-1],curr=annual[i],qDelta=curr.qty-prev.qty,qPct=changePct(curr.qty,prev.qty),leadDelta=prev.lead!=null&&curr.lead!=null?curr.lead-prev.lead:null,leadPct=leadDelta!=null?changePct(curr.lead,prev.lead):null,recordDelta=curr.records-prev.records,recordPct=changePct(curr.records,prev.records);
-   insights.push('<b>Overall '+prev.year+' → '+curr.year+':</b> Quantity '+(qDelta>=0?'increased':'decreased')+' by <b>'+fmt(Math.abs(qDelta))+' units'+(qPct==null?'':' ('+qPct.toFixed(1)+'%)')+'</b>; average lead days '+(leadDelta==null?'could not be compared':(leadDelta<=0?'decreased':'increased')+' by <b>'+fmt(Math.abs(leadDelta).toFixed(1))+' days'+(leadPct==null?'':' ('+leadPct.toFixed(1)+'%)')+'</b>')+'.');
-   insights.push('<b>Record volume:</b> Completed FGTS records '+(recordDelta>=0?'increased':'decreased')+' by <b>'+fmt(Math.abs(recordDelta))+(recordPct==null?'':' ('+recordPct.toFixed(1)+'%)')+'</b>, from '+fmt(prev.records)+' to '+fmt(curr.records)+'.');
-   if(prev.category&&curr.category)insights.push('<b>Leading category:</b> '+prev.year+' was led by <b>'+escape(prev.category.name)+'</b>, while '+curr.year+' was led by <b>'+escape(curr.category.name)+'</b>.');
-  }
- }else{
-  const highest=buckets.reduce((a,b)=>(Number(b.totalQty)||0)>(Number(a.totalQty)||0)?b:a,buckets[0]),lowest=buckets.filter(x=>x.averageLeadDays!=null).reduce((a,b)=>!a||Number(b.averageLeadDays)<Number(a.averageLeadDays)?b:a,null);
-  insights.push('Highest quantity: <b>'+escape(highest.label)+'</b> with <b>'+fmt(highest.totalQty)+'</b>.');if(lowest)insights.push('Lowest average lead days: <b>'+escape(lowest.label)+'</b> at <b>'+fmt(lowest.averageLeadDays)+' days</b>.');if(buckets.length>1){const first=buckets[0],last=buckets[buckets.length-1];insights.push('Quantity changed by <b>'+fmt((Number(last.totalQty)||0)-(Number(first.totalQty)||0))+'</b> from '+escape(first.label)+' to '+escape(last.label)+'.');}
- }
- const insightHtml='<ul class="fgts-ref-insights">'+insights.map(x=>'<li><i>✓</i><span>'+x+'</span></li>').join('')+'</ul>';
- const rangeCaption=mode==='MONTH'?monthNames[(Number(buckets[0].periodIndex)||1)-1]+' – '+monthNames[(Number(buckets[buckets.length-1].periodIndex)||12)-1]:escape(buckets[0].label)+' – '+escape(buckets[buckets.length-1].label);
- const kpis='<div class="fgts-reference-kpis"><article class="fgts-reference-kpi blue"><span class="fgts-kpi-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 43 24 24 43 5 24Z" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/></svg></span><div class="fgts-kpi-copy"><b>Total Quantity · Selected Range</b><strong>'+fmt(totalQty)+'</strong><small>'+rangeCaption+'</small></div></article><article class="fgts-reference-kpi purple"><span class="fgts-kpi-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M24 12v13l9 5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="fgts-kpi-copy"><b>Average Lead Days · Selected Range</b><strong>'+fmt(avgLead)+'</strong><small>'+rangeCaption+'</small></div></article></div>';
- const title=mode==='YEAR'?'Year':mode==='MONTH'?'Month':mode==='QUARTER'?'Quarter':'Half-Year';
- let html=kpis;
- html+='<div class="fgts-reference-top-grid fgts-monthly-ref-grid">'+panel(mode==='MONTH'?'Monthly Quantity':mode==='YEAR'?'Overall Quantity per Year':'Quantity per '+title,'chart','Completed FGTS quantity · hover over a bar to see its quantity',quantityChart(),'fgts-ref-quantity '+(mode==='MONTH'?'fgts-monthly-ref-panel':''))+panel(mode==='MONTH'?'Monthly Average Lead Days':'Average Lead Days per '+title,'trend','Average record-level lead time for each selected period',leadLineChart(),'fgts-ref-lead '+(mode==='MONTH'?'fgts-monthly-ref-panel':''))+'</div>';
- html+='<div class="fgts-reference-bottom-grid">'+panel('Category Distribution','category','All categories · stacked quantities by selected period',categoryHtml,'fgts-ref-category-panel')+panel('Classification Distribution','classification','Standard · Non-standard · Telcos · Others · one donut per selected period',classificationHtml,'fgts-ref-class-panel')+'</div>';
- html+='<div class="fgts-reference-summary-row">'+panel('Comparison Summary','chart','Period totals and changes versus the previous period',summary,'fgts-ref-summary-panel')+panel('Key Insights','bulb','Highlights across the selected reporting range',insightHtml,'fgts-ref-insight-panel')+'</div>';
- content.innerHTML=html;const updated=el('fgtsReportUpdated');if(updated)updated.textContent=new Date().toLocaleString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+ const aggregateDimension=key=>{
+  const result=new Map();
+  years.forEach(year=>{const map=new Map();buckets.filter(x=>Number(x.year)===year).forEach(bucket=>(bucket[key]||[]).forEach(item=>{const name=String(item.name||'Unassigned');map.set(name,(map.get(name)||0)+(Number(item.total)||0));}));result.set(year,map);});
+  return result;
+ };
+ const categoryMap=aggregateDimension('category'),classMap=aggregateDimension('classification');
+ const categoryNames=[...new Set([...categoryMap.values()].flatMap(m=>[...m.keys()]))];
+ const classNames=[...new Set([...classMap.values()].flatMap(m=>[...m.keys()]))];
+ const categoryRows=categoryNames.map(name=>({name,values:years.map(y=>categoryMap.get(y).get(name)||0)})).map(x=>({...x,total:x.values.reduce((a,b)=>a+b,0)})).filter(x=>x.total>0).sort((a,b)=>b.total-a.total);
+ const classRows=classNames.map(name=>({name,values:years.map(y=>classMap.get(y).get(name)||0)})).map(x=>({...x,total:x.values.reduce((a,b)=>a+b,0)})).filter(x=>x.total>0).sort((a,b)=>b.total-a.total);
+ const stackedRows=(rows)=>{
+  if(!rows.length)return '<div class="report-empty">No distribution data available.</div>';
+  return '<div class="fgts-ov-stacked-rows">'+rows.map(row=>{
+   const parts=row.values.map((v,i)=>{const pct=row.total?v/row.total*100:0;return v?'<span class="fgts-ov-segment" style="width:'+pct.toFixed(3)+'%;background:'+colorByYear(years[i])+'"><b>'+pct.toFixed(1)+'%</b><i>'+years[i]+'</i></span>':'';}).join('');
+   return '<div class="fgts-ov-stacked-row"><span class="fgts-ov-row-label" title="'+escape(row.name)+'">'+escape(row.name)+'</span><div class="fgts-ov-track">'+parts+'</div></div>';
+  }).join('')+'</div>';
+ };
+ const yearlyCategoryQty=yearRows.map(x=>x.totalQty);
+ const sideTotal=sideMetrics(false);
+ const categoryContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+stackedRows(categoryRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div>'+legend+'</div>'+sideMetrics(true)+'</div>';
+ const classificationContent='<div class="fgts-ov-distribution-layout"><div class="fgts-ov-distribution-main">'+stackedRows(classRows)+'<div class="fgts-ov-percent-axis"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div>'+legend+'</div>'+sideMetrics(true)+'</div>';
+ const fmtPct=(v,total)=>total?(v/total*100).toFixed(1)+'%':'0.0%';
+ const fmtVariance=(current,previous)=>{const d=current-previous,p=previous?d/Math.abs(previous)*100:null;return (d>0?'+':'')+fmt(d)+' ('+(p==null?(current?'New':'0.0%'):(p>0?'+':'')+p.toFixed(1)+'%')+')';};
+ const tableHead='<thead><tr><th rowspan="2">Category</th>'+years.map(y=>'<th colspan="2">'+y+'</th>').join('')+years.slice(1).map((y,i)=>'<th rowspan="2">Variance<br>('+y+' vs '+years[i]+')</th>').join('')+'</tr><tr>'+years.map(()=>'<th>Qty</th><th>%</th>').join('')+'</tr></thead>';
+ const tableBody=categoryRows.map(row=>'<tr><td class="fgts-ov-table-category">'+escape(row.name)+'</td>'+years.map((y,i)=>'<td>'+fmt(row.values[i])+'</td><td>'+fmtPct(row.values[i],yearRows[i].totalQty)+'</td>').join('')+years.slice(1).map((y,i)=>'<td>'+fmtVariance(row.values[i+1],row.values[i])+'</td>').join('')+'</tr>').join('');
+ const totalRow='<tr class="fgts-ov-total-row"><td>Total</td>'+yearRows.map(x=>'<td>'+fmt(x.totalQty)+'</td><td>100.0%</td>').join('')+yearRows.slice(1).map((x,i)=>'<td>'+fmtVariance(x.totalQty,yearRows[i].totalQty)+'</td>').join('')+'</tr>';
+ const comparisonSummary='<div class="fgts-ov-table-wrap"><table class="fgts-ov-table">'+tableHead+'<tbody>'+tableBody+totalRow+'</tbody></table></div>';
+ const leadFirst=yearRows.find(x=>x.averageLeadDays!=null),leadLast=[...yearRows].reverse().find(x=>x.averageLeadDays!=null);
+ const qtyFirst=yearRows[0],qtyLast=yearRows[yearRows.length-1];
+ const topCategory=categoryRows[0],classTop=classRows[0];
+ const leadInsight=leadFirst&&leadLast&&leadFirst.year!==leadLast.year?'Average lead days '+(leadLast.averageLeadDays<=leadFirst.averageLeadDays?'decreased':'increased')+' to <b>'+fmt(leadLast.averageLeadDays)+' days</b> in '+leadLast.year+' (from '+fmt(leadFirst.averageLeadDays)+' days in '+leadFirst.year+').':'Average lead days are '+(leadLast?'<b>'+fmt(leadLast.averageLeadDays)+' days</b>.':'not available for this period.');
+ const qtyInsight=qtyFirst&&qtyLast?(qtyFirst.totalQty===qtyLast.totalQty?'Total quantity remained at <b>'+fmt(qtyLast.totalQty)+'</b> in '+qtyLast.year+', with no variance between the first and last selected year.':'Total quantity '+(qtyLast.totalQty>qtyFirst.totalQty?'increased':'decreased')+' by <b>'+fmt(Math.abs(qtyLast.totalQty-qtyFirst.totalQty))+'</b> from '+qtyFirst.year+' to '+qtyLast.year+'.'):'No quantity comparison is available.';
+ const categoryInsight=topCategory?'<b>'+escape(topCategory.name)+'</b> is the leading category across the selected years, representing '+fmtPct(topCategory.total,totalQty)+' of the combined quantity.':'Category distribution is not available.';
+ const classInsight=classTop?'<b>'+escape(classTop.name)+'</b> is the largest classification by combined quantity across the selected years.':'Classification trend is not available.';
+ const insights='<ul class="fgts-ov-insights"><li><i class="fgts-ov-insight-blue">▥</i><span><b>Stable Growth</b><small>'+qtyInsight+'</small></span></li><li><i class="fgts-ov-insight-green">◔</i><span><b>Lead Time Improvement</b><small>'+leadInsight+'</small></span></li><li><i class="fgts-ov-insight-orange">★</i><span><b>Top Category</b><small>'+categoryInsight+'</small></span></li><li><i class="fgts-ov-insight-purple">✓</i><span><b>Classification Trend</b><small>'+classInsight+'</small></span></li></ul>';
+ const qtyTitle=(mode==='MONTH'||mode==='SINGLE_YEAR')?'Monthly Quantity':mode==='QUARTER'?'Quarterly Quantity':mode==='HALF'?'Half-Year Quantity':'Overall Quantity per Year';
+ const leadTitle=(mode==='MONTH'||mode==='SINGLE_YEAR')?'Monthly Average Lead Days':mode==='QUARTER'?'Quarterly Average Lead Days':mode==='HALF'?'Half-Year Average Lead Days':'Average Lead Days per Year';
+ const html='<div class="fgts-ov-top-grid">'+panel(qtyTitle,'chart',quantityChart(),'fgts-ov-quantity-panel')+panel(leadTitle,'clock',leadChart(),'fgts-ov-lead-panel')+'</div>'+
+ '<div class="fgts-ov-middle-grid">'+panel('Category Distribution','category',categoryContent,'fgts-ov-category-panel')+panel('Classification','classification',classificationContent,'fgts-ov-classification-panel')+'</div>'+
+ '<div class="fgts-ov-bottom-grid">'+panel('Comparison Summary','chart',comparisonSummary,'fgts-ov-summary-panel')+panel('Key Insights','bulb',insights,'fgts-ov-insights-panel')+'</div>';
+ content.innerHTML=html;
+ document.querySelectorAll('.fgts-overview-mode-tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===(mode==='SINGLE_YEAR'?'MONTH':mode)));
+ const updated=el('fgtsReportUpdated');if(updated)updated.textContent=new Date().toLocaleString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
 }
-
 function exportFgtsReportPdf(){
  const report=el('fgtsReportView');if(!report)return;
  const style=document.createElement('style');style.id='fgts-report-print-style';
@@ -5219,6 +5161,78 @@ button.action-icon-btn svg{width:17px!important;height:17px!important;display:bl
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-row>b{text-align:right!important}
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track{background:none!important;background-image:none!important;border-left:0!important}
 #fgtsReportView:has(#fgtsReportMode option[value="MONTH"]:checked) .fgts-month-category .fgts-ref-cat-track>i{cursor:pointer!important}
+</style>
+
+<style id="fgts-report-dashboard-overview-exact-v1">
+#fgtsReportView{background:#f0f4fa!important;padding:14px!important;border-radius:13px!important;color:#102b56}
+#fgtsReportView .fgts-report-banner{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:76px;padding:13px 20px;margin:0 0 13px;background:#09275c!important;border-radius:13px!important;color:#fff!important;box-shadow:0 3px 10px #0b285826}
+#fgtsReportView .fgts-report-brand{display:flex;align-items:center;gap:13px;min-width:220px}
+#fgtsReportView .fgts-brand-icon{display:grid;place-items:center;width:43px;height:43px;border-radius:10px;background:#ffffff18!important;color:#fff}
+#fgtsReportView .fgts-brand-icon svg{width:32px;height:32px;fill:#fff}
+#fgtsReportView .fgts-report-title{margin:0!important;color:#fff!important;font-size:22px!important;font-weight:850!important;letter-spacing:.2px}
+#fgtsReportView .fgts-report-brand p{margin:3px 0 0!important;color:#d7e5fb!important;font-size:11px!important}
+#fgtsReportView .fgts-report-banner-meta{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0}
+#fgtsReportView .fgts-overview-mode-tabs{display:flex;align-items:center;gap:5px;padding:4px;background:#ffffff12;border:1px solid #ffffff26;border-radius:9px}
+#fgtsReportView .fgts-overview-mode-tabs button{height:31px;padding:0 12px;border:1px solid transparent;border-radius:6px;background:transparent;color:#e5efff;font-size:11px;font-weight:750;white-space:nowrap;cursor:pointer}
+#fgtsReportView .fgts-overview-mode-tabs button.active{background:#fff;color:#09275c;box-shadow:0 2px 5px #0002}
+#fgtsReportView .fgts-export-btn{height:36px;padding:0 13px;border:0;border-radius:7px;background:#20a85a;color:#fff;font-size:11px;font-weight:850;white-space:nowrap;cursor:pointer}
+#fgtsReportView .fgts-period-panel{margin:0 0 13px!important;padding:8px 14px 10px!important;border:1px solid #d6e1f0!important;border-radius:10px!important;background:#fff!important;box-shadow:0 2px 7px #193b690c!important}
+#fgtsReportView .fgts-period-heading{padding:3px 0 6px!important;border:0!important;color:#123461!important;font-size:11px!important}
+#fgtsReportView .fgts-period-controls{padding-top:3px!important;gap:8px!important}
+#fgtsReportView .fgts-period-controls label{font-size:10px!important}
+#fgtsReportView .fgts-period-controls select{height:30px!important;font-size:11px!important}
+#fgtsReportView .fgts-period-help{margin:6px 0 0!important;font-size:9px!important}
+#fgtsReportView .fgts-view-controls .report-year-field:first-child{display:none!important}
+#fgtsReportView .fgts-reference-kpis{display:none!important}
+#fgtsReportView .fgts-ov-top-grid,#fgtsReportView .fgts-ov-middle-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px;margin:0 0 13px}
+#fgtsReportView .fgts-ov-bottom-grid{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(250px,1fr);gap:13px;align-items:stretch;margin:0}
+#fgtsReportView .fgts-ov-panel{min-width:0;overflow:hidden;border:1px solid #d8e2f1!important;border-radius:12px!important;background:#fff!important;box-shadow:0 2px 8px #12345b0d!important}
+#fgtsReportView .fgts-ov-panel .fgts-panel-head{display:flex;align-items:center;gap:9px;min-height:40px;padding:9px 13px;background:#fff!important;color:#09275c!important;font-size:14px!important;font-weight:850!important;border-bottom:1px solid #edf1f7}
+#fgtsReportView .fgts-ov-panel .fgts-panel-head span{color:#09275c!important}
+#fgtsReportView .fgts-ov-panel .fgts-panel-icon{width:21px;height:21px;flex:0 0 21px;color:#1769ed}
+#fgtsReportView .fgts-ov-panel .fgts-panel-body{padding:9px 12px 12px!important;min-width:0}
+#fgtsReportView .fgts-ov-chart-layout{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:10px;align-items:stretch;min-width:0}
+#fgtsReportView .fgts-ov-chart-main{min-width:0}
+#fgtsReportView .fgts-ov-chart-main svg{display:block;width:100%;height:auto;max-height:235px;overflow:visible}
+#fgtsReportView .fgts-ov-legend{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin:4px 0 0;color:#24416d;font-size:10px;font-weight:750}
+#fgtsReportView .fgts-ov-legend span,#fgtsReportView .fgts-ov-side-row span{display:flex;align-items:center;gap:5px}
+#fgtsReportView .fgts-ov-legend i,#fgtsReportView .fgts-ov-side-row i{display:inline-block;width:9px;height:9px;flex:0 0 9px;border-radius:50%}
+#fgtsReportView .fgts-ov-side{display:flex;flex-direction:column;justify-content:center;gap:10px;min-width:0;padding:8px 10px;border-left:1px solid #e2e9f3;background:#f8faff}
+#fgtsReportView .fgts-ov-side-title{margin-bottom:3px;color:#17365f;font-size:11px;font-weight:850;line-height:1.25}
+#fgtsReportView .fgts-ov-side-row{display:flex;align-items:center;justify-content:space-between;gap:7px;color:#29466f;font-size:10px}
+#fgtsReportView .fgts-ov-side-row b{font-size:11px;font-weight:850}
+#fgtsReportView .fgts-ov-total{display:flex;justify-content:space-between;gap:7px;margin-top:auto;padding-top:8px;border-top:1px solid #dce5f1;color:#18365f;font-size:10px;font-weight:850}
+#fgtsReportView .fgts-ov-total b{font-size:13px}
+#fgtsReportView .fgts-ov-side-rule{margin-top:auto;border-top:1px solid #dce5f1}
+#fgtsReportView .fgts-ov-distribution-layout{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:10px;align-items:stretch;min-width:0}
+#fgtsReportView .fgts-ov-distribution-main{min-width:0;padding-top:2px}
+#fgtsReportView .fgts-ov-stacked-rows{display:flex;flex-direction:column;gap:12px}
+#fgtsReportView .fgts-ov-stacked-row{display:grid;grid-template-columns:minmax(88px,115px) minmax(0,1fr);gap:9px;align-items:center;min-width:0}
+#fgtsReportView .fgts-ov-row-label{overflow:hidden;color:#17365f;font-size:11px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
+#fgtsReportView .fgts-ov-track{display:flex;width:100%;height:26px;min-width:0;overflow:hidden;border-radius:4px;background:#edf2f8;box-shadow:inset 0 0 0 1px #e1e8f2}
+#fgtsReportView .fgts-ov-segment{display:flex;align-items:center;justify-content:center;flex-direction:column;min-width:0;height:100%;overflow:hidden;color:#fff;font-size:9px;line-height:1.1;text-shadow:0 1px 2px #0005}
+#fgtsReportView .fgts-ov-segment b{font-size:10px;font-weight:850;white-space:nowrap}
+#fgtsReportView .fgts-ov-segment i{font-size:8px;font-style:normal;font-weight:750;white-space:nowrap}
+#fgtsReportView .fgts-ov-percent-axis{display:flex;justify-content:space-between;margin:5px 0 0 124px;color:#6b7c96;font-size:9px}
+#fgtsReportView .fgts-ov-distribution-layout .fgts-ov-legend{justify-content:flex-start;margin:11px 0 0 124px}
+#fgtsReportView .fgts-ov-table-wrap{width:100%;overflow-x:auto}
+#fgtsReportView .fgts-ov-table{width:100%;border-collapse:collapse;font-size:10px;color:#17365f}
+#fgtsReportView .fgts-ov-table th{padding:7px 6px;background:#e5edff;border:1px solid #cbd9ed;text-align:center;font-size:10px;font-weight:850;white-space:nowrap}
+#fgtsReportView .fgts-ov-table td{padding:7px 6px;border:1px solid #dce5f1;text-align:center;white-space:nowrap}
+#fgtsReportView .fgts-ov-table td:first-child{text-align:left}
+#fgtsReportView .fgts-ov-table-category{font-weight:750}
+#fgtsReportView .fgts-ov-table .fgts-ov-total-row{background:#f0f5fd;font-weight:850}
+#fgtsReportView .fgts-ov-insights{display:flex;flex-direction:column;gap:11px;margin:2px 0;padding:0;list-style:none}
+#fgtsReportView .fgts-ov-insights li{display:flex;align-items:flex-start;gap:9px;color:#18365f}
+#fgtsReportView .fgts-ov-insights li>i{display:grid;place-items:center;width:25px;height:25px;flex:0 0 25px;border-radius:50%;background:#e8f1ff;color:#1769ed;font-size:13px;font-style:normal;font-weight:850}
+#fgtsReportView .fgts-ov-insights li>i.fgts-ov-insight-green{background:#e7f8ef;color:#159b55}
+#fgtsReportView .fgts-ov-insights li>i.fgts-ov-insight-orange{background:#fff3e4;color:#e58a19}
+#fgtsReportView .fgts-ov-insights li>i.fgts-ov-insight-purple{background:#f0eaff;color:#8150cf}
+#fgtsReportView .fgts-ov-insights li>span{display:flex;flex-direction:column;gap:3px;min-width:0}
+#fgtsReportView .fgts-ov-insights li b{font-size:11px;font-weight:850}
+#fgtsReportView .fgts-ov-insights li small{color:#657894;font-size:10px;line-height:1.35}
+@media(max-width:1050px){#fgtsReportView .fgts-report-banner{align-items:flex-start;flex-direction:column}#fgtsReportView .fgts-report-banner-meta{width:100%;justify-content:space-between}#fgtsReportView .fgts-ov-top-grid,#fgtsReportView .fgts-ov-middle-grid{grid-template-columns:1fr}#fgtsReportView .fgts-ov-bottom-grid{grid-template-columns:1fr}#fgtsReportView .fgts-ov-chart-layout,#fgtsReportView .fgts-ov-distribution-layout{grid-template-columns:minmax(0,1fr) 135px}}
+@media(max-width:700px){#fgtsReportView{padding:8px!important}#fgtsReportView .fgts-report-banner-meta{align-items:stretch;flex-direction:column}#fgtsReportView .fgts-overview-mode-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#fgtsReportView .fgts-overview-mode-tabs button{padding:0 5px}#fgtsReportView .fgts-ov-chart-layout,#fgtsReportView .fgts-ov-distribution-layout{grid-template-columns:1fr}#fgtsReportView .fgts-ov-side{border-left:0;border-top:1px solid #e2e9f3}#fgtsReportView .fgts-ov-percent-axis,#fgtsReportView .fgts-ov-distribution-layout .fgts-ov-legend{margin-left:0}#fgtsReportView .fgts-ov-stacked-row{grid-template-columns:minmax(78px,100px) minmax(0,1fr)}}
 </style>
 </body></html>
 <!-- Trigger syntax validation for restored #242 source -->
